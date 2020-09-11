@@ -8,7 +8,7 @@
 #include "cmsis_os.h"
 #include "sensor.h"
 #include "maze.h"
-
+extern osMutexId_t UART_MutexHandle;
 extern osThreadId_t POS_CHECK_TASKHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
@@ -127,7 +127,7 @@ void straight(RUNConfig config) {
 		 / 2 + 5 / STEP_LENGTH;
 		 }
 		 }*/
-
+		//osThreadYield();
 		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	//1走行距離判定　ループ１へ
@@ -193,6 +193,7 @@ void turn(RUNConfig config) {
 		//1各モータスピードに代入
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
+		//osThreadYield();
 		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
@@ -262,6 +263,7 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
+		//osThreadYield();
 		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
@@ -326,9 +328,9 @@ void chenge_head(RUNConfig config) {
 }
 
 void run_block(RUNConfig config) {
-	osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
+	//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
 	straight(config);
-	osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
+	//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
 }
 
 void turn_u(void) {
@@ -339,12 +341,12 @@ void turn_u(void) {
 	chenge_head(turn_config);
 }
 
-extern void POS_CHECK(void *argument) {
+/*extern void POS_CHECK(void *argument) {
 	uint32_t move = 0, move_buf = 0, move_prev = 0;
 	uint8_t wall_set_flag = 1;
 	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	for (;;) {
-		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5U) == TASK_STOP) {
+		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
 			switch (head) {
 			case 0:
 				if (posY * 100 < posY_buf && posY_buf % 100 >= 50) {
@@ -371,6 +373,7 @@ extern void POS_CHECK(void *argument) {
 			posX_buf *= 100;
 			posY_buf /= 100;
 			posY_buf *= 100;
+
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 			posX_buf = posX * 100;
 			posY_buf = posY * 100;
@@ -401,13 +404,15 @@ extern void POS_CHECK(void *argument) {
 				wall_set();
 				wall_set_flag = 0;
 			}
-			if(posY_buf/100!=posY||posX_buf/100!=posX){
-				wall_set_flag=1;
+			if (posY_buf / 100 != posY || posX_buf / 100 != posX) {
+				wall_set_flag = 1;
 			}
 			posY = posY_buf / 100;
 			posX = posX_buf / 100;
 			move_prev = move_buf;
 		}
+		osThreadYield();
+		osDelay(5);
 	}
-	/* USER CODE END POS_CHECK */
-}
+	 USER CODE END POS_CHECK
+}*/

@@ -10,7 +10,7 @@
 #include"battery.h"
 #include"buzzer.h"
 #include "UI.h"
-
+extern osMutexId_t UART_MutexHandle;
 extern ADC_HandleTypeDef hadc2;
 extern void BatteryCheck(void *argument) {
 	/* USER CODE BEGIN BatteryCheck */

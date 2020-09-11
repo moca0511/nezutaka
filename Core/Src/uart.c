@@ -7,7 +7,8 @@
 
 #include "main.h"
 #include "uart.h"
-
+#include "cmsis_os.h"
+extern osMutexId_t UART_MutexHandle;
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -39,4 +40,9 @@ uint8_t ugets(UART_HandleTypeDef *uartHandle, uint8_t *data, uint8_t data_len) {
 	} while (buff[0] != '\n');//	改行されるまで
 	return len;
 }
-
+void print_str(char *str){
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	      printf("%s",str);
+	      osMutexRelease(UART_MutexHandle);
+	    }
+}

@@ -62,28 +62,28 @@ UART_HandleTypeDef huart1;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal3,
   .stack_size = 128 * 4
 };
 /* Definitions for Sensor_Task */
 osThreadId_t Sensor_TaskHandle;
 const osThreadAttr_t Sensor_Task_attributes = {
   .name = "Sensor_Task",
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityNormal4,
   .stack_size = 128 * 4
 };
 /* Definitions for MOTOR_R_Task */
 osThreadId_t MOTOR_R_TaskHandle;
 const osThreadAttr_t MOTOR_R_Task_attributes = {
   .name = "MOTOR_R_Task",
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityNormal3,
   .stack_size = 128 * 4
 };
 /* Definitions for MOTOR_L_Task */
 osThreadId_t MOTOR_L_TaskHandle;
 const osThreadAttr_t MOTOR_L_Task_attributes = {
   .name = "MOTOR_L_Task",
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityNormal3,
   .stack_size = 128 * 4
 };
 /* Definitions for BUZZER_Task */
@@ -104,7 +104,7 @@ const osThreadAttr_t BATTERY_CHECK_attributes = {
 osThreadId_t MOTER_SLEEP_CHEHandle;
 const osThreadAttr_t MOTER_SLEEP_CHE_attributes = {
   .name = "MOTER_SLEEP_CHE",
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityNormal2,
   .stack_size = 128 * 4
 };
 /* Definitions for WALL_READ_TASK */
@@ -114,19 +114,17 @@ const osThreadAttr_t WALL_READ_TASK_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
-/* Definitions for POS_CHECK_TASK */
-osThreadId_t POS_CHECK_TASKHandle;
-const osThreadAttr_t POS_CHECK_TASK_attributes = {
-  .name = "POS_CHECK_TASK",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
 /* Definitions for SENSOR_PRINT_TA */
 osThreadId_t SENSOR_PRINT_TAHandle;
 const osThreadAttr_t SENSOR_PRINT_TA_attributes = {
   .name = "SENSOR_PRINT_TA",
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
+};
+/* Definitions for UART_Mutex */
+osMutexId_t UART_MutexHandle;
+const osMutexAttr_t UART_Mutex_attributes = {
+  .name = "UART_Mutex"
 };
 /* Definitions for wait_usSem */
 osSemaphoreId_t wait_usSemHandle;
@@ -167,7 +165,6 @@ void BUZZER(void *argument);
 void BatteryCheck(void *argument);
 void MOTER_SLEEP_CHECK(void *argument);
 void WALL_READ(void *argument);
-void POS_CHECK(void *argument);
 void SENSOR_PRINT(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -223,6 +220,9 @@ int main(void)
 
   /* Init scheduler */
   osKernelInitialize();
+  /* Create the mutex(es) */
+  /* creation of UART_Mutex */
+  UART_MutexHandle = osMutexNew(&UART_Mutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
@@ -274,9 +274,6 @@ int main(void)
 
   /* creation of WALL_READ_TASK */
   WALL_READ_TASKHandle = osThreadNew(WALL_READ, NULL, &WALL_READ_TASK_attributes);
-
-  /* creation of POS_CHECK_TASK */
-  POS_CHECK_TASKHandle = osThreadNew(POS_CHECK, NULL, &POS_CHECK_TASK_attributes);
 
   /* creation of SENSOR_PRINT_TA */
   SENSOR_PRINT_TAHandle = osThreadNew(SENSOR_PRINT, NULL, &SENSOR_PRINT_TA_attributes);

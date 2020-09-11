@@ -12,7 +12,7 @@
 #include "run.h"
 #include "buzzer.h"
 #include "UI.h"
-
+extern osMutexId_t UART_MutexHandle;
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim3;
 SensorData sensorData = { 0, 0, 0, 0 };
@@ -27,50 +27,35 @@ extern void Sensor(void *argument) {
 	osDelay(10);
 	ADCSet ADC_config = { &hadc1, ADC_CHANNEL_RS };
 	PWMconfig pwm_config = { &htim3, PWM_CHANNEL_RS, 5000, 50, 84000000 };
-	SensorData sensorData_buf = { 0, 0, 0, 0 };
-	uint8_t count = 5;
+	;
 	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	/* Infinite loop */
 	for (;;) {
-		for (int i = 0; i < count; i++) {
-			if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 2U) == TASK_STOP) {
-				osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
-				sensorData_buf.ADC_DATA_RS = 0;
-				sensorData_buf.ADC_DATA_RF = 0;
-				sensorData_buf.ADC_DATA_LS = 0;
-				sensorData_buf.ADC_DATA_LF = 0;
-			}
-			//printf("sensor\n");
 
-			pwm_config.hz = 5000;
-			pwm_config.duty = 50;
+			if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
+				HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
+				HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
+				HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
+				HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
+				osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+			}
 
 			//LED_RS on
-//		pwm_config.htim = &htim3;
 			pwm_config.pin = PWM_CHANNEL_RS;
-//		printf("set pwmset\n");
 			PWM_Set(&pwm_config);
-			//	printf("pwmstart\n");
 			HAL_TIM_PWM_Start_IT(pwm_config.htim, pwm_config.pin);
 
 			//wait20us
 			wait_us(20);
-			//printf("wait us endend\n");
 
 //Sensor RS read
-//		ADC_config.hadc = &hadc1;
 			ADC_config.channel = ADC_CHANNEL_RS;
-			//printf("set sensorread\n");
-			sensorData_buf.ADC_DATA_RS += ADConv(&ADC_config);
-//		if (sensor_debug_f)
-//			printf("RS_ADC=%5ld\n", sensorData.ADC_DATA_RS);
+			sensorData.ADC_DATA_RS = ADConv(&ADC_config);
 
 //LED_RS off
-//printf("pwmstop\n");
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
 
 			//LED_RF on
-//		pwm_config.htim = &htim3;
 			pwm_config.pin = PWM_CHANNEL_RF;
 			PWM_Set(&pwm_config);
 			HAL_TIM_PWM_Start_IT(pwm_config.htim, pwm_config.pin);
@@ -79,17 +64,13 @@ extern void Sensor(void *argument) {
 			wait_us(20);
 
 			//Sensor_RF read
-//		ADC_config.hadc = &hadc1;
 			ADC_config.channel = ADC_CHANNEL_RF;
-			sensorData_buf.ADC_DATA_RF += ADConv(&ADC_config);
-			//if (sensor_debug_f)
-			//printf("RF_ADC=%5ld\n", sensorData.ADC_DATA_RF);
+			sensorData.ADC_DATA_RF = ADConv(&ADC_config);
 
 			//LED_RF off
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
 
 			//LED_LS on
-//		pwm_config.htim = &htim3;
 			pwm_config.pin = PWM_CHANNEL_LS;
 			PWM_Set(&pwm_config);
 			HAL_TIM_PWM_Start_IT(pwm_config.htim, pwm_config.pin);
@@ -98,17 +79,13 @@ extern void Sensor(void *argument) {
 			wait_us(20);
 
 			//sensor_LS read
-//		ADC_config.hadc = &hadc1;
 			ADC_config.channel = ADC_CHANNEL_LS;
-			sensorData_buf.ADC_DATA_LS += ADConv(&ADC_config);
-			//if (sensor_debug_f)
-			//printf("LS_ADC=%5ld\n", sensorData.ADC_DATA_LS);
+			sensorData.ADC_DATA_LS = ADConv(&ADC_config);
 
 			//LED_LS off
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
 
 			//LED_LF on
-//		pwm_config.htim = &htim3;
 			pwm_config.pin = PWM_CHANNEL_LF;
 			PWM_Set(&pwm_config);
 			HAL_TIM_PWM_Start_IT(pwm_config.htim, pwm_config.pin);
@@ -117,25 +94,17 @@ extern void Sensor(void *argument) {
 			wait_us(20);
 
 			//Sensor_LF read
-//		ADC_config.hadc = &hadc1;
 			ADC_config.channel = ADC_CHANNEL_LF;
-			sensorData_buf.ADC_DATA_LF += ADConv(&ADC_config);
-			//if (sensor_debug_f)
-			//printf("LF_ADC=%5ld\n\n", sensorData.ADC_DATA_LF);
+			sensorData.ADC_DATA_LF = ADConv(&ADC_config);
 
 			//LED_LF off
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
-		}
-		sensorData.ADC_DATA_RS = sensorData_buf.ADC_DATA_RS / count;
-		sensorData.ADC_DATA_RF = sensorData_buf.ADC_DATA_RF / count;
-		sensorData.ADC_DATA_LS = sensorData_buf.ADC_DATA_LS / count;
-		sensorData.ADC_DATA_LF = sensorData_buf.ADC_DATA_LF / count;
 
-		sensorData_buf.ADC_DATA_RS = 0;
-		sensorData_buf.ADC_DATA_RF = 0;
-		sensorData_buf.ADC_DATA_LS = 0;
-		sensorData_buf.ADC_DATA_LF = 0;
+			osDelay(2);
+			osThreadYield();
+
 		//task sycle time
+
 	}
 	/* USER CODE END Sensor */
 }
@@ -265,9 +234,13 @@ extern void SENSOR_PRINT(void *argument) {
 		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 500U) == TASK_STOP) {
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 		}
-		printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
-				sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-				sensorData.ADC_DATA_LF);
+		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+
+			printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
+					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
+					sensorData.ADC_DATA_LF);
+			osMutexRelease(UART_MutexHandle);
+		}
 	}
 	/* USER CODE END WALL_READ */
 }

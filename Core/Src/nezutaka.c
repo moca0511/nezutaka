@@ -15,7 +15,7 @@
 #include"run.h"
 #include "maze.h"
 #include"agent.h"
-
+extern osMutexId_t UART_MutexHandle;
 extern uint32_t MOTORSPEED_R;
 extern uint32_t MOTORSPEED_L;
 extern BuzzerConfig buzzer_config;
@@ -131,7 +131,11 @@ void MENU(int16_t *mode) {
 			*mode = 15;
 		UILED_SET((unsigned int) *mode);
 		if (flag == 1) {
-			printf("\r*mode:%2d %20s", *mode, mode_name[*mode]);
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+
+				printf("\r*mode:%2d %20s", *mode, mode_name[*mode]);
+				osMutexRelease(UART_MutexHandle);
+			}
 		}
 		osDelay(5);
 	}
@@ -220,7 +224,6 @@ void mode11(void) {
 
 void mode12(void) {
 	adachi();
-	music();
 	return;
 }
 void mode13(void) {
@@ -299,8 +302,8 @@ void mode14(void) {
 	return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 800, 1000, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 0, 200, 800, 1000, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 400, 400, 400, 0, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 400, 400, 400, 0, 90 };
 	printf("guruguru\n");
 	osDelay(500);
 	tone(tone_hiC, 10);
@@ -314,9 +317,9 @@ void mode15(void) {
 			tone(tone_hiC, 200);
 			break;
 		}
-		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
-		turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		slalom(turn_config);
 	}
 }
