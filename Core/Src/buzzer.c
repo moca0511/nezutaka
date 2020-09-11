@@ -43,20 +43,20 @@ void tone(uint32_t tone,uint32_t ms){
 
 //music
 void music(void) {
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_C, 100);
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_D, 100);
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_E, 100);
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_F, 100);
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_G, 100);
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_A, 100);
-	osDelay(100);
+	osDelay(1000);
 	tone(tone_B, 100);
 	tone(tone_hiC, 100);
-	osDelay(100);
+	osDelay(1000);
 }
