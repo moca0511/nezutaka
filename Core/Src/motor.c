@@ -9,7 +9,7 @@
 #include "buzzer.h"
 #include "nezutaka.h"
 
-
+extern osMutexId_t UART_MutexHandle;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
 uint32_t MotorHz_R = 0;
@@ -43,7 +43,8 @@ extern void MOTOR_R(void *argument) {
 				HAL_TIM_PWM_Start_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
 			}
 		}
-		osDelay(1);
+		osDelay(2);
+		osThreadYield();
 	}
 
 	/* USER CODE END MOTOR_R */
@@ -81,7 +82,8 @@ extern void MOTOR_L(void *argument) {
 				HAL_TIMEx_PWMN_Start_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
 			}
 		}
-		osDelay(1);
+		osDelay(2);
+		osThreadYield();
 	}
 	/* USER CODE END MOTER_SLEEP_CHECK */
 }
@@ -91,7 +93,7 @@ extern void MOTER_SLEEP_CHECK(void *argument) {
 	int sleepcount = 0;
 	for (;;) {
 		if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
-			if (sleepcount == 1000) {
+			if (sleepcount >= 10) {
 				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
 				sleepcount=0;
@@ -102,7 +104,7 @@ extern void MOTER_SLEEP_CHECK(void *argument) {
 			HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 		}
-		osDelay(10);
+		osDelay(5);
 	}
 }
 

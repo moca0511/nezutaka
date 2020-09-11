@@ -1,6 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-2\#ChannelRegularConversion=ADC_CHANNEL_10
-ADC1.IPParameters=Rank-2\#ChannelRegularConversion,master,Channel-2\#ChannelRegularConversion,SamplingTime-2\#ChannelRegularConversion,NbrOfConversionFlag
+ADC1.IPParameters=Rank-2\#ChannelRegularConversion,master,Channel-2\#ChannelRegularConversion,SamplingTime-2\#ChannelRegularConversion,NbrOfConversionFlag,Mode
+ADC1.Mode=__NULL
 ADC1.NbrOfConversionFlag=1
 ADC1.Rank-2\#ChannelRegularConversion=1
 ADC1.SamplingTime-2\#ChannelRegularConversion=ADC_SAMPLETIME_3CYCLES
@@ -12,8 +13,9 @@ ADC2.Rank-0\#ChannelRegularConversion=1
 ADC2.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_3CYCLES
 FREERTOS.BinarySemaphores01=wait_usSem,Dynamic,NULL;pwm_setSem,Dynamic,NULL;sensor_readSem,Dynamic,NULL
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,FootprintOK,BinarySemaphores01
-FREERTOS.Tasks01=defaultTask,8,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;Sensor_Task,40,128,Sensor,Default,NULL,Dynamic,NULL,NULL;MOTOR_R_Task,40,128,MOTOR_R,Default,NULL,Dynamic,NULL,NULL;MOTOR_L_Task,40,128,MOTOR_L,Default,NULL,Dynamic,NULL,NULL;BUZZER_Task,24,128,BUZZER,Default,NULL,Dynamic,NULL,NULL;BATTERY_CHECK,8,128,BatteryCheck,Default,NULL,Dynamic,NULL,NULL;MOTER_SLEEP_CHE,24,128,MOTER_SLEEP_CHECK,Default,NULL,Dynamic,NULL,NULL;WALL_READ_TASK,8,128,WALL_READ,Default,NULL,Dynamic,NULL,NULL;POS_CHECK_TASK,8,128,POS_CHECK,Default,NULL,Dynamic,NULL,NULL;SENSOR_PRINT_TA,8,128,SENSOR_PRINT,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.IPParameters=Tasks01,FootprintOK,BinarySemaphores01,Mutexes01
+FREERTOS.Mutexes01=UART_Mutex,Dynamic,NULL
+FREERTOS.Tasks01=defaultTask,27,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;Sensor_Task,28,128,Sensor,Default,NULL,Dynamic,NULL,NULL;MOTOR_R_Task,27,128,MOTOR_R,Default,NULL,Dynamic,NULL,NULL;MOTOR_L_Task,27,128,MOTOR_L,Default,NULL,Dynamic,NULL,NULL;BUZZER_Task,24,128,BUZZER,Default,NULL,Dynamic,NULL,NULL;BATTERY_CHECK,8,128,BatteryCheck,Default,NULL,Dynamic,NULL,NULL;MOTER_SLEEP_CHE,26,128,MOTER_SLEEP_CHECK,Default,NULL,Dynamic,NULL,NULL;WALL_READ_TASK,8,128,WALL_READ,Default,NULL,Dynamic,NULL,NULL;SENSOR_PRINT_TA,8,128,SENSOR_PRINT,Default,NULL,Dynamic,NULL,NULL
 File.Version=6
 GPIO.groupedBy=Group By Peripherals
 KeepUserPlacement=false

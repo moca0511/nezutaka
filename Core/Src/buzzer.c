@@ -9,14 +9,14 @@
 #include "cmsis_os.h"
 
 BuzzerConfig buzzer_config = { tone_C, 1 };
-
+extern osMutexId_t UART_MutexHandle;
 extern osThreadId_t BUZZER_TaskHandle;
 extern TIM_HandleTypeDef htim4;
 
 extern void BUZZER(void *argument)
 {
   /* USER CODE BEGIN BUZZER */
-	osDelay(10);
+	osDelay(1);
 	PWMconfig pwm_config = { &htim4, BUZZER_CHANNEL, tone_A, 10, 84000000 };
 	/* Infinite loop */
 	for (;;) {
@@ -27,7 +27,7 @@ extern void BUZZER(void *argument)
 		PWM_Set(&pwm_config);
 		HAL_TIM_PWM_Start_IT(&htim4, BUZZER_CHANNEL);
 //		printf("start\n");
-		osDelay(buzzer_config.ms*10);
+		osDelay(buzzer_config.ms);
 		HAL_TIM_PWM_Stop_IT(&htim4, BUZZER_CHANNEL);
 //		printf("stop\n");
 	}
@@ -43,20 +43,21 @@ void tone(uint32_t tone,uint32_t ms){
 
 //music
 void music(void) {
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_C, 100);
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_D, 100);
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_E, 100);
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_F, 100);
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_G, 100);
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_A, 100);
-	osDelay(1000);
+	osDelay(100);
 	tone(tone_B, 100);
+	osDelay(100);
 	tone(tone_hiC, 100);
-	osDelay(1000);
+	osDelay(100);
 }

@@ -8,9 +8,9 @@
 #include "maze.h"
 #include "sensor.h"
 #include "nezutaka.h"
-
+#include "cmsis_os.h"
+extern osMutexId_t UART_MutexHandle;
 MAP map[MAP_SIZE]; //ｓマップ情報
-
 int16_t posX = 0, posY = 0;	//　現在の位置
 uint8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
 uint8_t game_mode = 0;	//　探索(0)・最短(1)　選択
@@ -18,75 +18,81 @@ extern SensorData sensorData;
 extern uint32_t wall_config[12];
 
 void print_map(void) {
-	printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);
-	printf("    ");
-	for (int i = 0; i < MAP_X_MAX; i++) {
-		printf("  %d%d", i / 10, i % 10);
-	}
-	printf("\n");
-	for (int i = 0; i <= MAP_X_MAX; i++) {
-		printf("----");
-	}
-	printf("\n");
-	for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
-		printf("%3d|", i / MAP_X_MAX);
-		for (int f = 0; f < MAP_X_MAX; f++) {
-			printf("%4d", map[i + f].step);
+/*\	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);
+		printf("    ");
+		for (int i = 0; i < MAP_X_MAX; i++) {
+			printf("  %d%d", i / 10, i % 10);
 		}
 		printf("\n");
-	}
-
-	printf("\n");
-	printf("    ");
-	for (int i = 0; i < MAP_X_MAX; i++) {
-		printf("  %d%d", i / 10, i % 10);
-	}
-	printf("\n");
-	for (int i = 0; i <= MAP_X_MAX; i++) {
-		printf("----");
-	}
-	printf("\n");
-	for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
-		printf("%3d|", i / MAP_X_MAX);
-		for (int f = 0; f < MAP_X_MAX; f++) {
-			printf("%4x", map[i + f].wall);
+		for (int i = 0; i <= MAP_X_MAX; i++) {
+			printf("----");
 		}
 		printf("\n");
-	}
-
-	printf("\n");
-	printf("    ");
-	for (int i = 0; i < MAP_X_MAX; i++) {
-		printf("  %d%d", i / 10, i % 10);
-	}
-	printf("\n");
-	for (int i = 0; i <= MAP_X_MAX; i++) {
-		printf("----");
-	}
-	printf("\n");
-	for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
-		printf("%3d|", i / MAP_X_MAX);
-		for (int f = 0; f < MAP_X_MAX; f++) {
-			if (i == posY * MAP_X_MAX && f == posX) {
-				switch(head){
-				case 0:
-					printf(" ^^ ");
-					break;
-				case 1:
-					printf(" -> ");
-					break;
-				case 2:
-					printf(" vv ");
-					break;
-				case 3:
-					printf(" <- ");
-					break;
-				}
-			} else {
-				printf("%4x", map[i + f].wall);
+		for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
+			printf("%3d|", i / MAP_X_MAX);
+			for (int f = 0; f < MAP_X_MAX; f++) {
+				printf("%4d", map[i + f].step);
 			}
+			printf("\n");
+		}
+		osMutexRelease(UART_MutexHandle);
+	}*/
+		printf("\n");
+	 printf("    ");
+	 for (int i = 0; i < MAP_X_MAX; i++) {
+	 printf("  %d%d", i / 10, i % 10);
+	 }
+	 printf("\n");
+	 for (int i = 0; i <= MAP_X_MAX; i++) {
+	 printf("----");
+	 }
+	 printf("\n");
+	 for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
+	 printf("%3d|", i / MAP_X_MAX);
+	 for (int f = 0; f < MAP_X_MAX; f++) {
+	 printf("%4x", map[i + f].wall);
+	 }
+	 printf("\n");
+	 }
+
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("\n");
+		printf("    ");
+		for (int i = 0; i < MAP_X_MAX; i++) {
+			printf("  %d%d", i / 10, i % 10);
 		}
 		printf("\n");
+		for (int i = 0; i <= MAP_X_MAX; i++) {
+			printf("----");
+		}
+		printf("\n");
+		for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
+			printf("%3d|", i / MAP_X_MAX);
+			for (int f = 0; f < MAP_X_MAX; f++) {
+				if (i == posY * MAP_X_MAX && f == posX) {
+					switch (head) {
+					case 0:
+						printf(" ^^ ");
+						break;
+					case 1:
+						printf(" -> ");
+						break;
+					case 2:
+						printf(" vv ");
+						break;
+					case 3:
+						printf(" <- ");
+						break;
+					}
+				} else {
+					printf("%4d", map[i + f].step);
+				}
+			}
+			printf("\n");
+		}
+		osMutexRelease(UART_MutexHandle);
+		osThreadYield();
 	}
 }
 
@@ -369,6 +375,8 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 }
 
 void wall_set(void) {
+
+	//printf("wallset Y=%d,X=%d\n", posY, posX);
 	int8_t wall_flag = 0;
 	//北壁判定
 	if ((map[posX + posY * MAP_X_MAX].wall & 0x80) == 0x00) {
@@ -401,7 +409,7 @@ void wall_set(void) {
 		}
 
 		if (wall_flag == 1) {
-			printf("N");
+		//	printf("N");
 			map[posX + posY * MAP_X_MAX].wall += 0x88;
 			if (posY < MAP_X_MAX - 1) {
 				if ((map[posX + (posY + 1) * MAP_X_MAX].wall & 0x20) == 0x00)
@@ -446,7 +454,7 @@ void wall_set(void) {
 			break;
 		}
 		if (wall_flag == 1) {
-			printf("E");
+			//printf("E");
 			map[posX + posY * MAP_X_MAX].wall += 0x44;
 			if (posX < MAP_X_MAX - 1) {
 				if ((map[posX + 1 + posY * MAP_X_MAX].wall & 0x10) == 0x00)
@@ -492,7 +500,7 @@ void wall_set(void) {
 		}
 
 		if (wall_flag == 1) {
-			printf("S");
+		//	printf("S");
 			map[posX + posY * MAP_X_MAX].wall += 0x22;
 			if (posY > 0) {
 				if ((map[posX + (posY - 1) * MAP_X_MAX].wall & 0x80) == 0x00)
@@ -538,7 +546,7 @@ void wall_set(void) {
 		}
 
 		if (wall_flag == 1) {
-			printf("F");
+		//	printf("F");
 			map[posX + posY * MAP_X_MAX].wall += 0x11;
 			if (posX > 0) {
 				if ((map[posX - 1 + posY * MAP_X_MAX].wall & 0x40) == 0x00)
@@ -613,5 +621,96 @@ uint8_t wall_check(uint8_t direction) {
 			map[posX + posY * MAP_X_MAX].wall,
 			map[posX + posY * MAP_X_MAX].wall & and);
 	return (map[posX + posY * MAP_X_MAX].wall & and) % 0x10;
+}
+
+int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
+	int16_t step = -1;
+	switch (direction) {
+	case 0:
+		switch (head) {
+		case 0:
+			if (posY + 1 < MAP_Y_MAX) {
+				step = map[posX + (posY + 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 1:
+			if (posX + 1 < MAP_X_MAX) {
+				step = map[posX + posY * MAP_X_MAX + 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 2:
+			if (posY > 0) {
+				step = map[posX + (posY - 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 3:
+			if (posX > 0) {
+				step = map[posX + posY * MAP_X_MAX + 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		}
+		break;
+	case 1:
+		switch (head) {
+		case 0:
+			if (posX > 0) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX - 1].step;
+			}
+			break;
+		case 1:
+			if (posY + 1 < MAP_Y_MAX) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + (posY + 1) * MAP_X_MAX].step;
+			}
+			break;
+		case 2:
+			if (posX + 1 < MAP_X_MAX) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX + 1].step;
+			}
+			break;
+		case 3:
+			if (posY > 0) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + (posY - 1) * MAP_X_MAX].step;
+			}
+			break;
+		}
+		break;
+	case 2:
+		switch (head) {
+		case 0:
+			if (posX + 1 < MAP_X_MAX) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX + 1].step;
+			}
+			break;
+		case 1:
+			if (posY > 0) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + (posY - 1) * MAP_X_MAX].step;
+			}
+			break;
+		case 2:
+			if (posX > 0) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX - 1].step;
+			}
+			break;
+		case 3:
+			if (posY + 1 < MAP_Y_MAX) {
+				step = map[posX + posY * MAP_X_MAX].step
+						- map[posX + (posY + 1) * MAP_X_MAX].step;
+			}
+			break;
+		}
+		break;
+	}
+	return step;
 }
 

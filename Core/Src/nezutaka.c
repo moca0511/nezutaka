@@ -14,7 +14,8 @@
 #include"nezutaka.h"
 #include"run.h"
 #include "maze.h"
-
+#include"agent.h"
+extern osMutexId_t UART_MutexHandle;
 extern uint32_t MOTORSPEED_R;
 extern uint32_t MOTORSPEED_L;
 extern BuzzerConfig buzzer_config;
@@ -130,7 +131,11 @@ void MENU(int16_t *mode) {
 			*mode = 15;
 		UILED_SET((unsigned int) *mode);
 		if (flag == 1) {
-			printf("\r*mode:%2d %20s", *mode, mode_name[*mode]);
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+
+				printf("\r*mode:%2d %20s", *mode, mode_name[*mode]);
+				osMutexRelease(UART_MutexHandle);
+			}
 		}
 		osDelay(5);
 	}
@@ -181,7 +186,7 @@ void mode5(void) {
 //SLALOM_R
 void mode6(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
-	osDelay(5000);
+	osDelay(500);
 	slalom(turn_config);
 }
 
@@ -216,68 +221,20 @@ void mode10(void) {
 void mode11(void) {
 	return;
 }
+
 void mode12(void) {
+	adachi();
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 0, 300, 300, 1000, 90 };
-	printf("hidarite\n");
-	osDelay(5000);
-	smap_Init();
-	//wall_calibration();
-	tone(tone_hiC, 10);
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	osDelay(100);
-	for (;;) {
-
-		//print_map();
-		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-			MOTORSPEED_R = MOTORSPEED_L = 0;
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-				osDelay(50);
-			}
-			tone(tone_hiC, 200);
-			break;
-		}
-
-		if (wall_check(1) == 0) {
-			printf("TURNL\n");
-			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			turn_config.direction = TURN_L;
-			slalom(turn_config);
-			chenge_head(turn_config);
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			run_block(RUN_config);
-		} else if (wall_check(0) == 0) {
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			printf("straight\n");
-			run_block(RUN_config);
-		} else if (wall_check(2) == 0) {
-			printf("TURN R\n");
-			//			RUN_config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3;
-			//			straight(RUN_config);
-			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			turn_config.direction = TURN_R;
-			slalom(turn_config);
-			chenge_head(turn_config);
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			run_block(RUN_config);
-		} else {
-			printf("U\n");
-			turn_u();
-		}
-		print_map();
-		tone(tone_hiC, 100);
-	}
+	hidarite();
 	return;
 }
 void mode14(void) {
 	printf("speed test\n");
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 2000, BLOCK_LENGTH * 5 };
 	RUNConfig turn_config = { TURN_R, 0, 300, 800, 2000, 90 };
-	osDelay(5000);
+	osDelay(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -345,10 +302,10 @@ void mode14(void) {
 	return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 800, 1000, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 0, 200, 800, 1000, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 400, 400, 400, 0, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 400, 400, 400, 0, 90 };
 	printf("guruguru\n");
-	osDelay(5000);
+	osDelay(500);
 	tone(tone_hiC, 10);
 	for (;;) {
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
@@ -360,9 +317,9 @@ void mode15(void) {
 			tone(tone_hiC, 200);
 			break;
 		}
-		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
-		turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		slalom(turn_config);
 	}
 }

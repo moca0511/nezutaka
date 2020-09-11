@@ -8,7 +8,7 @@
 #include "cmsis_os.h"
 #include "sensor.h"
 #include "maze.h"
-
+extern osMutexId_t UART_MutexHandle;
 extern osThreadId_t POS_CHECK_TASKHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
@@ -25,7 +25,7 @@ void straight(RUNConfig config) {
 	int32_t speed = config.initial_speed;
 	int32_t speed_R = speed;
 	int32_t speed_L = speed;
-	int32_t plpl = config.acceleration, plpl_count = 20, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
@@ -127,7 +127,7 @@ void straight(RUNConfig config) {
 		 / 2 + 5 / STEP_LENGTH;
 		 }
 		 }*/
-
+		//osThreadYield();
 		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	//1走行距離判定　ループ１へ
@@ -141,7 +141,7 @@ void turn(RUNConfig config) {
 	//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 20, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -193,6 +193,7 @@ void turn(RUNConfig config) {
 		//1各モータスピードに代入
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
+		//osThreadYield();
 		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
@@ -205,7 +206,7 @@ void slalom(RUNConfig config) {
 	//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 20, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -262,6 +263,7 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
+		//osThreadYield();
 		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
@@ -325,12 +327,10 @@ void chenge_head(RUNConfig config) {
 	head = head_buf;
 }
 
-
-
 void run_block(RUNConfig config) {
-	osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
+	//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
 	straight(config);
-	osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
+	//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
 }
 
 void turn_u(void) {
@@ -341,11 +341,12 @@ void turn_u(void) {
 	chenge_head(turn_config);
 }
 
-extern void POS_CHECK(void *argument) {
+/*extern void POS_CHECK(void *argument) {
 	uint32_t move = 0, move_buf = 0, move_prev = 0;
+	uint8_t wall_set_flag = 1;
 	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	for (;;) {
-		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5U) == TASK_STOP) {
+		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
 			switch (head) {
 			case 0:
 				if (posY * 100 < posY_buf && posY_buf % 100 >= 50) {
@@ -372,10 +373,12 @@ extern void POS_CHECK(void *argument) {
 			posX_buf *= 100;
 			posY_buf /= 100;
 			posY_buf *= 100;
+
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 			posX_buf = posX * 100;
 			posY_buf = posY * 100;
 			move = move_buf = move_prev = 0;
+			wall_set_flag = 1;
 		}
 
 		move_buf = (uint32_t) ((((MotorStepCount_R + MotorStepCount_L) / 2)
@@ -397,10 +400,19 @@ extern void POS_CHECK(void *argument) {
 				break;
 			}
 
+			if (wall_set_flag && move_buf % 100 >= 50) {
+				wall_set();
+				wall_set_flag = 0;
+			}
+			if (posY_buf / 100 != posY || posX_buf / 100 != posX) {
+				wall_set_flag = 1;
+			}
 			posY = posY_buf / 100;
 			posX = posX_buf / 100;
 			move_prev = move_buf;
 		}
+		osThreadYield();
+		osDelay(5);
 	}
-	/* USER CODE END POS_CHECK */
-}
+	 USER CODE END POS_CHECK
+}*/
