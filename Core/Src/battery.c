@@ -42,7 +42,7 @@ extern void BatteryCheck(void *argument) {
 			count=0;
 			RGBLED_SET(LED_OFF,LED_ON,LED_OFF);
 		}
-		osDelay(10000); //1s
+		osDelay(1000); //1s
 	}
 	/* USER CODE END BatteryCheck */
 }

@@ -102,7 +102,7 @@ extern void MOTER_SLEEP_CHECK(void *argument) {
 			HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 		}
-		osDelay(10);
+		osDelay(100);
 	}
 }
 

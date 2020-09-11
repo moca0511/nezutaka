@@ -9,11 +9,11 @@
 #define INC_MAZE_H_
 #include"main.h"
 
-#define MAP_X_MAX 4
-#define MAP_Y_MAX 6
+#define MAP_X_MAX 16
+#define MAP_Y_MAX 16
 #define MAP_SIZE	MAP_X_MAX*MAP_Y_MAX	//　マップマスの数
-#define goalX 3
-#define goalY 0
+#define goalX 7
+#define goalY 8
 #define startX 0
 #define startY 0
 #define goal (goalY * MAP_X_MAX + goalX) //ｓゴールの添え字

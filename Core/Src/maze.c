@@ -10,7 +10,6 @@
 #include "nezutaka.h"
 
 MAP map[MAP_SIZE]; //ｓマップ情報
-
 int16_t posX = 0, posY = 0;	//　現在の位置
 uint8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
 uint8_t game_mode = 0;	//　探索(0)・最短(1)　選択
@@ -18,7 +17,7 @@ extern SensorData sensorData;
 extern uint32_t wall_config[12];
 
 void print_map(void) {
-	printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);
+	/*printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);*/
 	printf("    ");
 	for (int i = 0; i < MAP_X_MAX; i++) {
 		printf("  %d%d", i / 10, i % 10);
@@ -36,7 +35,7 @@ void print_map(void) {
 		printf("\n");
 	}
 
-	printf("\n");
+/*	printf("\n");
 	printf("    ");
 	for (int i = 0; i < MAP_X_MAX; i++) {
 		printf("  %d%d", i / 10, i % 10);
@@ -58,7 +57,7 @@ void print_map(void) {
 	printf("    ");
 	for (int i = 0; i < MAP_X_MAX; i++) {
 		printf("  %d%d", i / 10, i % 10);
-	}
+	}*/
 	printf("\n");
 	for (int i = 0; i <= MAP_X_MAX; i++) {
 		printf("----");
@@ -100,26 +99,26 @@ void smap_Init(void) {
 	for (int i = 0; i < MAP_SIZE; i++) {
 		map[i].check = 0;
 		map[i].step = 255;
-		map[i].wall = 0x00;
+		map[i].wall = 0xf0;
 	}
 
 	game_mode = 0;
 	for (int i = 0; i < MAP_SIZE; i += MAP_X_MAX) {
-		map[i].wall += 0x11;
+		map[i].wall += 0x01;
 	}
 	for (int i = 0; i < MAP_X_MAX; i++) {
-		map[i].wall += 0x22;
+		map[i].wall += 0x02;
 	}
 	for (int i = MAP_SIZE - 1; i >= MAP_SIZE - MAP_X_MAX; i--) {
-		map[i].wall += 0x88;
+		map[i].wall += 0x08;
 	}
 	for (int i = MAP_X_MAX - 1; i < MAP_SIZE; i += MAP_X_MAX) {
-		map[i].wall += 0x44;
+		map[i].wall += 0x04;
 	}
-	map[start].wall += 0x44;
-	map[start].wall += 0x80;
-	map[start + 1].wall += 0x11;
-	map[start + MAP_X_MAX].wall += 0x20;
+	map[start].wall += 0x04;
+	map[start].wall += 0x00;
+	map[start + 1].wall += 0x01;
+	map[start + MAP_X_MAX].wall += 0x00;
 }
 
 void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
@@ -369,6 +368,7 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 }
 
 void wall_set(void) {
+	printf("wallset Y=%d,X=%d\n",posY,posX);
 	int8_t wall_flag = 0;
 	//北壁判定
 	if ((map[posX + posY * MAP_X_MAX].wall & 0x80) == 0x00) {
@@ -650,26 +650,22 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 		switch (head) {
 		case 0:
 			if (posX > 0) {
-				step = map[posX + posY * MAP_X_MAX - 1].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step -map[posX + posY * MAP_X_MAX - 1].step;
 			}
 			break;
 		case 1:
 			if (posY + 1 < MAP_Y_MAX) {
-				step = map[posX + (posY + 1) * MAP_X_MAX].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step - map[posX + (posY + 1) * MAP_X_MAX].step;
 			}
 			break;
 		case 2:
 			if (posX + 1 < MAP_X_MAX) {
-				step = map[posX + posY * MAP_X_MAX + 1].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step -map[posX + posY * MAP_X_MAX + 1].step;
 			}
 			break;
 		case 3:
 			if (posY > 0) {
-				step = map[posX + (posY - 1) * MAP_X_MAX].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step - map[posX + (posY - 1) * MAP_X_MAX].step;
 			}
 			break;
 		}
@@ -678,26 +674,22 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 		switch (head) {
 		case 0:
 			if (posX + 1 < MAP_X_MAX) {
-				step = map[posX + posY * MAP_X_MAX + 1].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step - map[posX + posY * MAP_X_MAX + 1].step;
 			}
 			break;
 		case 1:
 			if (posY > 0) {
-				step = map[posX + (posY - 1) * MAP_X_MAX].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step - map[posX + (posY - 1) * MAP_X_MAX].step;
 			}
 			break;
 		case 2:
 			if (posX > 0) {
-				step = map[posX + posY * MAP_X_MAX - 1].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step = map[posX + posY * MAP_X_MAX].step - map[posX + posY * MAP_X_MAX - 1].step;
 			}
 			break;
 		case 3:
 			if (posY + 1 < MAP_Y_MAX) {
-				step = map[posX + (posY + 1) * MAP_X_MAX].step
-						- map[posX + posY * MAP_X_MAX].step;
+				step =  map[posX + posY * MAP_X_MAX].step -map[posX + (posY + 1) * MAP_X_MAX].step;
 			}
 			break;
 		}
