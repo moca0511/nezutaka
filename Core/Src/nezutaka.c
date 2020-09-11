@@ -162,7 +162,7 @@ void mode3(void) {
 }
 //turn R 90°
 void mode4(void) {
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 1000, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 	printf("turn 90°\n");
 	osDelay(500);
 	tone(tone_hiC, 10);
@@ -178,10 +178,11 @@ void mode5(void) {
 	turn_u();
 	tone(tone_hiC, 100);
 }
-
+//SLALOM_R
 void mode6(void) {
-	printf("print_map\n");
-	print_map();
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
+	osDelay(5000);
+	slalom(turn_config);
 }
 
 void mode7(void) {
@@ -190,12 +191,41 @@ void mode7(void) {
 }
 
 void mode8(void) {
+	printf("print_map\n");
+	print_map();
+
+}
+
+void mode9(void) {
+	//探索マップ作成
+	printf("tansaku map\n");
+	game_mode = 0;
+	make_smap(goalX, goalY, game_mode);
+	print_map();
+	return;
+}
+
+void mode10(void) {
+	//最短マップ作成
+	printf("saitan map\n");
+	game_mode = 1;
+	make_smap(goalX, goalY, game_mode);
+	print_map();
+	return;
+}
+void mode11(void) {
+	return;
+}
+void mode12(void) {
+	return;
+}
+void mode13(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
 	RUNConfig turn_config = { TURN_R, 0, 300, 300, 1000, 90 };
 	printf("hidarite\n");
-	osDelay(500);
+	osDelay(5000);
 	smap_Init();
-	wall_calibration();
+	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	osDelay(100);
@@ -214,8 +244,6 @@ void mode8(void) {
 
 		if (wall_check(1) == 0) {
 			printf("TURNL\n");
-			//			RUN_config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3;
-			//			straight(RUN_config);
 			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_L;
 			slalom(turn_config);
@@ -243,39 +271,13 @@ void mode8(void) {
 		print_map();
 		tone(tone_hiC, 100);
 	}
-}
-
-void mode9(void) {
-	//探索マップ作成
-	printf("tansaku map\n");
-	game_mode = 0;
-	make_smap(goalX, goalY, game_mode);
-	print_map();
-	return;
-}
-
-void mode10(void) {
-	//最短マップ作成
-	printf("saitan map\n");
-	game_mode = 1;
-	make_smap(goalX, goalY, game_mode);
-	print_map();
-	return;
-}
-void mode11(void) {
-	return;
-}
-void mode12(void) {
-	return;
-}
-void mode13(void) {
 	return;
 }
 void mode14(void) {
 	printf("speed test\n");
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 2000, BLOCK_LENGTH * 5 };
 	RUNConfig turn_config = { TURN_R, 0, 300, 800, 2000, 90 };
-	osDelay(500);
+	osDelay(5000);
 	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -343,18 +345,25 @@ void mode14(void) {
 	return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 500, 1000, BLOCK_LENGTH * 2 };
-	RUNConfig turn_config = { TURN_R, 0, 200, 500, 1000, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 800, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 200, 800, 1000, 90 };
 	printf("guruguru\n");
-	osDelay(500);
+	osDelay(5000);
 	tone(tone_hiC, 10);
 	for (;;) {
+		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+			MOTORSPEED_R = MOTORSPEED_L = 0;
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+				osDelay(50);
+			}
+			tone(tone_hiC, 200);
+			break;
+		}
 		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
-		//osDelay(100);
 		turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		slalom(turn_config);
-		//osDelay(100);
 	}
 }
 

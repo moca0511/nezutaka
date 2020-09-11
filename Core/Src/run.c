@@ -25,7 +25,7 @@ void straight(RUNConfig config) {
 	int32_t speed = config.initial_speed;
 	int32_t speed_R = speed;
 	int32_t speed_L = speed;
-	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 20, loop_count = 0;
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
@@ -128,7 +128,7 @@ void straight(RUNConfig config) {
 		 }
 		 }*/
 
-		osDelay(1);
+		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	//1走行距離判定　ループ１へ
 	MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
@@ -141,7 +141,7 @@ void turn(RUNConfig config) {
 	//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 20, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -193,7 +193,7 @@ void turn(RUNConfig config) {
 		//1各モータスピードに代入
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
-		osDelay(1);
+		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
@@ -205,7 +205,7 @@ void slalom(RUNConfig config) {
 	//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 20, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -262,7 +262,7 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
-		osDelay(1);
+		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
@@ -270,13 +270,11 @@ void slalom(RUNConfig config) {
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 }
+
 void sirituke(void) {
 	RUNConfig RUN_Config = { MOVE_BACK, (MOTORSPEED_L + MOTORSPEED_R) / 2, 0,
 			200, 1000, BLOCK_LENGTH / 3 };
 	straight(RUN_Config);
-	//RUN_Config.direction = MOVE_FORWARD;
-	//RUN_Config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.6;
-	//straight(RUN_Config);
 }
 
 int32_t PID(int32_t speed, int32_t target, int32_t sensor,

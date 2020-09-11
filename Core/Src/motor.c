@@ -91,7 +91,7 @@ extern void MOTER_SLEEP_CHECK(void *argument) {
 	int sleepcount = 0;
 	for (;;) {
 		if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
-			if (sleepcount == 100) {
+			if (sleepcount == 1000) {
 				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
 				sleepcount=0;
