@@ -16,7 +16,7 @@ extern TIM_HandleTypeDef htim4;
 extern void BUZZER(void *argument)
 {
   /* USER CODE BEGIN BUZZER */
-	osDelay(10);
+	osDelay(1);
 	PWMconfig pwm_config = { &htim4, BUZZER_CHANNEL, tone_A, 10, 84000000 };
 	/* Infinite loop */
 	for (;;) {
@@ -59,4 +59,5 @@ void music(void) {
 	tone(tone_B, 100);
 	osDelay(100);
 	tone(tone_hiC, 100);
+	osDelay(100);
 }

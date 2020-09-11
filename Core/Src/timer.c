@@ -13,7 +13,7 @@ int32_t us = 20;
 extern osSemaphoreId_t wait_usSemHandle;
 
 int PWM_Set(PWMconfig *config) {
-	config->htim->Init.Prescaler = config->timeclock / 10 / (config->hz) - 1;
+	config->htim->Init.Prescaler = config->timeclock / 100 / (config->hz) - 1;
 	config->htim->Init.Period = 100;
 	if (HAL_TIM_PWM_Init(config->htim) != HAL_OK) {
 		return -1;

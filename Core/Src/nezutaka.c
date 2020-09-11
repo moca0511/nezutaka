@@ -182,7 +182,7 @@ void mode5(void) {
 //SLALOM_R
 void mode6(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
-	osDelay(5000);
+	osDelay(500);
 	slalom(turn_config);
 }
 
@@ -231,7 +231,7 @@ void mode14(void) {
 	printf("speed test\n");
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 2000, BLOCK_LENGTH * 5 };
 	RUNConfig turn_config = { TURN_R, 0, 300, 800, 2000, 90 };
-	osDelay(5000);
+	osDelay(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -302,7 +302,7 @@ void mode15(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 800, 1000, BLOCK_LENGTH };
 	RUNConfig turn_config = { TURN_R, 0, 200, 800, 1000, 90 };
 	printf("guruguru\n");
-	osDelay(5000);
+	osDelay(500);
 	tone(tone_hiC, 10);
 	for (;;) {
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {

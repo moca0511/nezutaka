@@ -41,10 +41,10 @@ void adachi(void) {
 	uint8_t temp_head = 0;
 	game_mode = 0;
 	printf("adachi\n");
-	osDelay(5000);
+	osDelay(500);
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	osDelay(100);
+	osDelay(10);
 
 	for (;;) {
 		printf("loop\n");
@@ -64,7 +64,7 @@ void adachi(void) {
 		}
 
 		make_smap(goalX, goalY, game_mode);
-		print_map();
+		//print_map();
 
 		if ((map[posX + posY * MAP_X_MAX].wall & 0x11) == 0x10
 				&& map[posX + posY * MAP_X_MAX].step
@@ -125,11 +125,11 @@ void hidarite(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
 	RUNConfig turn_config = { TURN_R, 0, 300, 300, 1000, 90 };
 	printf("hidarite\n");
-	osDelay(5000);
+	osDelay(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	osDelay(100);
+	osDelay(10);
 	for (;;) {
 
 		//print_map();

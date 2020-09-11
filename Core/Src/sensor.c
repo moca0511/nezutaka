@@ -33,7 +33,7 @@ extern void Sensor(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		for (int i = 0; i < count; i++) {
-			if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
+			if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 2U) == TASK_STOP) {
 				osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 				sensorData_buf.ADC_DATA_RS = 0;
 				sensorData_buf.ADC_DATA_RF = 0;
@@ -262,7 +262,7 @@ extern void SENSOR_PRINT(void *argument) {
 	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	/* Infinite loop */
 	for (;;) {
-		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5000U) == TASK_STOP) {
+		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 500U) == TASK_STOP) {
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 		}
 		printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
