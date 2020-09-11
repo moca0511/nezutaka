@@ -11,6 +11,7 @@
 #include "adc.h"
 #include "run.h"
 #include "buzzer.h"
+#include "UI.h"
 
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim3;
@@ -143,8 +144,56 @@ void wall_calibration(void) {
 	for (int i = 0; i < 12; i++) {
 		wall_config[i] = 0;
 	}
+
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	osDelay(100);
+	osDelay(50);
+	printf("RS_threshould\n");
+	UILED_SET(1);
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
+		osDelay(50);
+	}
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+		osDelay(50);
+	}
+	tone(tone_hiC, 100);
+	wall_config[RS_threshold] = read_wall(&sensorData.ADC_DATA_RS);
+	tone(tone_C, 100);
+
+	printf("LS_threshould\n");
+	UILED_SET(8);
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
+		osDelay(50);
+	}
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+		osDelay(50);
+	}
+	tone(tone_hiC, 100);
+	wall_config[LS_threshold] = read_wall(&sensorData.ADC_DATA_LS);
+	tone(tone_C, 100);
+
+	printf("F_threshould\n");
+	UILED_SET(6);
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
+		osDelay(50);
+	}
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+		osDelay(50);
+	}
+	tone(tone_hiC, 100);
+	wall_config[RF_threshold] = read_wall(&sensorData.ADC_DATA_RF);
+	wall_config[LF_threshold] = read_wall(&sensorData.ADC_DATA_LF);
+	tone(tone_C, 100);
+
+	printf("ALL_WALL&FREE\n");
+	UILED_SET(15);
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
+		osDelay(50);
+	}
+	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+		osDelay(50);
+	}
+	tone(tone_hiC, 100);
+
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
 	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 	wall_config[RF_FREE] = read_wall(&sensorData.ADC_DATA_RF);
@@ -168,15 +217,6 @@ void wall_calibration(void) {
 	turn(turn_config);
 	sirituke();
 
-	wall_config[RS_threshold] = wall_config[RS_FREE]
-			+ (wall_config[RS_WALL] - wall_config[RS_FREE]) / 4;
-	wall_config[LS_threshold] = wall_config[LS_FREE]
-			+ (wall_config[LS_WALL] - wall_config[LS_FREE]) / 4;
-	wall_config[RF_threshold] = wall_config[RF_WALL]
-			- (wall_config[RF_WALL] - wall_config[RF_FREE]) / 2;
-	wall_config[LF_threshold] = wall_config[LF_WALL]
-			- (wall_config[LF_WALL] - wall_config[LF_FREE]) / 2;
-
 	for (int i = 0; i < 12; i++) {
 		printf("wall[%d]=%ld,", i, wall_config[i]);
 	}
@@ -186,7 +226,7 @@ void wall_calibration(void) {
 
 //sensordebug
 void print_sensordata(void) {
-	static uint8_t flag=0;
+	static uint8_t flag = 0;
 	tone(tone_C, 100);
 	if (flag == 1) {
 		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
@@ -206,23 +246,23 @@ extern void SENSOR_PRINT(void *argument) {
 	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	/* Infinite loop */
 	for (;;) {
-		if(osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 100U) == TASK_STOP){
+		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 100U) == TASK_STOP) {
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 		}
-		printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n",sensorData.ADC_DATA_RS,sensorData.ADC_DATA_LS,sensorData.ADC_DATA_RF,sensorData.ADC_DATA_LF);
+		printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
+				sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
+				sensorData.ADC_DATA_LF);
 	}
 	/* USER CODE END WALL_READ */
 }
 
-extern void WALL_READ(void *argument)
-{
-  /* USER CODE BEGIN WALL_READ */
-  /* Infinite loop */
-  for(;;)
-  {
+extern void WALL_READ(void *argument) {
+	/* USER CODE BEGIN WALL_READ */
+	/* Infinite loop */
+	for (;;) {
 
-    osDelay(1);
-  }
-  /* USER CODE END WALL_READ */
+		osDelay(1);
+	}
+	/* USER CODE END WALL_READ */
 }
 
