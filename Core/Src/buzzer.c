@@ -57,6 +57,6 @@ void music(void) {
 	tone(tone_A, 100);
 	osDelay(1000);
 	tone(tone_B, 100);
-	tone(tone_hiC, 100);
 	osDelay(1000);
+	tone(tone_hiC, 100);
 }

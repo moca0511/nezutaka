@@ -68,7 +68,7 @@ void print_map(void) {
 		printf("%3d|", i / MAP_X_MAX);
 		for (int f = 0; f < MAP_X_MAX; f++) {
 			if (i == posY * MAP_X_MAX && f == posX) {
-				switch(head){
+				switch (head) {
 				case 0:
 					printf(" ^^ ");
 					break;
@@ -613,5 +613,96 @@ uint8_t wall_check(uint8_t direction) {
 			map[posX + posY * MAP_X_MAX].wall,
 			map[posX + posY * MAP_X_MAX].wall & and);
 	return (map[posX + posY * MAP_X_MAX].wall & and) % 0x10;
+}
+
+int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
+	int16_t step = -1;
+	switch (direction) {
+	case 0:
+		switch (head) {
+		case 0:
+			if (posY + 1 < MAP_Y_MAX) {
+				step = map[posX + (posY + 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 1:
+			if (posX + 1 < MAP_X_MAX) {
+				step = map[posX + posY * MAP_X_MAX + 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 2:
+			if (posY > 0) {
+				step = map[posX + (posY - 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 3:
+			if (posX > 0) {
+				step = map[posX + posY * MAP_X_MAX + 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		}
+		break;
+	case 1:
+		switch (head) {
+		case 0:
+			if (posX > 0) {
+				step = map[posX + posY * MAP_X_MAX - 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 1:
+			if (posY + 1 < MAP_Y_MAX) {
+				step = map[posX + (posY + 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 2:
+			if (posX + 1 < MAP_X_MAX) {
+				step = map[posX + posY * MAP_X_MAX + 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 3:
+			if (posY > 0) {
+				step = map[posX + (posY - 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		}
+		break;
+	case 2:
+		switch (head) {
+		case 0:
+			if (posX + 1 < MAP_X_MAX) {
+				step = map[posX + posY * MAP_X_MAX + 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 1:
+			if (posY > 0) {
+				step = map[posX + (posY - 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 2:
+			if (posX > 0) {
+				step = map[posX + posY * MAP_X_MAX - 1].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		case 3:
+			if (posY + 1 < MAP_Y_MAX) {
+				step = map[posX + (posY + 1) * MAP_X_MAX].step
+						- map[posX + posY * MAP_X_MAX].step;
+			}
+			break;
+		}
+		break;
+	}
+	return step;
 }
 

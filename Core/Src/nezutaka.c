@@ -216,7 +216,70 @@ void mode10(void) {
 void mode11(void) {
 	return;
 }
+
+//足立法探索→ゴール→最短の可能性があれば残り探索
 void mode12(void) {
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 300, 300, 1000, 90 };
+	game_mode = 0;
+	make_smap(goalX, goalY, game_mode);
+	printf("adachi\n");
+	osDelay(5000);
+	tone(tone_hiC, 10);
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	osDelay(100);
+
+	for (;;) {
+
+		//print_map();
+		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+			MOTORSPEED_R = MOTORSPEED_L = 0;
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+				osDelay(50);
+			}
+			tone(tone_hiC, 200);
+			break;
+		}
+
+		make_smap(goalX, goalY, game_mode);
+		print_map();
+
+		if (wall_check(1) == 0 && step_check(posX, posY, 1) == 1) {
+			printf("TURNL\n");
+			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.direction = TURN_L;
+			slalom(turn_config);
+			chenge_head(turn_config);
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			run_block(RUN_config);
+		} else if (wall_check(0) == 0 && step_check(posX, posY, 1) == 1) {
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			printf("straight\n");
+			run_block(RUN_config);
+		} else if (wall_check(2) == 0 && step_check(posX, posY, 2) == 1) {
+			printf("TURN R\n");
+			//			RUN_config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3;
+			//			straight(RUN_config);
+			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.direction = TURN_R;
+			slalom(turn_config);
+			chenge_head(turn_config);
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			run_block(RUN_config);
+		} else {
+			printf("U\n");
+			turn_u();
+		}
+
+		tone(tone_hiC, 100);
+		//wall_set();??
+		if(posX==goalX&&posY==goalY){
+			MOTORSPEED_L = MOTORSPEED_R = 0;
+			break;
+		}
+	}
+	music();
 	return;
 }
 void mode13(void) {
@@ -224,7 +287,6 @@ void mode13(void) {
 	RUNConfig turn_config = { TURN_R, 0, 300, 300, 1000, 90 };
 	printf("hidarite\n");
 	osDelay(5000);
-	smap_Init();
 	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
