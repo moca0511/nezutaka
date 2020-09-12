@@ -13,10 +13,13 @@ uint32_t ADConv(ADCSet *config) {
 	sConfig.Rank = 1;
 	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 	if (HAL_ADC_ConfigChannel(config->hadc, &sConfig) != HAL_OK) {
+		printf("adcErr\n");
 		Error_Handler();
 	}
 	HAL_ADC_Start(config->hadc);
-	while (HAL_ADC_PollForConversion(config->hadc, 1000) != HAL_OK);
+	while (HAL_ADC_PollForConversion(config->hadc, 1000) != HAL_OK){
+		printf("adcErr\n");
+	}
 	ADC_Date = HAL_ADC_GetValue(config->hadc);
 	HAL_ADC_Stop(config->hadc);
 	return ADC_Date;

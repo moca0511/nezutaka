@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "cmsis_os.h"
 
+
 extern TIM_HandleTypeDef htim2;
 int32_t us = 20;
 extern osSemaphoreId_t wait_usSemHandle;
@@ -26,5 +27,9 @@ void wait_us(int32_t wait) {
 	us = wait;
 	HAL_TIM_Base_Start_IT(&htim2);
 	osSemaphoreAcquire(wait_usSemHandle, osWaitForever);
+}
+
+void Delay_ms(uint32_t ms){
+	osDelay((uint32_t)configTICK_RATE_HZ /1000 * ms);
 }
 

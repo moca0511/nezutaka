@@ -18,27 +18,8 @@ extern SensorData sensorData;
 extern uint32_t wall_config[12];
 
 void print_map(void) {
-/*\	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);
-		printf("    ");
-		for (int i = 0; i < MAP_X_MAX; i++) {
-			printf("  %d%d", i / 10, i % 10);
-		}
-		printf("\n");
-		for (int i = 0; i <= MAP_X_MAX; i++) {
-			printf("----");
-		}
-		printf("\n");
-		for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
-			printf("%3d|", i / MAP_X_MAX);
-			for (int f = 0; f < MAP_X_MAX; f++) {
-				printf("%4d", map[i + f].step);
-			}
-			printf("\n");
-		}
-		osMutexRelease(UART_MutexHandle);
-	}*/
-		printf("\n");
+	/*\	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	 printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);
 	 printf("    ");
 	 for (int i = 0; i < MAP_X_MAX; i++) {
 	 printf("  %d%d", i / 10, i % 10);
@@ -51,12 +32,31 @@ void print_map(void) {
 	 for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
 	 printf("%3d|", i / MAP_X_MAX);
 	 for (int f = 0; f < MAP_X_MAX; f++) {
-	 printf("%4x", map[i + f].wall);
+	 printf("%4d", map[i + f].step);
 	 }
 	 printf("\n");
 	 }
-
+	 osMutexRelease(UART_MutexHandle);
+	 }*/
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("\n");
+		printf("    ");
+		for (int i = 0; i < MAP_X_MAX; i++) {
+			printf("  %d%d", i / 10, i % 10);
+		}
+		printf("\n");
+		for (int i = 0; i <= MAP_X_MAX; i++) {
+			printf("----");
+		}
+		printf("\n");
+		for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
+			printf("%3d|", i / MAP_X_MAX);
+			for (int f = 0; f < MAP_X_MAX; f++) {
+				printf("%4x", map[i + f].wall);
+			}
+			printf("\n");
+		}
+
 		printf("\n");
 		printf("    ");
 		for (int i = 0; i < MAP_X_MAX; i++) {
@@ -92,7 +92,6 @@ void print_map(void) {
 			printf("\n");
 		}
 		osMutexRelease(UART_MutexHandle);
-		osThreadYield();
 	}
 }
 
@@ -100,8 +99,8 @@ void smap_Init(void) {
 	/*
 	 マップ設定
 	 */
-	posX = 0;
-	posY = 0;
+	posX = startX;
+	posY = startY;
 	head = 0;
 	for (int i = 0; i < MAP_SIZE; i++) {
 		map[i].check = 0;
@@ -377,189 +376,87 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 void wall_set(void) {
 
 	//printf("wallset Y=%d,X=%d\n", posY, posX);
-	int8_t wall_flag = 0;
+	uint8_t wall_info = 0;
+
 	//北壁判定
-	if ((map[posX + posY * MAP_X_MAX].wall & 0x80) == 0x00) {
-		switch (head) {
-		case 0:
-			if (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
-					|| sensorData.ADC_DATA_RF >= wall_config[RF_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 1:
-			if (sensorData.ADC_DATA_LS >= wall_config[LS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 2:
-			wall_flag = -1;
-			break;
-		case 3:
-			if (sensorData.ADC_DATA_RS >= wall_config[RS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		}
 
-		if (wall_flag == 1) {
+	if (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
+			|| sensorData.ADC_DATA_RF >= wall_config[RF_threshold]) {
+		wall_info += 0x88;
+	}
+	if (sensorData.ADC_DATA_LS >= wall_config[LS_threshold]) {
+		wall_info += 0x11;
+	}
+	if (sensorData.ADC_DATA_RS >= wall_config[RS_threshold]) {
+		wall_info += 0x44;
+	}
+	wall_info >>= head;
+	wall_info &= 0x0f;
+	wall_info |= (wall_info << 4);
+	wall_info |= 0xd0;
+//
+//	printf("wall_info=%2x,wall=%2x\n", wall_info,
+//			map[posX + posY * MAP_X_MAX].wall);
+	map[posX + posY * MAP_X_MAX].wall |= wall_info;
+
+	if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x88) {
 		//	printf("N");
-			map[posX + posY * MAP_X_MAX].wall += 0x88;
-			if (posY < MAP_X_MAX - 1) {
-				if ((map[posX + (posY + 1) * MAP_X_MAX].wall & 0x20) == 0x00)
-					map[posX + (posY + 1) * MAP_X_MAX].wall += 0x22;
-			}
-		} else if (wall_flag == 0) {
-			map[posX + posY * MAP_X_MAX].wall += 0x80;
-			if (posY < MAP_X_MAX - 1) {
-				if ((map[posX + (posY + 1) * MAP_X_MAX].wall & 0x20) == 0x00)
-					map[posX + (posY + 1) * MAP_X_MAX].wall += 0x20;
+		if (posY < MAP_X_MAX - 1) {
+			if ((map[posX + (posY + 1) * MAP_X_MAX].wall & 0x20) == 0x00) {
+				map[posX + (posY + 1) * MAP_X_MAX].wall += 0x22;
 			}
 		}
-		wall_flag = 0;
+	} else {
+		if (posY < MAP_X_MAX - 1) {
+			if ((map[posX + (posY + 1) * MAP_X_MAX].wall & 0x20) == 0x00) {
+				map[posX + (posY + 1) * MAP_X_MAX].wall += 0x20;
+			}
+		}
 	}
-//東壁判定
-	if ((map[posX + posY * MAP_X_MAX].wall & 0x40) == 0x00) {
-		switch (head) {
-		case 0:
-			if (sensorData.ADC_DATA_RS >= wall_config[RS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 1:
-			if (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
-					|| sensorData.ADC_DATA_RF >= wall_config[RF_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 2:
-			if (sensorData.ADC_DATA_LS >= wall_config[LS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 3:
-			wall_flag = -1;
-			break;
-		}
-		if (wall_flag == 1) {
-			//printf("E");
-			map[posX + posY * MAP_X_MAX].wall += 0x44;
-			if (posX < MAP_X_MAX - 1) {
-				if ((map[posX + 1 + posY * MAP_X_MAX].wall & 0x10) == 0x00)
-					map[posX + 1 + posY * MAP_X_MAX].wall += 0x11;
-			}
-		} else if (wall_flag == 0) {
-			map[posX + posY * MAP_X_MAX].wall += 0x40;
-			if (posX < MAP_X_MAX - 1) {
-				if ((map[posX + 1 + posY * MAP_X_MAX].wall & 0x10) == 0x00)
-					map[posX + 1 + posY * MAP_X_MAX].wall += 0x10;
-			}
-		}
-		wall_flag = 0;
-	}
-//南壁判定
-	if ((map[posX + posY * MAP_X_MAX].wall & 0x20) == 0x00) {
-		switch (head) {
-		case 0:
-			wall_flag = -1;
-			break;
-		case 1:
-			if (sensorData.ADC_DATA_RS >= wall_config[RS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 2:
-			if (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
-					|| sensorData.ADC_DATA_RF >= wall_config[RF_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 3:
-			if (sensorData.ADC_DATA_LS >= wall_config[RS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		}
 
-		if (wall_flag == 1) {
+	if ((map[posX + posY * MAP_X_MAX].wall & 0x44) == 0x44) {
 		//	printf("S");
-			map[posX + posY * MAP_X_MAX].wall += 0x22;
-			if (posY > 0) {
-				if ((map[posX + (posY - 1) * MAP_X_MAX].wall & 0x80) == 0x00)
-					map[posX + (posY - 1) * MAP_X_MAX].wall += 0x88;
-			}
-		} else if (wall_flag == 0) {
-			map[posX + posY * MAP_X_MAX].wall += 0x20;
-			if (posY > 0) {
-				if ((map[posX + (posY - 1) * MAP_X_MAX].wall & 0x80) == 0x00)
-					map[posX + (posY - 1) * MAP_X_MAX].wall += 0x80;
+		if (posX + 1 < MAP_X_MAX) {
+			if ((map[posX + posY * MAP_X_MAX + 1].wall & 0x10) == 0x00) {
+				map[posX + posY * MAP_X_MAX + 1].wall += 0x11;
 			}
 		}
-		wall_flag = 0;
+	} else {
+		if (posX + 1 < MAP_X_MAX) {
+			if ((map[posX + posY * MAP_X_MAX + 1].wall & 0x10) == 0x00) {
+				map[posX + posY * MAP_X_MAX + 1].wall += 0x10;
+			}
+		}
 	}
-//西壁判定
-	if ((map[posX + posY * MAP_X_MAX].wall & 0x10) == 0x00) {
-		switch (head) {
-		case 0:
-			if (sensorData.ADC_DATA_LS >= wall_config[LS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 1:
-			wall_flag = -1;
-			break;
-		case 2:
-			if (sensorData.ADC_DATA_RS >= wall_config[RS_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		case 3:
-			if (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
-					|| sensorData.ADC_DATA_RF >= wall_config[RF_threshold]) {
-				wall_flag = 1;
-			} else {
-				wall_flag = 0;
-			}
-			break;
-		}
 
-		if (wall_flag == 1) {
-		//	printf("F");
-			map[posX + posY * MAP_X_MAX].wall += 0x11;
-			if (posX > 0) {
-				if ((map[posX - 1 + posY * MAP_X_MAX].wall & 0x40) == 0x00)
-					map[posX - 1 + posY * MAP_X_MAX].wall += 0x44;
-			}
-		} else if (wall_flag == 0) {
-			map[posX + posY * MAP_X_MAX].wall += 0x10;
-			if (posX > 0) {
-				if ((map[posX - 1 + posY * MAP_X_MAX].wall & 0x40) == 0x00)
-					map[posX - 1 + posY * MAP_X_MAX].wall += 0x40;
+	if ((map[posX + posY * MAP_X_MAX].wall & 0x22) == 0x22) {
+		//	printf("N");
+		if (posY > 0) {
+			if ((map[posX + (posY - 1) * MAP_X_MAX].wall & 0x80) == 0x00) {
+				map[posX + (posY - 1) * MAP_X_MAX].wall += 0x88;
 			}
 		}
-		wall_flag = 0;
+	} else {
+		if (posY > 0) {
+			if ((map[posX + (posY - 1) * MAP_X_MAX].wall & 0x80) == 0x00) {
+				map[posX + (posY - 1) * MAP_X_MAX].wall += 0x80;
+			}
+		}
+	}
+
+	if ((map[posX + posY * MAP_X_MAX].wall & 0x11) == 0x11) {
+		//	printf("S");
+		if (posX > 0) {
+			if ((map[posX + posY * MAP_X_MAX - 1].wall & 0x40) == 0x00) {
+				map[posX + posY * MAP_X_MAX - 1].wall += 0x44;
+			}
+		}
+	} else {
+		if (posX > 0) {
+			if ((map[posX + posY * MAP_X_MAX - 1].wall & 0x40) == 0x00) {
+				map[posX + posY * MAP_X_MAX - 1].wall += 0x40;
+			}
+		}
 	}
 }
 

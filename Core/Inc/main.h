@@ -34,6 +34,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include"uart.h"
 #include<stdio.h>
+#include"timer.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

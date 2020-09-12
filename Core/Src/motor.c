@@ -18,18 +18,27 @@ uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
 uint32_t MOTORSPEED_R = 0;
 uint32_t MOTORSPEED_L = 0;
+extern osThreadId_t MOTOR_R_TaskHandle;
+extern osThreadId_t MOTOR_L_TaskHandle;
 
 extern void MOTOR_R(void *argument) {
 	/* USER CODE BEGIN MOTOR_R */
-	osDelay(10);
+	Delay_ms(10);
 	uint32_t hz = 0;
 	uint32_t speed_prev = 0;
-
+	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	__HAL_TIM_SET_COMPARE(&htim1, STEPPER_CLOCK_R_CHANNEL, 50);
 
 	/* Infinite loop */
 	for (;;) {
+		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5U) == TASK_STOP) {
+			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+		}
 		if (MOTORSPEED_R != speed_prev) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("MOTORSPEED_R:%d \n", MOTORSPEED_R);
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			speed_prev = MOTORSPEED_R;
 			hz = SPEEDtoHz(MOTORSPEED_R);
 			if (hz == 0) {
@@ -43,8 +52,8 @@ extern void MOTOR_R(void *argument) {
 				HAL_TIM_PWM_Start_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
 			}
 		}
-		osDelay(2);
-		osThreadYield();
+		//Delay_ms(5);
+		//osThreadYield();
 	}
 
 	/* USER CODE END MOTOR_R */
@@ -60,15 +69,23 @@ extern void MOTOR_R(void *argument) {
 extern void MOTOR_L(void *argument) {
 	/* USER CODE BEGIN MOTOR_L */
 
-	osDelay(10);
+	Delay_ms(10);
 	uint32_t hz = 0;
 	uint32_t speed_prev = 0;
-
+	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 	__HAL_TIM_SET_COMPARE(&htim8, STEPPER_CLOCK_L_CHANNEL, 50);
 
 	/* Infinite loop */
 	for (;;) {
+		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5U) == TASK_STOP) {
+			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+		}
 		if (MOTORSPEED_L != speed_prev) {
+
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("MOTORSPEED_L:%d \n", MOTORSPEED_L);
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			speed_prev = MOTORSPEED_L;
 			hz = SPEEDtoHz(MOTORSPEED_L);
 			if (hz == 0) {
@@ -82,31 +99,32 @@ extern void MOTOR_L(void *argument) {
 				HAL_TIMEx_PWMN_Start_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
 			}
 		}
-		osDelay(2);
-		osThreadYield();
+		//Delay_ms(5);
+//		osThreadYield();
 	}
 	/* USER CODE END MOTER_SLEEP_CHECK */
 }
-
+/*
 extern void MOTER_SLEEP_CHECK(void *argument) {
-	osDelay(10);
-	int sleepcount = 0;
+	Delay_ms(10);
+	int16_t sleepcount = 10;
 	for (;;) {
 		if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
-			if (sleepcount >= 10) {
+			if (sleepcount <= 0) {
 				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
-				sleepcount=0;
+				sleepcount = 10;
 			} else {
-				sleepcount++;
+				sleepcount--;
 			}
 		} else {
 			HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 		}
-		osDelay(5);
+		Delay_ms(10);
+//		osThreadYield();
 	}
-}
+}*/
 
 uint32_t SPEEDtoHz(uint32_t speed) {
 	return speed / STEP_LENGTH;
@@ -115,14 +133,24 @@ uint32_t HztoSPEED(uint32_t Hz) {
 	return Hz * STEP_LENGTH;
 }
 
-void mortor_direction(uint8_t motor,uint8_t direction){
-	if(motor==MR){
-		HAL_GPIO_WritePin(CW_CCW_R_GPIO_Port, CW_CCW_R_Pin,
-				direction);
-	}else{
-		HAL_GPIO_WritePin(CW_CCW_L_GPIO_Port, CW_CCW_L_Pin,
-						direction);
+void mortor_direction(uint8_t motor, uint8_t direction) {
+	if (motor == MR) {
+		HAL_GPIO_WritePin(CW_CCW_R_GPIO_Port, CW_CCW_R_Pin, direction);
+	} else {
+		HAL_GPIO_WritePin(CW_CCW_L_GPIO_Port, CW_CCW_L_Pin, direction);
 		HAL_GPIO_TogglePin(CW_CCW_L_GPIO_Port, CW_CCW_L_Pin);
 	}
 	return;
+}
+
+void mortor_stop(void) {
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
+	MOTORSPEED_R = 0;
+	MOTORSPEED_L = 0;
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
+	Delay_ms(50);
+	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
 }

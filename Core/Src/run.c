@@ -16,6 +16,8 @@ extern uint32_t MOTORSPEED_R;
 extern uint32_t MOTORSPEED_L;
 extern SensorData sensorData;
 extern uint32_t wall_config[12];
+extern osThreadId_t MOTOR_R_TaskHandle;
+extern osThreadId_t MOTOR_L_TaskHandle;
 
 extern int16_t posX, posY;	//　現在の位置
 int32_t posX_buf = 0, posY_buf = 0;	//　現在の位置
@@ -31,6 +33,8 @@ void straight(RUNConfig config) {
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 	if (config.max_speed > SPEED_MAX) {
 		config.max_speed = SPEED_MAX;
 	}
@@ -42,6 +46,9 @@ void straight(RUNConfig config) {
 	//1進行方向設定
 	mortor_direction(MR, config.direction);
 	mortor_direction(ML, config.direction);
+	//on
+	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 	//1ループ１
 	do {
 		//1スピード変更処理
@@ -114,27 +121,35 @@ void straight(RUNConfig config) {
 		 }*/
 
 		//　前壁判定
-		/*if (stop == 0 && wall_config[LF_threshold] != 0
-		 && (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
-		 && sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
+		if (stop == 0 && wall_config[LF_threshold] != 0
+		 && (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
+		 && sensorData.ADC_DATA_RF >= wall_config[RF_threshold])) {
 		 printf("maekabe\n");
 		 stop = 1;
-		 if (speed >= 400) {		//　速度が早ければ間に合わない？？
+		 plpl=-20;
+		 config.finish_speed=0;
+/*		 if (speed >= 400) {		//　速度が早ければ間に合わない？？
 		 break;
 		 } else {
 		 plpl_count /= 2;
 		 stopcount = (MotorStepCount_R + MotorStepCount_L)
 		 / 2 + 5 / STEP_LENGTH;
-		 }
 		 }*/
+		 }
 		//osThreadYield();
-		osDelay(5);
+		Delay_ms(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	//1走行距離判定　ループ１へ
-	MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+	if (config.finish_speed == 0) {
+		mortor_stop();
+	} else {
+		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+	}
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
 
 void turn(RUNConfig config) {
@@ -146,6 +161,11 @@ void turn(RUNConfig config) {
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
+	//on
+	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 	mortor_direction(MR, MOVE_FORWARD);
 	mortor_direction(ML, MOVE_FORWARD);
 	if (config.direction == TURN_R) {
@@ -161,8 +181,7 @@ void turn(RUNConfig config) {
 	} else {
 		plpl /= 100;
 	}
-	MotorStepCount_R = 0;
-	MotorStepCount_L = 0;
+
 	do {
 		//1スピード変更処理
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
@@ -194,13 +213,19 @@ void turn(RUNConfig config) {
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
 		//osThreadYield();
-		osDelay(5);
+		Delay_ms(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
-	MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+	if (config.finish_speed == 0) {
+		mortor_stop();
+	} else {
+		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+	}
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
 void slalom(RUNConfig config) {
 	//1移動用パラメータ設定
@@ -211,6 +236,12 @@ void slalom(RUNConfig config) {
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
+
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
+	//on
+	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 	mortor_direction(MR, MOVE_FORWARD);
 	mortor_direction(ML, MOVE_FORWARD);
 	if (config.direction == TURN_U) {
@@ -223,8 +254,13 @@ void slalom(RUNConfig config) {
 	} else {
 		plpl /= 100;
 	}
-	MotorStepCount_R = 0;
-	MotorStepCount_L = 0;
+	if (config.direction == TURN_R) {
+		MOTORSPEED_R = 0;
+	} else if (config.direction == TURN_L) {
+		MOTORSPEED_L = 0;
+	}
+
+
 	do {
 		//1スピード変更処理
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
@@ -263,14 +299,18 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
-		//osThreadYield();
-		osDelay(5);
+		Delay_ms(5);
+//		osThreadYield();
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
-
-	MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
-
+	if (config.finish_speed == 0) {
+		mortor_stop();
+	} else {
+		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+	}
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
+	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
+	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
 
 void sirituke(void) {
@@ -342,77 +382,77 @@ void turn_u(void) {
 }
 
 /*extern void POS_CHECK(void *argument) {
-	uint32_t move = 0, move_buf = 0, move_prev = 0;
-	uint8_t wall_set_flag = 1;
-	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
-	for (;;) {
-		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
-			switch (head) {
-			case 0:
-				if (posY * 100 < posY_buf && posY_buf % 100 >= 50) {
-					posY += 1;
-				}
-				break;
-			case 1:
-				if (posX * 100 < posX_buf && posX_buf % 100 >= 50) {
-					posX += 1;
-				}
-				break;
-			case 2:
-				if (posY * 100 > posY_buf && posY_buf % 100 <= 50) {
-					posY -= 1;
-				}
-				break;
-			case 3:
-				if (posX * 100 > posX_buf && posX_buf % 100 <= 50) {
-					posY -= 1;
-				}
-				break;
-			}
-			posX_buf /= 100;
-			posX_buf *= 100;
-			posY_buf /= 100;
-			posY_buf *= 100;
+ uint32_t move = 0, move_buf = 0, move_prev = 0;
+ uint8_t wall_set_flag = 1;
+ osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+ for (;;) {
+ if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
+ switch (head) {
+ case 0:
+ if (posY * 100 < posY_buf && posY_buf % 100 >= 50) {
+ posY += 1;
+ }
+ break;
+ case 1:
+ if (posX * 100 < posX_buf && posX_buf % 100 >= 50) {
+ posX += 1;
+ }
+ break;
+ case 2:
+ if (posY * 100 > posY_buf && posY_buf % 100 <= 50) {
+ posY -= 1;
+ }
+ break;
+ case 3:
+ if (posX * 100 > posX_buf && posX_buf % 100 <= 50) {
+ posY -= 1;
+ }
+ break;
+ }
+ posX_buf /= 100;
+ posX_buf *= 100;
+ posY_buf /= 100;
+ posY_buf *= 100;
 
-			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
-			posX_buf = posX * 100;
-			posY_buf = posY * 100;
-			move = move_buf = move_prev = 0;
-			wall_set_flag = 1;
-		}
+ osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+ posX_buf = posX * 100;
+ posY_buf = posY * 100;
+ move = move_buf = move_prev = 0;
+ wall_set_flag = 1;
+ }
 
-		move_buf = (uint32_t) ((((MotorStepCount_R + MotorStepCount_L) / 2)
-				* 100) / (BLOCK_LENGTH / STEP_LENGTH));
-		if (move_buf != 0) {
-			move = move_buf - move_prev;
-			switch (head) {
-			case 0:
-				posY_buf += move;
-				break;
-			case 1:
-				posX_buf += move;
-				break;
-			case 2:
-				posY_buf -= move;
-				break;
-			case 3:
-				posX_buf -= move;
-				break;
-			}
+ move_buf = (uint32_t) ((((MotorStepCount_R + MotorStepCount_L) / 2)
+ * 100) / (BLOCK_LENGTH / STEP_LENGTH));
+ if (move_buf != 0) {
+ move = move_buf - move_prev;
+ switch (head) {
+ case 0:
+ posY_buf += move;
+ break;
+ case 1:
+ posX_buf += move;
+ break;
+ case 2:
+ posY_buf -= move;
+ break;
+ case 3:
+ posX_buf -= move;
+ break;
+ }
 
-			if (wall_set_flag && move_buf % 100 >= 50) {
-				wall_set();
-				wall_set_flag = 0;
-			}
-			if (posY_buf / 100 != posY || posX_buf / 100 != posX) {
-				wall_set_flag = 1;
-			}
-			posY = posY_buf / 100;
-			posX = posX_buf / 100;
-			move_prev = move_buf;
-		}
-		osThreadYield();
-		osDelay(5);
-	}
-	 USER CODE END POS_CHECK
-}*/
+ if (wall_set_flag && move_buf % 100 >= 50) {
+ wall_set();
+ wall_set_flag = 0;
+ }
+ if (posY_buf / 100 != posY || posX_buf / 100 != posX) {
+ wall_set_flag = 1;
+ }
+ posY = posY_buf / 100;
+ posX = posX_buf / 100;
+ move_prev = move_buf;
+ }
+ osThreadYield();
+ Delay_ms(5);
+ }
+ USER CODE END POS_CHECK
+ }*/

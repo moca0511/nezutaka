@@ -32,7 +32,7 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 void nezutaka(void) {
 	int16_t mode = 0;
 	tone(tone_C, 10);
-	osDelay(10);
+	Delay_ms(10);
 	tone(tone_G, 10);
 	for (;;) {
 		printf("mode select\n");
@@ -91,7 +91,7 @@ void nezutaka(void) {
 		default:
 			break;
 		}
-		osDelay(10);
+		Delay_ms(10);
 	}
 }
 
@@ -105,14 +105,14 @@ void MENU(int16_t *mode) {
 		flag = 0;
 		if (HAL_GPIO_ReadPin(UP_GPIO_Port, UP_Pin) == 0) {
 			while (HAL_GPIO_ReadPin(UP_GPIO_Port, UP_Pin) == 0) {
-				osDelay(50);
+				Delay_ms(50);
 			}
 			tone(tone_E, 100);
 			(*mode)++;
 			flag = 1;
 		} else if (HAL_GPIO_ReadPin(DOWN_GPIO_Port, DOWN_Pin) == 0) {
 			while (HAL_GPIO_ReadPin(DOWN_GPIO_Port, DOWN_Pin) == 0) {
-				osDelay(50);
+				Delay_ms(50);
 			}
 			tone(tone_D, 100);
 			(*mode)--;
@@ -120,7 +120,7 @@ void MENU(int16_t *mode) {
 		}
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-				osDelay(50);
+				Delay_ms(50);
 			}
 			tone(tone_hiC, 200);
 			break;
@@ -137,7 +137,7 @@ void MENU(int16_t *mode) {
 				osMutexRelease(UART_MutexHandle);
 			}
 		}
-		osDelay(5);
+		Delay_ms(5);
 	}
 }
 //music
@@ -153,14 +153,14 @@ void mode1(void) {
 //init wall value
 void mode2(void) {
 	printf("wall_calibration\n");
-	osDelay(500);
+	Delay_ms(500);
 	wall_calibration();
 }
 //1block run
 void mode3(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 1000, BLOCK_LENGTH * 1 };
 	printf("1block run(180mm)\n");
-	osDelay(500);
+	Delay_ms(500);
 	tone(tone_hiC, 10);
 	run_block(RUN_config);
 	tone(tone_hiC, 100);
@@ -169,7 +169,7 @@ void mode3(void) {
 void mode4(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 	printf("turn 90°\n");
-	osDelay(500);
+	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn(turn_config);
 	chenge_head(turn_config);
@@ -178,16 +178,17 @@ void mode4(void) {
 //turn 180° and sirituke
 void mode5(void) {
 	printf("turn 180° and sirituke\n");
-	osDelay(500);
+	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn_u();
 	tone(tone_hiC, 100);
 }
 //SLALOM_R
 void mode6(void) {
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
-	osDelay(500);
+	RUNConfig turn_config = { TURN_R, 300, 300, 300, 0, 90 };
+	Delay_ms(500);
 	slalom(turn_config);
+	mortor_stop();
 }
 
 void mode7(void) {
@@ -234,17 +235,17 @@ void mode14(void) {
 	printf("speed test\n");
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 2000, BLOCK_LENGTH * 5 };
 	RUNConfig turn_config = { TURN_R, 0, 300, 800, 2000, 90 };
-	osDelay(500);
+	Delay_ms(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	osDelay(100);
+	Delay_ms(100);
 
 	run_block(RUN_config);			//5kukaku
 
 	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	turn_config.direction = TURN_R;
-	slalom(turn_config);
+	turn(turn_config);
 	chenge_head(turn_config);
 
 	RUN_config.value = BLOCK_LENGTH;
@@ -253,7 +254,7 @@ void mode14(void) {
 
 	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	turn_config.direction = TURN_R;
-	slalom(turn_config);
+	turn(turn_config);
 	chenge_head(turn_config);
 
 	RUN_config.value = BLOCK_LENGTH * 5;
@@ -262,7 +263,7 @@ void mode14(void) {
 
 	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	turn_config.direction = TURN_L;
-	slalom(turn_config);
+	turn(turn_config);
 	chenge_head(turn_config);
 
 	RUN_config.value = BLOCK_LENGTH;
@@ -271,7 +272,7 @@ void mode14(void) {
 
 	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	turn_config.direction = TURN_L;
-	slalom(turn_config);
+	turn(turn_config);
 	chenge_head(turn_config);
 
 	RUN_config.value = BLOCK_LENGTH * 5;
@@ -280,7 +281,7 @@ void mode14(void) {
 
 	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	turn_config.direction = TURN_R;
-	slalom(turn_config);
+	turn(turn_config);
 	chenge_head(turn_config);
 
 	RUN_config.value = BLOCK_LENGTH;
@@ -289,7 +290,7 @@ void mode14(void) {
 
 	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	turn_config.direction = TURN_R;
-	slalom(turn_config);
+	turn(turn_config);
 	chenge_head(turn_config);
 
 	RUN_config.value = BLOCK_LENGTH * 5;
@@ -305,14 +306,14 @@ void mode15(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 400, 400, 400, 0, BLOCK_LENGTH };
 	RUNConfig turn_config = { TURN_R, 400, 400, 400, 0, 90 };
 	printf("guruguru\n");
-	osDelay(500);
+	Delay_ms(500);
 	tone(tone_hiC, 10);
 	for (;;) {
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 			MOTORSPEED_R = MOTORSPEED_L = 0;
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-				osDelay(50);
+				Delay_ms(50);
 			}
 			tone(tone_hiC, 200);
 			break;
@@ -320,7 +321,7 @@ void mode15(void) {
 		//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
 		//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-		slalom(turn_config);
+		turn(turn_config);
 	}
 }
 

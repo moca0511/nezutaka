@@ -20,5 +20,6 @@ typedef struct {
 
 int PWM_Set(PWMconfig *config);
 void wait_us(int32_t wait);
+void Delay_ms(uint32_t ms);
 
 #endif /* INC_TIMER_H_ */
