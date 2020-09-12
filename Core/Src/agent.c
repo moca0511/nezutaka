@@ -136,8 +136,8 @@ void adachi(void) {
 }
 
 void hidarite(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 400, 400, 400, 0, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 400, 400, 400, 0, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 1000, 90 };
 	printf("hidarite\n");
 	Delay_ms(500);
 	//wall_calibration();
@@ -159,20 +159,28 @@ void hidarite(void) {
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 		wall_set();
 //		make_smap(goalX, goalY, game_mode);
-		print_map();
+//		print_map();
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf(
+					"posX=%d,posY=%d,head=%d,wall=0x%2x,step=%d\n\n",
+					posX, posY, head,
+					map[posX + posY * MAP_X_MAX].wall,
+					map[posX + posY * MAP_X_MAX].step);
+			osMutexRelease(UART_MutexHandle);
+		}
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 
 		if (wall_check(1) == 0) {
 			//	printf("TURNL\n");
-			//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config);
-			//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
 		} else if (wall_check(0) == 0) {
-			//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			//	printf("straight\n");
 			straight(RUN_config);
 			chenge_pos(1);
@@ -180,11 +188,12 @@ void hidarite(void) {
 			//	printf("TURN R\n");
 			//			RUN_config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3;
 			//			straight(RUN_config);
-			//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-			//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
 		} else {

@@ -24,25 +24,30 @@ int32_t posX_buf = 0, posY_buf = 0;	//　現在の位置
 extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void straight(RUNConfig config) {
-	int32_t speed = config.initial_speed;
+	//int32_t speed = config.initial_speed;
+	double speed = config.initial_speed,plpl = config.acceleration;
 	int32_t speed_R = speed;
 	int32_t speed_L = speed;
-	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
+	uint8_t delay_time =5;
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
+	int32_t loop_count=0,plpl_count=2;
+
+
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 	if (config.max_speed > SPEED_MAX) {
 		config.max_speed = SPEED_MAX;
 	}
-	if (plpl / 100 < 1 && plpl != 0) {
+	plpl = (plpl / configTICK_RATE_HZ) * delay_time * plpl_count;
+	/*if (plpl / 100 < 1 && plpl != 0) {
 		plpl = 1;
 	} else {
 		plpl /= 100;
-	}
+	}*/
 	//1進行方向設定
 	mortor_direction(MR, config.direction);
 	mortor_direction(ML, config.direction);
@@ -58,7 +63,7 @@ void straight(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count) {
+		if (loop_count >= plpl_count-1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -137,7 +142,7 @@ void straight(RUNConfig config) {
 		 }*/
 		 }
 		//osThreadYield();
-		Delay_ms(5);
+		osDelay(delay_time);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	//1走行距離判定　ループ１へ
 	if (config.finish_speed == 0) {
@@ -154,11 +159,12 @@ void straight(RUNConfig config) {
 
 void turn(RUNConfig config) {
 	//1移動用パラメータ設定
+	double speed = config.initial_speed,plpl = config.acceleration;
+	uint8_t delay_time=5;
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
 	int32_t gensoku = -1;
-	int32_t speed = config.initial_speed;
+	int32_t plpl_count=2,loop_count=0;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
@@ -176,11 +182,8 @@ void turn(RUNConfig config) {
 		mortor_direction(ML, MOVE_BACK);
 	}
 
-	if (plpl / 100 < 1 && plpl != 0) {
-		plpl = 1;
-	} else {
-		plpl /= 100;
-	}
+
+	plpl = (plpl / configTICK_RATE_HZ) * delay_time * plpl_count;
 
 	do {
 		//1スピード変更処理
@@ -190,7 +193,7 @@ void turn(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count) {
+		if (loop_count >= plpl_count-1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -213,7 +216,7 @@ void turn(RUNConfig config) {
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
 		//osThreadYield();
-		Delay_ms(5);
+		osDelay(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	if (config.finish_speed == 0) {
@@ -229,11 +232,12 @@ void turn(RUNConfig config) {
 }
 void slalom(RUNConfig config) {
 	//1移動用パラメータ設定
+	double speed = config.initial_speed,plpl = config.acceleration;
+	uint8_t delay_time=5;
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
 	int32_t gensoku = -1;
-	int32_t speed = config.initial_speed;
+	int32_t plpl_count=2,loop_count=0;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
 
@@ -249,11 +253,7 @@ void slalom(RUNConfig config) {
 		mortor_direction(ML, MOVE_BACK);
 	}
 
-	if (plpl / 100 < 1 && plpl != 0) {
-		plpl = 1;
-	} else {
-		plpl /= 100;
-	}
+	plpl = (plpl / configTICK_RATE_HZ) * delay_time * plpl_count;
 	if (config.direction == TURN_R) {
 		MOTORSPEED_R = 0;
 	} else if (config.direction == TURN_L) {
@@ -269,7 +269,7 @@ void slalom(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count) {
+		if (loop_count >= plpl_count-1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -299,7 +299,7 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
-		Delay_ms(5);
+		osDelay(5);
 //		osThreadYield();
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	if (config.finish_speed == 0) {
