@@ -53,7 +53,7 @@ extern void MOTOR_R(void *argument) {
 			}
 		}
 		//Delay_ms(5);
-		//osThreadYield();
+		osThreadYield();
 	}
 
 	/* USER CODE END MOTOR_R */
@@ -100,7 +100,7 @@ extern void MOTOR_L(void *argument) {
 			}
 		}
 		//Delay_ms(5);
-//		osThreadYield();
+		osThreadYield();
 	}
 	/* USER CODE END MOTER_SLEEP_CHECK */
 }

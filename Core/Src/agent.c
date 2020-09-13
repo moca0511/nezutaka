@@ -70,7 +70,9 @@ void adachi(void) {
 		}
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 		wall_set();
+		osThreadYield();
 		make_smap(goalX, goalY, game_mode);
+		osThreadYield();
 		//print_map();
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 		if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x80
