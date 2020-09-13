@@ -63,49 +63,49 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for Sensor_Task */
 osThreadId_t Sensor_TaskHandle;
 const osThreadAttr_t Sensor_Task_attributes = {
   .name = "Sensor_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for MOTOR_R_Task */
 osThreadId_t MOTOR_R_TaskHandle;
 const osThreadAttr_t MOTOR_R_Task_attributes = {
   .name = "MOTOR_R_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for MOTOR_L_Task */
 osThreadId_t MOTOR_L_TaskHandle;
 const osThreadAttr_t MOTOR_L_Task_attributes = {
   .name = "MOTOR_L_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for BUZZER_Task */
 osThreadId_t BUZZER_TaskHandle;
 const osThreadAttr_t BUZZER_Task_attributes = {
   .name = "BUZZER_Task",
   .priority = (osPriority_t) osPriorityNormal1,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for BATTERY_CHECK */
 osThreadId_t BATTERY_CHECKHandle;
 const osThreadAttr_t BATTERY_CHECK_attributes = {
   .name = "BATTERY_CHECK",
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for SENSOR_PRINT_TA */
 osThreadId_t SENSOR_PRINT_TAHandle;
 const osThreadAttr_t SENSOR_PRINT_TA_attributes = {
   .name = "SENSOR_PRINT_TA",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for UART_Mutex */
 osMutexId_t UART_MutexHandle;
@@ -863,7 +863,6 @@ void StartDefaultTask(void *argument)
 	}
   /* USER CODE END 5 */
 }
-
 
 /**
   * @brief  This function is executed in case of error occurrence.
