@@ -37,10 +37,14 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void adachi(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 1000, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 500, 90 };
 	uint8_t temp_head = 0;
 	game_mode = 0;
-	printf("adachi\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("adachi\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -100,7 +104,11 @@ void adachi(void) {
 		}
 
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n", posX, posY, head,temp_head,map[posX + posY * MAP_X_MAX].wall,map[posX + posY * MAP_X_MAX].step);
+			printf(
+					"posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
+					posX, posY, head, temp_head,
+					map[posX + posY * MAP_X_MAX].wall,
+					map[posX + posY * MAP_X_MAX].step);
 			osMutexRelease(UART_MutexHandle);
 		}
 
@@ -136,9 +144,13 @@ void adachi(void) {
 }
 
 void hidarite(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 400, 400, 400, 0, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 400, 400, 400, 0, 90 };
-	printf("hidarite\n");
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 2000, 90 };
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("hidarite\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	Delay_ms(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
@@ -164,15 +176,15 @@ void hidarite(void) {
 
 		if (wall_check(1) == 0) {
 			//	printf("TURNL\n");
-			//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config);
-			//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
 		} else if (wall_check(0) == 0) {
-			//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			//	printf("straight\n");
 			straight(RUN_config);
 			chenge_pos(1);
@@ -180,11 +192,11 @@ void hidarite(void) {
 			//	printf("TURN R\n");
 			//			RUN_config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3;
 			//			straight(RUN_config);
-			//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-			//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
 		} else {

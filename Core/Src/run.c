@@ -58,7 +58,7 @@ void straight(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count) {
+		if (loop_count >= plpl_count-1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -190,7 +190,7 @@ void turn(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count) {
+		if (loop_count >= plpl_count-1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -269,7 +269,7 @@ void slalom(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count) {
+		if (loop_count >= plpl_count-1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {

@@ -393,7 +393,7 @@ void wall_set(void) {
 	wall_info >>= head;
 	wall_info &= 0x0f;
 	wall_info |= (wall_info << 4);
-	wall_info |= 0xd0;
+	wall_info |= (((0xdd >> head) & 0x0f) << 4);
 //
 //	printf("wall_info=%2x,wall=%2x\n", wall_info,
 //			map[posX + posY * MAP_X_MAX].wall);
@@ -514,9 +514,13 @@ uint8_t wall_check(uint8_t direction) {
 		}
 		break;
 	}
-	printf("and:%4x,wall:%4x,wall_check:%4x\n", and,
-			map[posX + posY * MAP_X_MAX].wall,
-			map[posX + posY * MAP_X_MAX].wall & and);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("and:%4x,wall:%4x,wall_check:%4x\n", and,
+				map[posX + posY * MAP_X_MAX].wall,
+				map[posX + posY * MAP_X_MAX].wall & and);
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	return (map[posX + posY * MAP_X_MAX].wall & and) % 0x10;
 }
 

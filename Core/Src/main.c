@@ -97,7 +97,7 @@ const osThreadAttr_t BUZZER_Task_attributes = {
 osThreadId_t BATTERY_CHECKHandle;
 const osThreadAttr_t BATTERY_CHECK_attributes = {
   .name = "BATTERY_CHECK",
-  .priority = (osPriority_t) osPriorityNormal1,
+  .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
 /* Definitions for SENSOR_PRINT_TA */
@@ -863,7 +863,6 @@ void StartDefaultTask(void *argument)
 	}
   /* USER CODE END 5 */
 }
-
 
 /**
   * @brief  This function is executed in case of error occurrence.

@@ -33,23 +33,23 @@ extern void Sensor(void *argument) {
 	for (;;) {
 
 		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5U) == TASK_STOP) {
-//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				printf("SSTOP\n");
-//				osMutexRelease(UART_MutexHandle);
-//			}
+				osMutexRelease(UART_MutexHandle);
+			}
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
-			/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("Sn\n\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("Sn\n\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
-			//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("Sstart\n");
-			 //osMutexRelease(UART_MutexHandle);
-			 //}
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("Sstart\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 		} /*else {
 		 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		 printf("Sy\n\n");
@@ -72,7 +72,7 @@ extern void Sensor(void *argument) {
 //LED_RS off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			//printf("RS\n");
+		//printf("RS\n");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 
@@ -91,7 +91,7 @@ extern void Sensor(void *argument) {
 		//LED_RF off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			//printf("RF\n");
+		//printf("RF\n");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		//LED_LS on
@@ -109,7 +109,7 @@ extern void Sensor(void *argument) {
 		//LED_LS off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			//printf("LS\n");
+		//printf("LS\n");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		//LED_LF on
@@ -127,7 +127,7 @@ extern void Sensor(void *argument) {
 		//LED_LF off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			//printf("LF\n");
+		//printf("LF\n");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		//Delay_ms(5);
@@ -161,7 +161,10 @@ void wall_calibration(void) {
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(50);
-	printf("RS_threshould\n");
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("RS_threshould\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	UILED_SET(1);
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
 		Delay_ms(50);
@@ -172,8 +175,10 @@ void wall_calibration(void) {
 	tone(tone_hiC, 100);
 	wall_config[RS_threshold] = read_wall(&sensorData.ADC_DATA_RS);
 	tone(tone_C, 100);
-
-	printf("LS_threshould\n");
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("LS_threshould\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	UILED_SET(8);
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
 		Delay_ms(50);
@@ -184,8 +189,10 @@ void wall_calibration(void) {
 	tone(tone_hiC, 100);
 	wall_config[LS_threshold] = read_wall(&sensorData.ADC_DATA_LS);
 	tone(tone_C, 100);
-
-	printf("F_threshould\n");
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("F_threshould\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	UILED_SET(6);
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
 		Delay_ms(50);
@@ -197,8 +204,10 @@ void wall_calibration(void) {
 	wall_config[RF_threshold] = read_wall(&sensorData.ADC_DATA_RF);
 	wall_config[LF_threshold] = read_wall(&sensorData.ADC_DATA_LF);
 	tone(tone_C, 100);
-
-	printf("ALL_WALL&FREE\n");
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("ALL_WALL&FREE\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	UILED_SET(15);
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 1) {
 		Delay_ms(50);
@@ -231,10 +240,13 @@ void wall_calibration(void) {
 	turn(turn_config);
 	sirituke();
 
-	for (int i = 0; i < 12; i++) {
-		printf("wall[%d]=%ld,", i, wall_config[i]);
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		for (int i = 0; i < 12; i++) {
+			printf("wall[%d]=%ld,", i, wall_config[i]);
+		}
+		printf("\n");
+		osMutexRelease(UART_MutexHandle);
 	}
-	printf("\n");
 	tone(tone_hiC, 100);
 }
 
@@ -264,7 +276,6 @@ extern void SENSOR_PRINT(void *argument) {
 			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
 		}
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-
 			printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
 					sensorData.ADC_DATA_LF);
