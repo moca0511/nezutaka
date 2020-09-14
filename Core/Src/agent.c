@@ -36,8 +36,8 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //5.1に戻る
 
 void adachi(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 150, 150, 1000, BLOCK_LENGTH / 2 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 100, 500, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 500, 90 };
 	uint8_t temp_head = 0;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -62,30 +62,18 @@ void adachi(void) {
 			tone(tone_hiC, 200);
 			break;
 		}
-
 		if (posX == goalX && posY == goalY) {
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			mortor_stop();
 			music();
 			break;
 		}
-
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("osThreadYield()=%d\n", osThreadYield());
-//			osMutexRelease(UART_MutexHandle);
-//		}
+		wall_set();
+		osThreadYield();
 		make_smap(goalX, goalY, game_mode);
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("MAKE_SMAP\n");
-			osMutexRelease(UART_MutexHandle);
-		}
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("osThreadYield()=%d\n", osThreadYield());
-//			osMutexRelease(UART_MutexHandle);
-//		}
-		print_map();
+		osThreadYield();
+		//print_map();
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 		if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x80
 				&& map[posX + posY * MAP_X_MAX].step
@@ -105,14 +93,6 @@ void adachi(void) {
 			temp_head = 2;
 		} else {
 			mortor_stop();
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf(
-						"posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
-						posX, posY, head, temp_head,
-						map[posX + posY * MAP_X_MAX].wall,
-						map[posX + posY * MAP_X_MAX].step);
-				osMutexRelease(UART_MutexHandle);
-			}
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
 			Delay_ms(1000);
@@ -138,21 +118,9 @@ void adachi(void) {
 		switch (temp_head) {
 		case 0:
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.7;
 			//printf("straight\n");
 			straight(RUN_config);
 			chenge_pos(1);
-			wall_set(0x02);
-			tone(tone_C, 50);
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.3;
-			straight(RUN_config);
-			wall_set(0x01);
-			wall_set_aound();
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("WALL_SET\n");
-				osMutexRelease(UART_MutexHandle);
-			}
 			break;
 		case 1:
 			//printf("TURN R\n");
@@ -160,20 +128,6 @@ void adachi(void) {
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf(
-						"((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
-						(((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-								| (map[posX + posY * MAP_X_MAX].wall << 4))
-								<< head));
-				osMutexRelease(UART_MutexHandle);
-			}
-			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
-					== 0x20) {
-				sirituke();
-			}
-
 			break;
 		case 2:
 			//	printf("U\n");
@@ -185,21 +139,8 @@ void adachi(void) {
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config);
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf(
-						"((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
-						(((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-								| (map[posX + posY * MAP_X_MAX].wall << 4))
-								<< head));
-				osMutexRelease(UART_MutexHandle);
-			}
-			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
-					== 0x20) {
-				sirituke();
-			}
 		}
-		tone(tone_hiC, 50);
+		tone(tone_hiC, 100);
 
 	}
 }
@@ -230,7 +171,7 @@ void hidarite(void) {
 			break;
 		}
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-		wall_set(0x03);
+		wall_set();
 //		make_smap(goalX, goalY, game_mode);
 		print_map();
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
