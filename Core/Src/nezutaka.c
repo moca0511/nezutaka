@@ -35,9 +35,17 @@ void nezutaka(void) {
 	Delay_ms(10);
 	tone(tone_G, 10);
 	for (;;) {
-		printf("mode select\n");
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("mode select\n");
+			osMutexRelease(UART_MutexHandle);
+		}
+
 		MENU(&mode);
-		printf("\n");
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("\n");
+			osMutexRelease(UART_MutexHandle);
+		}
+
 		switch (mode) {
 		case 0:
 			mode0();
@@ -142,24 +150,39 @@ void MENU(int16_t *mode) {
 }
 //music
 void mode0(void) {
-	printf("music\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("music\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	music();
 }
 //sensordebug
 void mode1(void) {
-	printf("print_sensordata\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("print_sensordata\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	print_sensordata();
 }
 //init wall value
 void mode2(void) {
-	printf("wall_calibration\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("wall_calibration\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	Delay_ms(500);
 	wall_calibration();
 }
 //1block run
 void mode3(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 1000, BLOCK_LENGTH * 1 };
-	printf("1block run(180mm)\n");
+
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("1block run(180mm)\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	run_block(RUN_config);
@@ -168,7 +191,11 @@ void mode3(void) {
 //turn R 90°
 void mode4(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
-	printf("turn 90°\n");
+
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("turn 90°\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn(turn_config);
@@ -177,7 +204,11 @@ void mode4(void) {
 }
 //turn 180° and sirituke
 void mode5(void) {
-	printf("turn 180° and sirituke\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("turn 180° and sirituke\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn_u();
@@ -192,19 +223,31 @@ void mode6(void) {
 }
 
 void mode7(void) {
-	printf("map init\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("map init\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	smap_Init();
 }
 
 void mode8(void) {
-	printf("print_map\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("print_map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	print_map();
 
 }
 
 void mode9(void) {
 	//探索マップ作成
-	printf("tansaku map\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("tansaku map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	game_mode = 0;
 	make_smap(goalX, goalY, game_mode);
 	print_map();
@@ -213,28 +256,40 @@ void mode9(void) {
 
 void mode10(void) {
 	//最短マップ作成
-	printf("saitan map\n");
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("saitan map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	game_mode = 1;
 	make_smap(goalX, goalY, game_mode);
 	print_map();
 	return;
 }
 void mode11(void) {
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 150, 150, 1000, BLOCK_LENGTH };
+	adachi(RUN_config);
 	return;
 }
 
 void mode12(void) {
-	adachi();
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
+	adachi(RUN_config);
 	return;
 }
 void mode13(void) {
-	hidarite();
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH };
+	adachi(RUN_config);
 	return;
 }
 void mode14(void) {
-	printf("speed test\n");
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 2000, BLOCK_LENGTH * 5 };
-	RUNConfig turn_config = { TURN_R, 0, 300, 800, 2000, 90 };
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("speed test\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 2000, BLOCK_LENGTH * 5 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 150, 500, 90 };
 	Delay_ms(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
@@ -242,70 +297,82 @@ void mode14(void) {
 	Delay_ms(100);
 
 	run_block(RUN_config);			//5kukaku
+			/*
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config);			//5kukaku
+			 RUN_config.value = BLOCK_LENGTH;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config);			//5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH * 5;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH * 5;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_L;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_L;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_L;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_L;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH * 5;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH * 5;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH * 5;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH * 5;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_u();
+			 turn_u();
+			 */
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 400, 400, 400, 0, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 400, 400, 400, 0, 90 };
-	printf("guruguru\n");
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 500, 90 };
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("guruguru\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	for (;;) {
@@ -318,9 +385,9 @@ void mode15(void) {
 			tone(tone_hiC, 200);
 			break;
 		}
-		//RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
-		//turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		turn(turn_config);
 	}
 }

@@ -20,7 +20,7 @@ extern void BUZZER(void *argument)
 	PWMconfig pwm_config = { &htim4, BUZZER_CHANNEL, tone_A, 10, 84000000 };
 	/* Infinite loop */
 	for (;;) {
-		osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+		while(osThreadFlagsWait(TASK_START|TASK_STOP, osFlagsWaitAny, osWaitForever)!=TASK_START);
 //		printf("buzzer:%ldhz,%ldms\n", ((BuzzerConfig*) argument)->tone,
 //				((BuzzerConfig*) argument)->ms);
 		pwm_config.hz = buzzer_config.tone;
