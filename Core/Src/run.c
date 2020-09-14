@@ -82,14 +82,18 @@ void straight(RUNConfig config) {
 		//PID
 		if (wall_calibration_F == 1) {
 			if (config.direction == MOVE_FORWARD) {
-				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
-						&& sensorData.ADC_DATA_RS > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
+				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]) { // *　壁がある時だけPID操作
 					speed_L = PID(speed, wall_config[LS_WALL],
 							sensorData.ADC_DATA_LS, &deviation_prevL);
+				} else {
+					deviation_prevL = 0;
+				}
+				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]) { // *　壁がある時だけPID操作
 					speed_R = PID(speed, wall_config[RS_WALL],
 							sensorData.ADC_DATA_RS, &deviation_prevR);
+
 				} else {
-					deviation_prevL = deviation_prevL = 0;
+					deviation_prevR = 0;
 				}
 			} else {
 				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
@@ -105,8 +109,15 @@ void straight(RUNConfig config) {
 		}
 		//printf("R:%ld,L:%ld,gensoku:%ld,plpl:%ld,step:%ld\n",speed_R,speed_L,gensoku,plpl,(MotorStepCount_R + MotorStepCount_L) / 2);
 		//1各モータスピードに代入
+
 		MOTORSPEED_R = speed_R;
 		MOTORSPEED_L = speed_L;
+		/*
+		 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		 printf("R=%d,L=%d\n", MOTORSPEED_R, MOTORSPEED_L);
+		 osMutexRelease(UART_MutexHandle);
+		 }
+		 */
 
 		/*		//　壁切れ補正 最終マス移動時のみ
 		 if (stop
@@ -118,44 +129,38 @@ void straight(RUNConfig config) {
 		 / 2 + BLOCK_LENGTH / 2 / STEP_LENGTH;
 		 stop = 1;
 		 }*/
-
+/*
 		//　前壁判定
-		/*if (wall_calibration_F==1
-		 && (sensorData.ADC_DATA_LF
-		 >= (wall_config[LF_threshold] + wall_config[LF_WALL])
-		 / 2
-		 && sensorData.ADC_DATA_RF
-		 >= (wall_config[RF_threshold]
-		 + wall_config[RF_WALL]) / 2)) {
-		 mortor_stop();
-		 MotorStepCount_R = 0;
-		 MotorStepCount_L = 0;
-		 osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
-		 osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
+		if (wall_calibration_F == 1
+				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
+						&& sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
+			config.finish_speed = 0;
+			break;
 
-		 }*/
-		/*if (stop == 0 && wall_config[LF_threshold] != 0
-		 && (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
-		 && sensorData.ADC_DATA_RF >= wall_config[RF_threshold])) {
-		 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		 printf("maekabe\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }
-		 stop = 1;
-		 plpl = -20;
-		 config.finish_speed = 0;
-		 if (speed >= 400) {		//　速度が早ければ間に合わない？？
-		 break;
-		 } else {
-		 plpl_count /= 2;
-		 stopcount = (MotorStepCount_R + MotorStepCount_L)
-		 / 2 + 5 / STEP_LENGTH;
-		 }
-		 }*/
+		}*/
+
+		if (stop == 0 && wall_calibration_F == 1
+				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
+						&& sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("maekabe\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
+			stop = 1;
+			plpl = -10;
+			config.finish_speed = 0;
+			/*if (speed >= 400) {		//　速度が早ければ間に合わない？？
+			 break;
+			 } else {
+			 plpl_count /= 2;
+			 stopcount = (MotorStepCount_R + MotorStepCount_L)
+			 / 2 + 5 / STEP_LENGTH;
+			 }*/
+		}
 		//osThreadYield();
 		Delay_ms(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
-	//1走行距離判定　ループ１へ
+//1走行距離判定　ループ１へ
 	if (config.finish_speed == 0) {
 		mortor_stop();
 	} else {
@@ -169,21 +174,19 @@ void straight(RUNConfig config) {
 }
 
 void turn(RUNConfig config) {
-	//1移動用パラメータ設定
+//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
-	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
-	//1回転方向設定
+//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
+//1回転方向設定
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
-	//on
+//on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
-	mortor_direction(MR, MOVE_FORWARD);
-	mortor_direction(ML, MOVE_FORWARD);
 	if (config.direction == TURN_R) {
 		mortor_direction(ML, MOVE_FORWARD);
 		mortor_direction(MR, MOVE_BACK);
@@ -230,7 +233,7 @@ void turn(RUNConfig config) {
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
 		//osThreadYield();
-		Delay_ms(1);
+		Delay_ms(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	if (config.finish_speed == 0) {
@@ -246,18 +249,18 @@ void turn(RUNConfig config) {
 }
 
 void slalom(RUNConfig config) {
-	//1移動用パラメータ設定
+//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
 	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
-	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
-	//1回転方向設定
+//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
+//1回転方向設定
 
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
-	//on
+//on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
 	mortor_direction(MR, MOVE_FORWARD);
@@ -332,7 +335,7 @@ void slalom(RUNConfig config) {
 
 void sirituke(void) {
 	RUNConfig RUN_Config = { MOVE_BACK, (MOTORSPEED_L + MOTORSPEED_R) / 2, 0,
-			200, 1000, BLOCK_LENGTH / 3 };
+			100, 1000, BLOCK_LENGTH / 3 };
 	straight(RUN_Config);
 }
 
@@ -340,6 +343,11 @@ int32_t PID(int32_t speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev) {
 	int32_t deviation;
 	deviation = target - sensor;
+	/*	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("devaition=%d\n", deviation);
+	 osMutexRelease(UART_MutexHandle);
+	 }*/
+
 	*deviation_prev = deviation - (*deviation_prev);
 	speed -= (kp * deviation + kd * (*deviation_prev));
 	if (speed < SPEED_MIN) {
@@ -385,9 +393,9 @@ void chenge_head(RUNConfig config) {
 }
 
 void run_block(RUNConfig config) {
-	//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
+//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
 	straight(config);
-	//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
+//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
 }
 
 void turn_u(void) {

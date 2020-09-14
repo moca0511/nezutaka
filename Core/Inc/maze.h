@@ -29,7 +29,7 @@ void smap_Init(void);  // 歩数マップ初期化
 void make_smap(uint16_t gx, uint16_t gy, uint8_t mode); //	gx,gyを目標値とした歩数を設定
 void print_map(void);	//	歩数マップ表示
 void wall_set(uint8_t mode);
-void wall_set_aound(void);
+void wall_set_around(void);
 uint8_t wall_check(uint8_t direction);
 int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction);
 

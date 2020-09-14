@@ -419,12 +419,12 @@ void wall_set(uint8_t mode) {
 		wall_info |= (((0xdd >> head) & 0x0f) << 4);
 	}
 
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("wall:0x%2x | info:0x%2x = %2x \n",
 				map[posX + posY * MAP_X_MAX].wall, wall_info,
 				map[posX + posY * MAP_X_MAX].wall | wall_info);
 		osMutexRelease(UART_MutexHandle);
-	}
+	}*/
 
 	map[posX + posY * MAP_X_MAX].wall |= wall_info;
 
@@ -488,151 +488,151 @@ void wall_set(uint8_t mode) {
 		}
 	}
 }
-void wall_set_aound(void) {
+void wall_set_around(void) {
 
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("check around\n");
 		printf("x:%d,y:%d,wall=0x%2x\n", posX, posY,
 				map[posX + posY * MAP_X_MAX].wall);
 		osMutexRelease(UART_MutexHandle);
-	}
+	}*/
 
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("map[posX + posY * MAP_X_MAX].wall & 0x88= %2x\n",
 				(map[posX + posY * MAP_X_MAX].wall & 0x88));
 		osMutexRelease(UART_MutexHandle);
-	}
+	}*/
 	if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x88) {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("O\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posY  < MAP_Y_MAX-1) {
 			map[posX + (posY + 1) * MAP_X_MAX].wall |= 0x22;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("ue ON\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 	} else {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("X\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posY  < MAP_Y_MAX-1) {
 
 			map[posX + (posY + 1) * MAP_X_MAX].wall |= 0x20;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("ue NO\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 	}
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("map[posX + posY * MAP_X_MAX].wall & 0x44= %2x\n",
 				(map[posX + posY * MAP_X_MAX].wall & 0x44));
 		osMutexRelease(UART_MutexHandle);
-	}
+	}*/
 	if ((map[posX + posY * MAP_X_MAX].wall & 0x44) == 0x44) {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("O\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posX < MAP_X_MAX - 1) {
 			map[posX + posY * MAP_X_MAX + 1].wall |= 0x11;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+/*			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("migi ON\n");
 				osMutexRelease(UART_MutexHandle);
 
-			}
+			}*/
 		}
 	} else {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("X\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posX < MAP_X_MAX - 1) {
 
 			map[posX + posY * MAP_X_MAX + 1].wall |= 0x10;
 
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("migi NO\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 	}
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("map[posX + posY * MAP_X_MAX].wall & 0x22= %2x\n",
 				(map[posX + posY * MAP_X_MAX].wall & 0x22));
 		osMutexRelease(UART_MutexHandle);
-	}
+	}*/
 	if ((map[posX + posY * MAP_X_MAX].wall & 0x22) == 0x22) {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("O\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posY > 0) {
 
 			map[posX + (posY - 1) * MAP_X_MAX].wall |= 0x88;
 
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("sita ON\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 	} else {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("X\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posY > 0) {
 
 			map[posX + (posY - 1) * MAP_X_MAX].wall |= 0x80;
 
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("sita NO\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 	}
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("map[posX + posY * MAP_X_MAX].wall & 0x11= %2x\n",
 				(map[posX + posY * MAP_X_MAX].wall & 0x11));
 		osMutexRelease(UART_MutexHandle);
-	}
+	}*/
 	if ((map[posX + posY * MAP_X_MAX].wall & 0x11) == 0x11) {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("O\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posX > 0) {
 
 			map[posX + posY * MAP_X_MAX - 1].wall |= 0x44;
 
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("hidari ON\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 	} else {
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("X\n");
 			osMutexRelease(UART_MutexHandle);
-		}
+		}*/
 		if (posX > 0) {
 
 			map[posX + posY * MAP_X_MAX - 1].wall |= 0x40;
 
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("hidari NO\n");
 				osMutexRelease(UART_MutexHandle);
-			}
+			}*/
 
 		}
 

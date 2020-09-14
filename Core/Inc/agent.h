@@ -11,7 +11,7 @@
 #include"main.h"
 
 
-void adachi(void);
+void adachi(RUNConfig RUN_config);
 void hidarite(void);
 
 

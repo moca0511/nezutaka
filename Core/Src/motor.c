@@ -39,6 +39,7 @@ extern void MOTOR_R(void *argument) {
 				;
 		}
 		if (MOTORSPEED_R != speed_prev) {
+
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("MOTORSPEED_R:%d \n", MOTORSPEED_R);
 //				osMutexRelease(UART_MutexHandle);
@@ -154,9 +155,9 @@ void mortor_stop(void) {
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 	MOTORSPEED_R = 0;
 	MOTORSPEED_L = 0;
+	Delay_ms(5);
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
-	Delay_ms(50);
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
 }

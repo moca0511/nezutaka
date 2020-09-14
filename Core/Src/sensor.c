@@ -137,7 +137,7 @@ extern void Sensor(void *argument) {
 //		printf("LF");
 //			osMutexRelease(UART_MutexHandle);
 //		}
-		Delay_ms(2);
+/*		Delay_ms(2);*/
 		osThreadYield();
 
 		//task sycle time
@@ -159,16 +159,17 @@ uint32_t read_wall(uint32_t *pADCdata) {
 
 //init wall value
 void wall_calibration(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 100, 1000, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) / 3 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 200, 1000, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 100, 500, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) / 2 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 100, 500, 90 };
+	wall_calibration_F=0;
 	tone(tone_hiC, 10);
 	for (int i = 0; i < 12; i++) {
 		wall_config[i] = 0;
 	}
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(50);
+	Delay_ms(100);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("RS_threshould\n");
 		osMutexRelease(UART_MutexHandle);
@@ -195,6 +196,7 @@ void wall_calibration(void) {
 		Delay_ms(50);
 	}
 	tone(tone_hiC, 100);
+
 	wall_config[LS_threshold] = read_wall(&sensorData.ADC_DATA_LS);
 	tone(tone_C, 100);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
@@ -224,19 +226,21 @@ void wall_calibration(void) {
 		Delay_ms(50);
 	}
 	tone(tone_hiC, 100);
-
+	osDelay(100);
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
 	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 	wall_config[RF_FREE] = read_wall(&sensorData.ADC_DATA_RF);
 	wall_config[LF_FREE] = read_wall(&sensorData.ADC_DATA_LF);
 	straight(RUN_config);
 	turn(turn_config);
+	osDelay(100);
 	wall_config[LS_FREE] = read_wall(&sensorData.ADC_DATA_LS);
 	wall_config[RF_WALL] = read_wall(&sensorData.ADC_DATA_RF);
 	wall_config[LF_WALL] = read_wall(&sensorData.ADC_DATA_LF);
 	turn_config.value = 180;
 	turn_config.direction = TURN_L;
 	turn(turn_config);
+	osDelay(100);
 	wall_config[RS_FREE] = read_wall(&sensorData.ADC_DATA_RS);
 	wall_config[RF_WALL] = (wall_config[RF_WALL]
 			+ read_wall(&sensorData.ADC_DATA_RF)) / 2;

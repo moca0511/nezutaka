@@ -267,15 +267,19 @@ void mode10(void) {
 	return;
 }
 void mode11(void) {
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 150, 150, 1000, BLOCK_LENGTH };
+	adachi(RUN_config);
 	return;
 }
 
 void mode12(void) {
-	adachi();
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
+	adachi(RUN_config);
 	return;
 }
 void mode13(void) {
-	hidarite();
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH };
+	adachi(RUN_config);
 	return;
 }
 void mode14(void) {
@@ -284,8 +288,8 @@ void mode14(void) {
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 2000, BLOCK_LENGTH * 5 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 2000, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 2000, BLOCK_LENGTH * 5 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 150, 500, 90 };
 	Delay_ms(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
@@ -293,62 +297,70 @@ void mode14(void) {
 	Delay_ms(100);
 
 	run_block(RUN_config);			//5kukaku
+			/*
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config);			//5kukaku
+			 RUN_config.value = BLOCK_LENGTH;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config);			//5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH * 5;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH * 5;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_L;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_L;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_L;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_L;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH * 5;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH * 5;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	turn_config.direction = TURN_R;
-	turn(turn_config);
-	chenge_head(turn_config);
+			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 turn_config.direction = TURN_R;
+			 turn(turn_config);
+			 chenge_head(turn_config);
+			 sirituke();
 
-	RUN_config.value = BLOCK_LENGTH * 5;
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	run_block(RUN_config); //5kukaku
+			 RUN_config.value = BLOCK_LENGTH * 5;
+			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			 run_block(RUN_config); //5kukaku
 
-	turn_u();
+			 turn_u();
+			 */
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	return;

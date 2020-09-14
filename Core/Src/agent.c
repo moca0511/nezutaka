@@ -35,9 +35,10 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //4.ゴールなら終了
 //5.1に戻る
 
-void adachi(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 150, 150, 1000, BLOCK_LENGTH / 2 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 100, 500, 90 };
+void adachi(RUNConfig RUN_config) {
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 100, 2000, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) / 4 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 100, 400, 90 };
 	uint8_t temp_head = 0;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -77,15 +78,15 @@ void adachi(void) {
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		make_smap(goalX, goalY, game_mode);
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("MAKE_SMAP\n");
-			osMutexRelease(UART_MutexHandle);
-		}
+		/*		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		 printf("MAKE_SMAP\n");
+		 osMutexRelease(UART_MutexHandle);
+		 }*/
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //			printf("osThreadYield()=%d\n", osThreadYield());
 //			osMutexRelease(UART_MutexHandle);
 //		}
-		print_map();
+		//print_map();
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 		if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x80
 				&& map[posX + posY * MAP_X_MAX].step
@@ -105,14 +106,14 @@ void adachi(void) {
 			temp_head = 2;
 		} else {
 			mortor_stop();
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf(
-						"posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
-						posX, posY, head, temp_head,
-						map[posX + posY * MAP_X_MAX].wall,
-						map[posX + posY * MAP_X_MAX].step);
-				osMutexRelease(UART_MutexHandle);
-			}
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf(
+			 "posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
+			 posX, posY, head, temp_head,
+			 map[posX + posY * MAP_X_MAX].wall,
+			 map[posX + posY * MAP_X_MAX].step);
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
 			Delay_ms(1000);
@@ -125,14 +126,14 @@ void adachi(void) {
 			temp_head -= 4;
 		}
 
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf(
-					"posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
-					posX, posY, head, temp_head,
-					map[posX + posY * MAP_X_MAX].wall,
-					map[posX + posY * MAP_X_MAX].step);
-			osMutexRelease(UART_MutexHandle);
-		}
+		/*		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		 printf(
+		 "posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
+		 posX, posY, head, temp_head,
+		 map[posX + posY * MAP_X_MAX].wall,
+		 map[posX + posY * MAP_X_MAX].step);
+		 osMutexRelease(UART_MutexHandle);
+		 }*/
 
 		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 		switch (temp_head) {
@@ -148,55 +149,77 @@ void adachi(void) {
 			RUN_config.value = BLOCK_LENGTH * 0.3;
 			straight(RUN_config);
 			wall_set(0x01);
-			wall_set_aound();
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("WALL_SET\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+			wall_set_around();
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("WALL_SET\n");
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
+			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 1:
 			//printf("TURN R\n");
-			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			//mortor_stop();
+			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			straight(tyousei_config);
+			turn_config.initial_speed = 0;
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf(
-						"((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
-						(((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-								| (map[posX + posY * MAP_X_MAX].wall << 4))
-								<< head));
-				osMutexRelease(UART_MutexHandle);
-			}
+			wall_set(0x03);
+			wall_set_around();
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf(
+			 "((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
+			 (((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			 | (map[posX + posY * MAP_X_MAX].wall << 4))
+			 << head));
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {
 				sirituke();
+				RUN_config.value = BLOCK_LENGTH;
+			} else {
+				RUN_config.value = BLOCK_LENGTH
+						- ((BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3);
 			}
 
 			break;
 		case 2:
 			//	printf("U\n");
+			mortor_stop();
 			turn_u();
+			wall_set(0x03);
+			wall_set_around();
+			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 3:
 			//	printf("TURNL\n");
-			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			straight(tyousei_config);
+			turn_config.initial_speed = 0;
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config);
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf(
-						"((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
-						(((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-								| (map[posX + posY * MAP_X_MAX].wall << 4))
-								<< head));
-				osMutexRelease(UART_MutexHandle);
-			}
+			wall_set(0x03);
+			wall_set_around();
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf(
+			 "((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
+			 (((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			 | (map[posX + posY * MAP_X_MAX].wall << 4))
+			 << head));
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {
 				sirituke();
+				RUN_config.value = BLOCK_LENGTH;
+			} else {
+				RUN_config.value = BLOCK_LENGTH
+						- ((BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3);
 			}
 		}
 		tone(tone_hiC, 50);
