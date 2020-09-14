@@ -12,12 +12,10 @@
 extern osMutexId_t UART_MutexHandle;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
-uint32_t MotorHz_R = 0;
-uint32_t MotorHz_L = 0;
 uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
-uint32_t MOTORSPEED_R = 0;
-uint32_t MOTORSPEED_L = 0;
+double MOTORSPEED_R = 0;
+double MOTORSPEED_L = 0;
 extern osThreadId_t MOTOR_R_TaskHandle;
 extern osThreadId_t MOTOR_L_TaskHandle;
 
@@ -25,7 +23,7 @@ extern void MOTOR_R(void *argument) {
 	/* USER CODE BEGIN MOTOR_R */
 	Delay_ms(10);
 	uint32_t hz = 0;
-	uint32_t speed_prev = 0;
+	double speed_prev = 0;
 	__HAL_TIM_SET_COMPARE(&htim1, STEPPER_CLOCK_R_CHANNEL, 50);
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
@@ -75,7 +73,7 @@ extern void MOTOR_L(void *argument) {
 
 	Delay_ms(10);
 	uint32_t hz = 0;
-	uint32_t speed_prev = 0;
+	double speed_prev = 0;
 	__HAL_TIM_SET_COMPARE(&htim8, STEPPER_CLOCK_L_CHANNEL, 50);
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
