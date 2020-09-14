@@ -15,8 +15,8 @@
 #include"run.h"
 #include "maze.h"
 extern osMutexId_t UART_MutexHandle;
-extern uint32_t MOTORSPEED_R;
-extern uint32_t MOTORSPEED_L;
+extern double MOTORSPEED_R;
+extern double MOTORSPEED_L;
 extern BuzzerConfig buzzer_config;
 extern SensorData sensorData;
 extern uint32_t us;
@@ -139,14 +139,14 @@ void adachi(RUNConfig RUN_config) {
 		switch (temp_head) {
 		case 0:
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.7;
+			RUN_config.value = BLOCK_LENGTH /2;
 			//printf("straight\n");
 			straight(RUN_config);
 			chenge_pos(1);
 			wall_set(0x02);
 			tone(tone_C, 50);
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.3;
+			RUN_config.value = BLOCK_LENGTH /2;
 			straight(RUN_config);
 			wall_set(0x01);
 			wall_set_around();
@@ -229,17 +229,14 @@ void adachi(RUNConfig RUN_config) {
 
 void hidarite(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
-<<<<<<< HEAD
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 1000, 90 };
-	printf("hidarite\n");
-=======
+
 	RUNConfig turn_config = { TURN_R, 0, 0, 300, 2000, 90 };
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("hidarite\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
->>>>>>> work
+
 	Delay_ms(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
@@ -293,10 +290,6 @@ void hidarite(void) {
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-<<<<<<< HEAD
-
-=======
->>>>>>> work
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
