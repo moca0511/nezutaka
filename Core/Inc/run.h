@@ -13,11 +13,11 @@
 
 typedef struct {
 	uint8_t direction;	//進行方向 (前後)
-	double initial_speed;	//初速 (mm/s)
-	double finish_speed;	//終了速度 (mm/s)
-	double max_speed;	//最大速度 (mm/s)
-	double acceleration;	//加速度
-	double value;	//各設定値
+	float initial_speed;	//初速 (mm/s)
+	float finish_speed;	//終了速度 (mm/s)
+	float max_speed;	//最大速度 (mm/s)
+	float acceleration;	//加速度
+	float value;	//各設定値
 } RUNConfig;
 
 //進行方向
@@ -39,7 +39,7 @@ void straight(RUNConfig config);
 void turn(RUNConfig config);
 void slalom(RUNConfig config);
 void sirituke(void);
-int32_t PID(double speed, int32_t target, int32_t sensor,
+int32_t PID(float speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev);
 void chenge_head(RUNConfig config) ;
 void chenge_pos(uint16_t block);

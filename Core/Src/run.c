@@ -12,8 +12,8 @@ extern osMutexId_t UART_MutexHandle;
 extern osThreadId_t POS_CHECK_TASKHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
-extern double MOTORSPEED_R;
-extern double MOTORSPEED_L;
+extern float MOTORSPEED_R;
+extern float MOTORSPEED_L;
 extern SensorData sensorData;
 extern uint32_t wall_config[12];
 extern osThreadId_t MOTOR_R_TaskHandle;
@@ -26,10 +26,10 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void straight(RUNConfig config) {
 	//int32_t speed = config.initial_speed;
-	double speed = config.initial_speed, plpl = config.acceleration;
-	double speed_R = speed;
-	double speed_L = speed;
-	uint8_t delay_time = 1;
+	float speed = config.initial_speed, plpl = config.acceleration;
+	float speed_R = speed;
+	float speed_L = speed;
+	uint8_t delay_tick = 1;
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
@@ -42,7 +42,7 @@ void straight(RUNConfig config) {
 	if (config.max_speed > SPEED_MAX) {
 		config.max_speed = SPEED_MAX;
 	}
-	plpl = (plpl / configTICK_RATE_HZ) * delay_time;
+	plpl = (plpl / configTICK_RATE_HZ) * delay_tick;
 	/*if (plpl / 100 < 1 && plpl != 0) {
 	 plpl = 1;
 	 } else {
@@ -159,7 +159,7 @@ void straight(RUNConfig config) {
 			 }*/
 		}
 		//osThreadYield();
-		osDelay(delay_time);
+		osDelay(delay_tick);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 //1走行距離判定　ループ１へ
 	if (config.finish_speed == 0) {
@@ -182,8 +182,8 @@ void turn(RUNConfig config) {
 
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value;		//mm
 	uint32_t stopcount = move / STEP_LENGTH;		//step
-	double speed = config.initial_speed, plpl = config.acceleration;
-	uint8_t delay_time = 1;
+	float speed = config.initial_speed, plpl = config.acceleration;
+	uint8_t delay_tick = 1;
 	int32_t gensoku = -1;
 
 //printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -201,7 +201,7 @@ void turn(RUNConfig config) {
 		mortor_direction(ML, MOVE_BACK);
 	}
 
-	plpl = (plpl / configTICK_RATE_HZ) * delay_time;
+	plpl = (plpl / configTICK_RATE_HZ) * delay_tick;
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 	do {
@@ -232,7 +232,7 @@ void turn(RUNConfig config) {
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
 		//osThreadYield();
-		osDelay(delay_time);
+		osDelay(delay_tick);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	if (config.finish_speed == 0) {
@@ -255,8 +255,8 @@ void slalom(RUNConfig config) {
 //1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value;		//mm
 	uint32_t stopcount = move / STEP_LENGTH;		//step
-	double speed = config.initial_speed, plpl = config.acceleration;
-	uint8_t delay_time = 1;
+	float speed = config.initial_speed, plpl = config.acceleration;
+	uint8_t delay_tick = 1;
 	int32_t gensoku = -1;
 //printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 //1回転方向設定
@@ -278,7 +278,7 @@ void slalom(RUNConfig config) {
 	} else if (config.direction == TURN_L) {
 		MOTORSPEED_L = 0;
 	}
-	plpl = (plpl / configTICK_RATE_HZ) * delay_time;
+	plpl = (plpl / configTICK_RATE_HZ) * delay_tick;
 
 	do {
 		//1スピード変更処理
@@ -315,7 +315,7 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
-		Delay_ms(delay_time);
+		osDelay(delay_tick);
 
 //		osThreadYield();
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
@@ -336,7 +336,7 @@ void sirituke(void) {
 	straight(RUN_Config);
 }
 
-int32_t PID(double speed, int32_t target, int32_t sensor,
+int32_t PID(float speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev) {
 	int32_t deviation;
 	deviation = target - sensor;

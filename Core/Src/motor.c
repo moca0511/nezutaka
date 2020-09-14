@@ -14,16 +14,16 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
 uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
-double MOTORSPEED_R = 0;
-double MOTORSPEED_L = 0;
+float MOTORSPEED_R = 0;
+float MOTORSPEED_L = 0;
 extern osThreadId_t MOTOR_R_TaskHandle;
 extern osThreadId_t MOTOR_L_TaskHandle;
 
 extern void MOTOR_R(void *argument) {
 	/* USER CODE BEGIN MOTOR_R */
 	Delay_ms(10);
-	uint32_t hz = 0;
-	double speed_prev = 0;
+	float hz = 0;
+	float speed_prev = 0;
 	__HAL_TIM_SET_COMPARE(&htim1, STEPPER_CLOCK_R_CHANNEL, 50);
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
@@ -72,8 +72,8 @@ extern void MOTOR_L(void *argument) {
 	/* USER CODE BEGIN MOTOR_L */
 
 	Delay_ms(10);
-	uint32_t hz = 0;
-	double speed_prev = 0;
+	float hz = 0;
+	float speed_prev = 0;
 	__HAL_TIM_SET_COMPARE(&htim8, STEPPER_CLOCK_L_CHANNEL, 50);
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
@@ -131,10 +131,10 @@ extern void MOTOR_L(void *argument) {
  }
  }*/
 
-uint32_t SPEEDtoHz(uint32_t speed) {
+float SPEEDtoHz(float speed) {
 	return speed / STEP_LENGTH;
 }
-uint32_t HztoSPEED(uint32_t Hz) {
+float HztoSPEED(float Hz) {
 	return Hz * STEP_LENGTH;
 }
 

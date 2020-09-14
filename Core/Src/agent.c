@@ -15,8 +15,8 @@
 #include"run.h"
 #include "maze.h"
 extern osMutexId_t UART_MutexHandle;
-extern double MOTORSPEED_R;
-extern double MOTORSPEED_L;
+extern float MOTORSPEED_R;
+extern float MOTORSPEED_L;
 extern BuzzerConfig buzzer_config;
 extern SensorData sensorData;
 extern uint32_t us;
