@@ -21,18 +21,20 @@ extern osThreadId_t Sensor_TaskHandle;
 extern osThreadId_t WALL_READ_TASKHandle;
 extern osThreadId_t SENSOR_PRINT_TAHandle;
 extern uint32_t wall_config[12];
+uint8_t wall_calibration_F = 0;
 
 extern void Sensor(void *argument) {
 	/* USER CODE BEGIN Sensor */
 	Delay_ms(10);
 	ADCSet ADC_config = { &hadc1, ADC_CHANNEL_RS };
 	PWMconfig pwm_config = { &htim3, PWM_CHANNEL_RS, 5000, 50, 84000000 };
-	;
-	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+	osWaitForever) != TASK_START)
+		;
 	/* Infinite loop */
 	for (;;) {
-
-		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 5U) == TASK_STOP) {
+		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+				0U) == TASK_STOP) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				printf("SSTOP\n");
 				osMutexRelease(UART_MutexHandle);
@@ -45,12 +47,17 @@ extern void Sensor(void *argument) {
 				printf("Sn\n\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+			osWaitForever) != TASK_START)
+				;
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				printf("Sstart\n");
 				osMutexRelease(UART_MutexHandle);
+
 			}
-		} /*else {
+
+		}
+		/*} else {
 		 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		 printf("Sy\n\n");
 		 osMutexRelease(UART_MutexHandle);
@@ -72,7 +79,7 @@ extern void Sensor(void *argument) {
 //LED_RS off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		//printf("RS\n");
+//		printf("RS");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 
@@ -91,7 +98,7 @@ extern void Sensor(void *argument) {
 		//LED_RF off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		//printf("RF\n");
+//		printf("RF");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		//LED_LS on
@@ -109,7 +116,7 @@ extern void Sensor(void *argument) {
 		//LED_LS off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		//printf("LS\n");
+//		printf("LS");
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		//LED_LF on
@@ -127,10 +134,11 @@ extern void Sensor(void *argument) {
 		//LED_LF off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		//printf("LF\n");
+//		printf("LF");
 //			osMutexRelease(UART_MutexHandle);
 //		}
-		//Delay_ms(5);
+		Delay_ms(2);
+		osThreadYield();
 
 		//task sycle time
 
@@ -239,6 +247,7 @@ void wall_calibration(void) {
 	turn_config.direction = TURN_R;
 	turn(turn_config);
 	sirituke();
+	wall_calibration_F=1;
 
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int i = 0; i < 12; i++) {
@@ -269,11 +278,16 @@ void print_sensordata(void) {
 
 extern void SENSOR_PRINT(void *argument) {
 	/* USER CODE BEGIN WALL_READ */
-	osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+			osWaitForever) != TASK_START)
+		;
 	/* Infinite loop */
 	for (;;) {
-		if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 0U) == TASK_STOP) {
-			osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
+		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+				0U) == TASK_STOP) {
+			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+			osWaitForever) != TASK_START)
+				;
 		}
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
@@ -281,7 +295,7 @@ extern void SENSOR_PRINT(void *argument) {
 					sensorData.ADC_DATA_LF);
 			osMutexRelease(UART_MutexHandle);
 		}
-		Delay_ms(500);
+		Delay_ms(100);
 //		osThreadYield();
 
 	}
