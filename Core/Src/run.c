@@ -18,6 +18,7 @@ extern SensorData sensorData;
 extern uint32_t wall_config[12];
 extern osThreadId_t MOTOR_R_TaskHandle;
 extern osThreadId_t MOTOR_L_TaskHandle;
+extern uint8_t wall_calibration_F;
 
 extern int16_t posX, posY;	//　現在の位置
 int32_t posX_buf = 0, posY_buf = 0;	//　現在の位置
@@ -58,7 +59,7 @@ void straight(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count-1) {
+		if (loop_count >= plpl_count - 1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -79,28 +80,26 @@ void straight(RUNConfig config) {
 		speed_R = speed;
 		speed_L = speed;
 		//PID
-		if (wall_config[LS_threshold] != 0) {
+		if (wall_calibration_F == 1) {
 			if (config.direction == MOVE_FORWARD) {
-				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]) { // *　壁がある時だけPID操作
+				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
+						&& sensorData.ADC_DATA_RS > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
 					speed_L = PID(speed, wall_config[LS_WALL],
 							sensorData.ADC_DATA_LS, &deviation_prevL);
-				}
-				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]) {
 					speed_R = PID(speed, wall_config[RS_WALL],
 							sensorData.ADC_DATA_RS, &deviation_prevR);
+				} else {
+					deviation_prevL = deviation_prevL = 0;
 				}
 			} else {
-				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]) {
-					speed_R = PID(speed, wall_config[LS_WALL],
-							sensorData.ADC_DATA_LS, &deviation_prevR);
-				} else {
-					deviation_prevR = 0;
-				}
-				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]) {
+				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
+						&& sensorData.ADC_DATA_RS > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
 					speed_L = PID(speed, wall_config[RS_WALL],
-							sensorData.ADC_DATA_RS, &deviation_prevL);
+							sensorData.ADC_DATA_LS, &deviation_prevL);
+					speed_R = PID(speed, wall_config[LS_WALL],
+							sensorData.ADC_DATA_RS, &deviation_prevR);
 				} else {
-					deviation_prevL = 0;
+					deviation_prevR = deviation_prevL = 0;
 				}
 			}
 		}
@@ -121,21 +120,38 @@ void straight(RUNConfig config) {
 		 }*/
 
 		//　前壁判定
-		if (stop == 0 && wall_config[LF_threshold] != 0
+		/*if (wall_calibration_F==1
+		 && (sensorData.ADC_DATA_LF
+		 >= (wall_config[LF_threshold] + wall_config[LF_WALL])
+		 / 2
+		 && sensorData.ADC_DATA_RF
+		 >= (wall_config[RF_threshold]
+		 + wall_config[RF_WALL]) / 2)) {
+		 mortor_stop();
+		 MotorStepCount_R = 0;
+		 MotorStepCount_L = 0;
+		 osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
+		 osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
+
+		 }*/
+		/*if (stop == 0 && wall_config[LF_threshold] != 0
 		 && (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
 		 && sensorData.ADC_DATA_RF >= wall_config[RF_threshold])) {
+		 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		 printf("maekabe\n");
+		 osMutexRelease(UART_MutexHandle);
+		 }
 		 stop = 1;
-		 plpl=-20;
-		 config.finish_speed=0;
-/*		 if (speed >= 400) {		//　速度が早ければ間に合わない？？
+		 plpl = -20;
+		 config.finish_speed = 0;
+		 if (speed >= 400) {		//　速度が早ければ間に合わない？？
 		 break;
 		 } else {
 		 plpl_count /= 2;
 		 stopcount = (MotorStepCount_R + MotorStepCount_L)
 		 / 2 + 5 / STEP_LENGTH;
-		 }*/
 		 }
+		 }*/
 		//osThreadYield();
 		Delay_ms(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
@@ -156,7 +172,7 @@ void turn(RUNConfig config) {
 	//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -181,7 +197,8 @@ void turn(RUNConfig config) {
 	} else {
 		plpl /= 100;
 	}
-
+	MotorStepCount_R = 0;
+	MotorStepCount_L = 0;
 	do {
 		//1スピード変更処理
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
@@ -190,7 +207,7 @@ void turn(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count-1) {
+		if (loop_count >= plpl_count - 1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -213,7 +230,7 @@ void turn(RUNConfig config) {
 		MOTORSPEED_L = speed;
 		MOTORSPEED_R = speed;
 		//osThreadYield();
-		Delay_ms(5);
+		Delay_ms(1);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	if (config.finish_speed == 0) {
@@ -227,11 +244,12 @@ void turn(RUNConfig config) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
+
 void slalom(RUNConfig config) {
 	//1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 10, loop_count = 0;
 	int32_t gensoku = -1;
 	int32_t speed = config.initial_speed;
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -260,7 +278,6 @@ void slalom(RUNConfig config) {
 		MOTORSPEED_L = 0;
 	}
 
-
 	do {
 		//1スピード変更処理
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
@@ -269,7 +286,7 @@ void slalom(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		if (loop_count >= plpl_count-1) {
+		if (loop_count >= plpl_count - 1) {
 			speed += plpl;
 			loop_count = 0;
 		} else {
@@ -299,7 +316,7 @@ void slalom(RUNConfig config) {
 			MOTORSPEED_L = speed;
 			MOTORSPEED_R = speed;
 		}
-		Delay_ms(5);
+		Delay_ms(1);
 //		osThreadYield();
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 	if (config.finish_speed == 0) {
