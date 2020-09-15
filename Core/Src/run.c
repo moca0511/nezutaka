@@ -28,7 +28,7 @@ void straight(RUNConfig config) {
 	int32_t speed = config.initial_speed;
 	int32_t speed_R = speed;
 	int32_t speed_L = speed;
-	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
+	int32_t plpl = config.acceleration, plpl_count = 5, loop_count = 0;
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
@@ -158,7 +158,7 @@ void straight(RUNConfig config) {
 			 }*/
 		}
 		//osThreadYield();
-		Delay_ms(5);
+		Delay_ms(2);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 //1走行距離判定　ループ１へ
 	if (config.finish_speed == 0) {

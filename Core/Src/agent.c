@@ -37,7 +37,7 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void adachi(RUNConfig RUN_config) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 100, 2000, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) / 4 };
+			- NEZUTAKA_LENGTH) / 3 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 100, 400, 90 };
 	uint8_t temp_head = 0;
 	game_mode = 0;
@@ -165,8 +165,8 @@ void adachi(RUNConfig RUN_config) {
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-			wall_set(0x03);
-			wall_set_around();
+//			wall_set(0x03);
+//			wall_set_around();
 			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			 printf(
 			 "((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
@@ -190,8 +190,8 @@ void adachi(RUNConfig RUN_config) {
 			//	printf("U\n");
 			mortor_stop();
 			turn_u();
-			wall_set(0x03);
-			wall_set_around();
+//			wall_set(0x03);
+//			wall_set_around();
 			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 3:
@@ -202,8 +202,8 @@ void adachi(RUNConfig RUN_config) {
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config);
-			wall_set(0x03);
-			wall_set_around();
+//			wall_set(0x03);
+//			wall_set_around();
 			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			 printf(
 			 "((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
