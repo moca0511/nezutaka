@@ -21,7 +21,7 @@ extern osThreadId_t Sensor_TaskHandle;
 extern osThreadId_t WALL_READ_TASKHandle;
 extern osThreadId_t SENSOR_PRINT_TAHandle;
 extern uint32_t wall_config[12];
-uint8_t wall_calibration_F = 0;
+uint8_t wall_calibration_F = 1;
 
 extern void Sensor(void *argument) {
 	/* USER CODE BEGIN Sensor */

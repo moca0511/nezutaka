@@ -129,15 +129,15 @@ void straight(RUNConfig config) {
 		 / 2 + BLOCK_LENGTH / 2 / STEP_LENGTH;
 		 stop = 1;
 		 }*/
-/*
-		//　前壁判定
-		if (wall_calibration_F == 1
-				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
-						&& sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
-			config.finish_speed = 0;
-			break;
+		/*
+		 //　前壁判定
+		 if (wall_calibration_F == 1
+		 && (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
+		 && sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
+		 config.finish_speed = 0;
+		 break;
 
-		}*/
+		 }*/
 
 		if (stop == 0 && wall_calibration_F == 1
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
@@ -335,7 +335,7 @@ void slalom(RUNConfig config) {
 
 void sirituke(void) {
 	RUNConfig RUN_Config = { MOVE_BACK, (MOTORSPEED_L + MOTORSPEED_R) / 2, 0,
-			100, 1000, BLOCK_LENGTH / 3 };
+			150, 1000, BLOCK_LENGTH / 4 };
 	straight(RUN_Config);
 }
 

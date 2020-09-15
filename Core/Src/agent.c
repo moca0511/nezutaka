@@ -36,9 +36,9 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //5.1に戻る
 
 void adachi(RUNConfig RUN_config) {
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 100, 2000, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) / 3 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 100, 400, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 200, 500, 90 };
 	uint8_t temp_head = 0;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -52,7 +52,6 @@ void adachi(RUNConfig RUN_config) {
 	Delay_ms(10);
 
 	for (;;) {
-		//printf("loop\n");
 
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
@@ -71,23 +70,9 @@ void adachi(RUNConfig RUN_config) {
 			break;
 		}
 
-		//osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("osThreadYield()=%d\n", osThreadYield());
-//			osMutexRelease(UART_MutexHandle);
-//		}
 		make_smap(goalX, goalY, game_mode);
-		/*		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		 printf("MAKE_SMAP\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("osThreadYield()=%d\n", osThreadYield());
-//			osMutexRelease(UART_MutexHandle);
-//		}
-		//print_map();
-		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+
 		if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x80
 				&& map[posX + posY * MAP_X_MAX].step
 						> map[posX + (posY + 1) * MAP_X_MAX].step) {
@@ -106,14 +91,6 @@ void adachi(RUNConfig RUN_config) {
 			temp_head = 2;
 		} else {
 			mortor_stop();
-			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf(
-			 "posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
-			 posX, posY, head, temp_head,
-			 map[posX + posY * MAP_X_MAX].wall,
-			 map[posX + posY * MAP_X_MAX].step);
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
 			Delay_ms(1000);
@@ -126,16 +103,7 @@ void adachi(RUNConfig RUN_config) {
 			temp_head -= 4;
 		}
 
-		/*		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		 printf(
-		 "posX=%d,posY=%d,head=%d,temp_head=%d,wall=0x%2x,step=%d\n\n",
-		 posX, posY, head, temp_head,
-		 map[posX + posY * MAP_X_MAX].wall,
-		 map[posX + posY * MAP_X_MAX].step);
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 
-		//osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 		switch (temp_head) {
 		case 0:
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
@@ -150,31 +118,16 @@ void adachi(RUNConfig RUN_config) {
 			straight(RUN_config);
 			wall_set(0x01);
 			wall_set_around();
-			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("WALL_SET\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 1:
 			//printf("TURN R\n");
-			//mortor_stop();
 			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(tyousei_config);
 			turn_config.initial_speed = 0;
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-//			wall_set(0x03);
-//			wall_set_around();
-			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf(
-			 "((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
-			 (((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-			 | (map[posX + posY * MAP_X_MAX].wall << 4))
-			 << head));
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {
@@ -190,8 +143,6 @@ void adachi(RUNConfig RUN_config) {
 			//	printf("U\n");
 			mortor_stop();
 			turn_u();
-//			wall_set(0x03);
-//			wall_set_around();
 			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 3:
@@ -202,16 +153,6 @@ void adachi(RUNConfig RUN_config) {
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config);
-//			wall_set(0x03);
-//			wall_set_around();
-			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf(
-			 "((map[posX + posY * MAP_X_MAX].wall & 0x0f) | (map[posX + posY * MAP_X_MAX].wall<<4) ) << head =%2x\n",
-			 (((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-			 | (map[posX + posY * MAP_X_MAX].wall << 4))
-			 << head));
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {

@@ -23,7 +23,7 @@ extern SensorData sensorData;
 extern uint32_t us;
 extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 0 };
+uint32_t wall_config[12] = { 1143,1279,2660,2660,500,500,500,500,780,780,700,700 };
 extern MAP map[MAP_SIZE];
 extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
