@@ -33,7 +33,6 @@ uint16_t straight(RUNConfig config) {
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
-	int32_t deviation_sumR = 0, deviation_sumL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
@@ -84,31 +83,18 @@ uint16_t straight(RUNConfig config) {
 		if (wall_calibration_F == 1) {
 			if (config.direction == MOVE_FORWARD) {
 				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]) { // *　壁がある時だけPID操作
-					if (sensorData.ADC_DATA_LS <= wall_config[LS_WALL] * 0.95
-							&& sensorData.ADC_DATA_LS
-									>= wall_config[LS_WALL] * 1.05) {
-						deviation_sumL = 0;
-					}
-					speed_L = PID(speed, wall_config[LS_WALL],
-							sensorData.ADC_DATA_LS, &deviation_prevL,
-							&deviation_sumL);
+					speed_L = PD(speed, wall_config[LS_WALL],
+							sensorData.ADC_DATA_LS, &deviation_prevL);
 				} else {
 					deviation_prevL = 0;
-					deviation_sumL = 0;
+
 				}
 				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
-					if (sensorData.ADC_DATA_RS <= wall_config[RS_WALL] * 0.95
-							&& sensorData.ADC_DATA_RS
-									>= wall_config[RS_WALL] * 1.05) {
-						deviation_sumL = 0;
-					}
-					speed_R = PID(speed, wall_config[RS_WALL],
-							sensorData.ADC_DATA_RS, &deviation_prevR,
-							&deviation_sumR);
 
+					speed_R = PD(speed, wall_config[RS_WALL],
+							sensorData.ADC_DATA_RS, &deviation_prevR);
 				} else {
 					deviation_prevR = 0;
-					deviation_sumR = 0;
 				}
 			}/* else {
 			 if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
@@ -190,7 +176,8 @@ uint16_t straight(RUNConfig config) {
 	}
 	move = (((MotorStepCount_R + MotorStepCount_L) / 2) * STEP_LENGTH)
 			/ BLOCK_LENGTH;
-	if (((uint16_t)(((MotorStepCount_R + MotorStepCount_L) / 2) * STEP_LENGTH) % (uint16_t)BLOCK_LENGTH )> BLOCK_LENGTH * 0.5) {
+	if (((uint16_t) (((MotorStepCount_R + MotorStepCount_L) / 2) * STEP_LENGTH)
+			% (uint16_t) BLOCK_LENGTH) > BLOCK_LENGTH * 0.5) {
 		move++;
 	}
 	MotorStepCount_R = 0;
@@ -361,8 +348,8 @@ void sirituke(void) {
 	straight(RUN_Config);
 }
 
-int32_t PID(int32_t speed, int32_t target, int32_t sensor,
-		int32_t *deviation_prev, int32_t *devaition_sum) {
+int32_t PD(int32_t speed, int32_t target, int32_t sensor,
+		int32_t *deviation_prev) {
 	int32_t deviation;
 	deviation = target - sensor;
 	/*	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -371,8 +358,8 @@ int32_t PID(int32_t speed, int32_t target, int32_t sensor,
 	 }*/
 
 	*deviation_prev = deviation - (*deviation_prev);
-	*devaition_sum += deviation;
-	speed -= (kp * deviation + kd * (*deviation_prev) + ki * (*devaition_sum));
+
+	speed -= (kp * deviation + kd * (*deviation_prev));
 	if (speed < SPEED_MIN) {
 		speed = SPEED_MIN;
 	}

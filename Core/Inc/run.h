@@ -32,15 +32,14 @@ typedef struct {
 #define SPEED_MIN (1680000/(65536+1))/STEP_LENGTH+1
 
 #define kp 0.003
-#define ki 0.0000005
 #define kd 0.0001
 
 uint16_t straight(RUNConfig config);
 void turn(RUNConfig config);
 void slalom(RUNConfig config);
 void sirituke(void);
-int32_t PID(int32_t speed, int32_t target, int32_t sensor,
-		int32_t *deviation_prev,int32_t *devaition_sum);
+int32_t PD(int32_t speed, int32_t target, int32_t sensor,
+		int32_t *deviation_prev);
 void chenge_head(RUNConfig config) ;
 void chenge_pos(int16_t block);
 void turn_u(void);
