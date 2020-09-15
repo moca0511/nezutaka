@@ -21,14 +21,14 @@ typedef struct {
 
 //音階周波数
 typedef enum {
-	tone_C = 523,
-	tone_D = 587,
-	tone_E = 659,
-	tone_F = 698,
-	tone_G = 784,
-	tone_A = 880,
-	tone_B = 988,
-	tone_hiC = 1046
+	tone_C = 1046,
+	tone_D = 1174,
+	tone_E = 1318,
+	tone_F = 1396,
+	tone_G = 1567,
+	tone_A = 1760,
+	tone_B = 1975,
+	tone_hiC = 2093
 } BUZZER_TONE;
 
 void tone(uint32_t tone,uint32_t ms);

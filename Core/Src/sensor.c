@@ -181,9 +181,9 @@ void wall_calibration(void) {
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 		Delay_ms(50);
 	}
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 	wall_config[RS_threshold] = read_wall(&sensorData.ADC_DATA_RS);
-	tone(tone_C, 100);
+	tone(tone_C, 50);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("LS_threshould\n");
 		osMutexRelease(UART_MutexHandle);
@@ -195,10 +195,10 @@ void wall_calibration(void) {
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 		Delay_ms(50);
 	}
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 
 	wall_config[LS_threshold] = read_wall(&sensorData.ADC_DATA_LS);
-	tone(tone_C, 100);
+	tone(tone_C, 50);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("F_threshould\n");
 		osMutexRelease(UART_MutexHandle);
@@ -210,10 +210,10 @@ void wall_calibration(void) {
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 		Delay_ms(50);
 	}
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 	wall_config[RF_threshold] = read_wall(&sensorData.ADC_DATA_RF);
 	wall_config[LF_threshold] = read_wall(&sensorData.ADC_DATA_LF);
-	tone(tone_C, 100);
+	tone(tone_C, 50);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("ALL_WALL&FREE\n");
 		osMutexRelease(UART_MutexHandle);
@@ -225,7 +225,7 @@ void wall_calibration(void) {
 	while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 		Delay_ms(50);
 	}
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 	osDelay(100);
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
 	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
@@ -260,13 +260,13 @@ void wall_calibration(void) {
 		printf("\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 }
 
 //sensordebug
 void print_sensordata(void) {
 	static uint8_t flag = 0;
-	tone(tone_C, 100);
+	tone(tone_C, 50);
 	if (flag == 1) {
 		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 		osThreadFlagsSet(SENSOR_PRINT_TAHandle, TASK_STOP);
@@ -277,7 +277,7 @@ void print_sensordata(void) {
 		osThreadFlagsSet(SENSOR_PRINT_TAHandle, TASK_START);
 	}
 
-	tone(tone_C, 100);
+	tone(tone_C, 50);
 }
 
 extern void SENSOR_PRINT(void *argument) {

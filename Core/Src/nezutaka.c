@@ -115,14 +115,14 @@ void MENU(int16_t *mode) {
 			while (HAL_GPIO_ReadPin(UP_GPIO_Port, UP_Pin) == 0) {
 				Delay_ms(50);
 			}
-			tone(tone_E, 100);
+			tone(tone_E, 50);
 			(*mode)++;
 			flag = 1;
 		} else if (HAL_GPIO_ReadPin(DOWN_GPIO_Port, DOWN_Pin) == 0) {
 			while (HAL_GPIO_ReadPin(DOWN_GPIO_Port, DOWN_Pin) == 0) {
 				Delay_ms(50);
 			}
-			tone(tone_D, 100);
+			tone(tone_D, 50);
 			(*mode)--;
 			flag = 1;
 		}
@@ -130,7 +130,7 @@ void MENU(int16_t *mode) {
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
 			}
-			tone(tone_hiC, 200);
+			tone(tone_hiC, 50);
 			break;
 		}
 		if (*mode > 15)
@@ -186,7 +186,7 @@ void mode3(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	run_block(RUN_config);
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 }
 //turn R 90°
 void mode4(void) {
@@ -200,7 +200,7 @@ void mode4(void) {
 	tone(tone_hiC, 10);
 	turn(turn_config);
 	chenge_head(turn_config);
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 }
 //turn 180° and sirituke
 void mode5(void) {
@@ -212,7 +212,7 @@ void mode5(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn_u();
-	tone(tone_hiC, 100);
+	tone(tone_hiC, 50);
 }
 //SLALOM_R
 void mode6(void) {
@@ -382,7 +382,7 @@ void mode15(void) {
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
 			}
-			tone(tone_hiC, 200);
+			tone(tone_hiC, 100);
 			break;
 		}
 		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;

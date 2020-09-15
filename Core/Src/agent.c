@@ -104,6 +104,7 @@ void adachi(RUNConfig RUN_config) {
 		if (temp_head >= 4) {    //桁上がりの考慮
 			temp_head -= 4;
 		}
+		print_map();
 
 		switch (temp_head) {
 		case 0:
