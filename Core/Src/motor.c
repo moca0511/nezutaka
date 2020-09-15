@@ -47,7 +47,7 @@ extern void MOTOR_R(void *argument) {
 			if (hz == 0) {
 				HAL_TIM_PWM_Stop_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
 			} else {
-				htim1.Init.Prescaler = 1680000 / hz - 1;
+				htim1.Init.Prescaler = 1680000 / (int16_t)hz - 1;
 				htim1.Init.Period = 100;
 				if (HAL_TIM_PWM_Init(&htim1) != HAL_OK) {
 					Error_Handler();
@@ -97,7 +97,7 @@ extern void MOTOR_L(void *argument) {
 			if (hz == 0) {
 				HAL_TIMEx_PWMN_Stop_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
 			} else {
-				htim8.Init.Prescaler = 1680000 / hz - 1;
+				htim8.Init.Prescaler = 1680000 / (int16_t)hz - 1;
 				htim8.Init.Period = 100;
 				if (HAL_TIM_PWM_Init(&htim8) != HAL_OK) {
 					Error_Handler();

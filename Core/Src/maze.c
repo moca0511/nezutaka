@@ -9,6 +9,7 @@
 #include "sensor.h"
 #include "nezutaka.h"
 #include "cmsis_os.h"
+#include "UI.h"
 extern osMutexId_t UART_MutexHandle;
 MAP map[MAP_SIZE]; //ｓマップ情報
 int16_t posX = 0, posY = 0;	//　現在の位置
@@ -411,6 +412,7 @@ void wall_set(uint8_t mode) {
 	wall_info >>= head;
 	wall_info &= 0x0f;
 	wall_info |= (wall_info << 4);
+	UILED_SET(wall_info&0x0f);
 	if (mode == 0x02) {
 		wall_info |= (((0x55 >> head) & 0x0f) << 4);
 	} else if (mode == 0x01) {

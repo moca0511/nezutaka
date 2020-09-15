@@ -29,7 +29,7 @@ void straight(RUNConfig config) {
 	float speed = config.initial_speed, plpl = config.acceleration;
 	float speed_R = speed;
 	float speed_L = speed;
-	uint8_t delay_tick = 1;
+	uint8_t delay_tick = 2;
 	int32_t stopcount = config.value / STEP_LENGTH;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
@@ -42,7 +42,7 @@ void straight(RUNConfig config) {
 	if (config.max_speed > SPEED_MAX) {
 		config.max_speed = SPEED_MAX;
 	}
-	plpl = (plpl / configTICK_RATE_HZ) * delay_tick;
+	plpl = plpl / configTICK_RATE_HZ / delay_tick;
 	/*if (plpl / 100 < 1 && plpl != 0) {
 	 plpl = 1;
 	 } else {
@@ -113,12 +113,12 @@ void straight(RUNConfig config) {
 
 		MOTORSPEED_R = speed_R;
 		MOTORSPEED_L = speed_L;
-		/*
+
 		 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		 printf("R=%d,L=%d\n", MOTORSPEED_R, MOTORSPEED_L);
+		 printf("R=%f,L=%f\n", MOTORSPEED_R, MOTORSPEED_L);
 		 osMutexRelease(UART_MutexHandle);
 		 }
-		 */
+
 
 		/*		//　壁切れ補正 最終マス移動時のみ
 		 if (stop
@@ -183,7 +183,7 @@ void turn(RUNConfig config) {
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value;		//mm
 	uint32_t stopcount = move / STEP_LENGTH;		//step
 	float speed = config.initial_speed, plpl = config.acceleration;
-	uint8_t delay_tick = 1;
+	uint8_t delay_tick = 2;
 	int32_t gensoku = -1;
 
 //printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
@@ -201,7 +201,7 @@ void turn(RUNConfig config) {
 		mortor_direction(ML, MOVE_BACK);
 	}
 
-	plpl = (plpl / configTICK_RATE_HZ) * delay_tick;
+	plpl = plpl / configTICK_RATE_HZ / delay_tick;
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 	do {
@@ -256,7 +256,7 @@ void slalom(RUNConfig config) {
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value;		//mm
 	uint32_t stopcount = move / STEP_LENGTH;		//step
 	float speed = config.initial_speed, plpl = config.acceleration;
-	uint8_t delay_tick = 1;
+	uint8_t delay_tick = 2;
 	int32_t gensoku = -1;
 //printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 //1回転方向設定
@@ -278,7 +278,7 @@ void slalom(RUNConfig config) {
 	} else if (config.direction == TURN_L) {
 		MOTORSPEED_L = 0;
 	}
-	plpl = (plpl / configTICK_RATE_HZ) * delay_tick;
+	plpl = plpl / configTICK_RATE_HZ / delay_tick;
 
 	do {
 		//1スピード変更処理
