@@ -23,7 +23,7 @@ extern SensorData sensorData;
 extern uint32_t us;
 extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 1143,1279,2660,2660,500,500,500,500,780,780,700,700 };
+uint32_t wall_config[12] = { 1300,1300,2660,2660,500,500,500,500,800,800,800,800 };
 extern MAP map[MAP_SIZE];
 extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
@@ -267,18 +267,18 @@ void mode10(void) {
 	return;
 }
 void mode11(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 150, 150, 1000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
 	adachi(RUN_config);
 	return;
 }
 
 void mode12(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 2000, BLOCK_LENGTH };
 	adachi(RUN_config);
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 2000, BLOCK_LENGTH };
 	adachi(RUN_config);
 	return;
 }

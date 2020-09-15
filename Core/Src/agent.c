@@ -37,8 +37,9 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void adachi(RUNConfig RUN_config) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) / 3 };
+			- NEZUTAKA_LENGTH) * 0.5 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 200, 500, 90 };
+	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -50,6 +51,8 @@ void adachi(RUNConfig RUN_config) {
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(10);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 
 	for (;;) {
 
@@ -69,7 +72,6 @@ void adachi(RUNConfig RUN_config) {
 			music();
 			break;
 		}
-
 
 		make_smap(goalX, goalY, game_mode);
 
@@ -102,7 +104,6 @@ void adachi(RUNConfig RUN_config) {
 		if (temp_head >= 4) {    //桁上がりの考慮
 			temp_head -= 4;
 		}
-
 
 		switch (temp_head) {
 		case 0:
@@ -137,12 +138,15 @@ void adachi(RUNConfig RUN_config) {
 				RUN_config.value = BLOCK_LENGTH
 						- ((BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3);
 			}
+			U_config.direction = TURN_L;
 
 			break;
 		case 2:
 			//	printf("U\n");
 			mortor_stop();
-			turn_u();
+			turn(U_config);
+			sirituke();
+			chenge_head(U_config);
 			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 3:
@@ -162,6 +166,7 @@ void adachi(RUNConfig RUN_config) {
 				RUN_config.value = BLOCK_LENGTH
 						- ((BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3);
 			}
+			U_config.direction = TURN_R;
 		}
 		tone(tone_hiC, 50);
 
