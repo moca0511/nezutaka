@@ -85,9 +85,9 @@ uint16_t straight(RUNConfig config) {
 				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
 						&& sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
 					speed_L = PD(speed,
-							wall_config[LS_WALL] - wall_config[LS_WALL] % 100,
+							wall_config[LS_WALL] - wall_config[LS_WALL] % 10,
 							sensorData.ADC_DATA_LS
-									- sensorData.ADC_DATA_LS % 100,
+									- sensorData.ADC_DATA_LS % 10,
 							&deviation_prevR);
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //						printf("R PD\n");
@@ -101,9 +101,9 @@ uint16_t straight(RUNConfig config) {
 						&& sensorData.ADC_DATA_LS < sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
 
 					speed_R = PD(speed,
-							wall_config[RS_WALL] - wall_config[RS_WALL] % 100,
+							wall_config[RS_WALL] - wall_config[RS_WALL] % 10,
 							sensorData.ADC_DATA_RS
-									- sensorData.ADC_DATA_RS % 100,
+									- sensorData.ADC_DATA_RS % 10,
 							&deviation_prevL);
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //						printf("L PD\n");
@@ -365,7 +365,7 @@ void slalom(RUNConfig config) {
 }
 
 void sirituke(void) {
-	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 2 };
+	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 3 };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {

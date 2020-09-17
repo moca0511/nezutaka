@@ -23,8 +23,8 @@ extern SensorData sensorData;
 extern uint32_t us;
 extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 1400, 1400, 2660, 2660, 500, 500, 500, 500, 800,
-		800, 900, 900 };
+uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 750, 750,
+		950, 950 };
 extern MAP map[MAP_SIZE];
 extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
@@ -274,11 +274,19 @@ void mode11(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(50);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("adachi to goal\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	sirituke();
+	//sirituke();
+	straight(tyousei_config);
 	adachi(RUN_config, goalX, goalY);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("goal\n");
@@ -327,8 +335,6 @@ void mode11(void) {
 	}
 
 	turn_u();
-	Delay_ms(10);
-	sirituke();
 
 	//　最短走行
 	return;
@@ -338,11 +344,19 @@ void mode12(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 2000, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(50);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("adachi to goal\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	sirituke();
+	//sirituke();
+	straight(tyousei_config);
 	adachi(RUN_config, goalX, goalY);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("goal\n");
@@ -391,7 +405,7 @@ void mode12(void) {
 	}
 	turn_u();
 	Delay_ms(10);
-	sirituke();
+//	sirituke();
 	return;
 }
 void mode13(void) {

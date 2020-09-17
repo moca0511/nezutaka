@@ -51,9 +51,9 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(10);
+	/*Delay_ms(10);
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);*/
 
 	for (;;) {
 
@@ -154,12 +154,12 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			mortor_stop();
 			turn(U_config);
 			chenge_head(U_config);
-			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {
 				sirituke();
 //				RUN_config.value = BLOCK_LENGTH;
-			}/* else {
+			}*//* else {
 			 RUN_config.value = BLOCK_LENGTH
 			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
 			 }*/
