@@ -35,12 +35,13 @@ extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //4.ゴールなら終了
 //5.1に戻る
 
-void adachi(RUNConfig RUN_config) {
+void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 200, 500, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
+	uint8_t value_buf = 0;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("adachi\n");
@@ -66,14 +67,17 @@ void adachi(RUNConfig RUN_config) {
 			break;
 		}
 
-		if (posX == goalX && posY == goalY) {
+		if (posX == gx && posY == gy) {
+			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+//			straight(tyousei_config);
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			mortor_stop();
 			music();
 			break;
 		}
 
-		make_smap(goalX, goalY, game_mode);
+		make_smap(gx, gy, 0);
 
 		if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x80
 				&& map[posX + posY * MAP_X_MAX].step
@@ -92,6 +96,7 @@ void adachi(RUNConfig RUN_config) {
 						> map[posX + (posY - 1) * MAP_X_MAX].step) {
 			temp_head = 2;
 		} else {
+//			mortor_sleep();
 			mortor_stop();
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
@@ -104,19 +109,20 @@ void adachi(RUNConfig RUN_config) {
 		if (temp_head >= 4) {    //桁上がりの考慮
 			temp_head -= 4;
 		}
-		print_map();
+		//print_map();
 
 		switch (temp_head) {
 		case 0:
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.7;
+			value_buf = RUN_config.value;
+			RUN_config.value = value_buf * 0.5;
 			//printf("straight\n");
-			straight(RUN_config);
-			chenge_pos(1);
+
+			chenge_pos(straight(RUN_config));
 			wall_set(0x02);
 			tone(tone_C, 50);
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.3;
+			RUN_config.value = value_buf * 0.5;
 			straight(RUN_config);
 			wall_set(0x01);
 			wall_set_around();
@@ -124,21 +130,22 @@ void adachi(RUNConfig RUN_config) {
 			break;
 		case 1:
 			//printf("TURN R\n");
-			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			straight(tyousei_config);
-			turn_config.initial_speed = 0;
+//			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+//			straight(tyousei_config);
+//			turn_config.initial_speed = 0;
+			mortor_stop();
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config);
-			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
-					== 0x20) {
-				sirituke();
-				RUN_config.value = BLOCK_LENGTH;
-			} else {
-				RUN_config.value = BLOCK_LENGTH
-						- ((BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3);
-			}
+			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
+			 == 0x20) {
+			 sirituke();
+			 RUN_config.value = BLOCK_LENGTH;
+			 } else {
+			 RUN_config.value = BLOCK_LENGTH
+			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
+			 }*/
 			U_config.direction = TURN_L;
 
 			break;
@@ -146,27 +153,36 @@ void adachi(RUNConfig RUN_config) {
 			//	printf("U\n");
 			mortor_stop();
 			turn(U_config);
-			sirituke();
 			chenge_head(U_config);
-			RUN_config.value = BLOCK_LENGTH;
-			break;
-		case 3:
-			//	printf("TURNL\n");
-			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			straight(tyousei_config);
-			turn_config.initial_speed = 0;
-			turn_config.direction = TURN_L;
-			turn(turn_config);
-			chenge_head(turn_config);
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {
 				sirituke();
-				RUN_config.value = BLOCK_LENGTH;
-			} else {
-				RUN_config.value = BLOCK_LENGTH
-						- ((BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3);
-			}
+//				RUN_config.value = BLOCK_LENGTH;
+			}/* else {
+			 RUN_config.value = BLOCK_LENGTH
+			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
+			 }*/
+
+			break;
+		case 3:
+			//	printf("TURNL\n");
+//			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+//			straight(tyousei_config);
+//			turn_config.initial_speed = 0;
+			turn_config.direction = TURN_L;
+			mortor_stop();
+			turn(turn_config);
+			chenge_head(turn_config);
+			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
+			 == 0x20) {
+			 sirituke();
+			 RUN_config.value = BLOCK_LENGTH;
+			 } else {
+			 RUN_config.value = BLOCK_LENGTH
+			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
+			 }*/
 			U_config.direction = TURN_R;
 		}
 		tone(tone_hiC, 50);

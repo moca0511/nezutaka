@@ -23,7 +23,8 @@ extern SensorData sensorData;
 extern uint32_t us;
 extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 1300,1300,2660,2660,500,500,500,500,800,800,800,800 };
+uint32_t wall_config[12] = { 1400, 1400, 2660, 2660, 500, 500, 500, 500, 800,
+		800, 900, 900 };
 extern MAP map[MAP_SIZE];
 extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
@@ -186,6 +187,7 @@ void mode3(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	run_block(RUN_config);
+//	mortor_sleep();
 	tone(tone_hiC, 50);
 }
 //turn R 90°
@@ -199,6 +201,7 @@ void mode4(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn(turn_config);
+//	mortor_sleep();
 	chenge_head(turn_config);
 	tone(tone_hiC, 50);
 }
@@ -212,14 +215,15 @@ void mode5(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	turn_u();
+//	mortor_sleep();
 	tone(tone_hiC, 50);
 }
 //SLALOM_R
 void mode6(void) {
-	RUNConfig turn_config = { TURN_R, 300, 300, 300, 0, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 0, 90 };
 	Delay_ms(500);
 	slalom(turn_config);
-	mortor_stop();
+//	mortor_sleep();
 }
 
 void mode7(void) {
@@ -268,18 +272,130 @@ void mode10(void) {
 }
 void mode11(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
-	adachi(RUN_config);
+	uint16_t step_buf = 0;
+	uint16_t searchX = 0, searchY = 0;
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("adachi to goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	sirituke();
+	adachi(RUN_config, goalX, goalY);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	make_smap(goalX, goalY, 0);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("tansaku map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	print_map();
+	step_buf = map[startX + startY * MAP_X_MAX].step;
+	make_smap(goalX, goalY, 1);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("saitan map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	print_map();
+	while (map[startX + startY * MAP_X_MAX].step > step_buf) {
+		//1最短の可能性があり未探索の場所を探索
+		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
+		//
+		check_searchBlock(&searchX, &searchY);
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("adachi to searchX=%d,searchY=%d\n", searchX, searchY);
+			osMutexRelease(UART_MutexHandle);
+		}
+		adachi(RUN_config, searchX, searchY);
+		make_smap(goalX, goalY, 0);
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("tansaku map\n");
+			osMutexRelease(UART_MutexHandle);
+		}
+		print_map();
+		step_buf = map[startX + startY * MAP_X_MAX].step;
+		make_smap(goalX, goalY, 1);
+	}
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("adachi to start\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	adachi(RUN_config, startX, startY);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("tansaku fin\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
+	turn_u();
+	Delay_ms(10);
+	sirituke();
+
+	//　最短走行
 	return;
 }
 
 void mode12(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 2000, BLOCK_LENGTH };
-	adachi(RUN_config);
+	uint16_t step_buf = 0;
+	uint16_t searchX = 0, searchY = 0;
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("adachi to goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	sirituke();
+	adachi(RUN_config, goalX, goalY);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	make_smap(goalX, goalY, 0);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("tansaku map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	print_map();
+	step_buf = map[startX + startY * MAP_X_MAX].step;
+	make_smap(goalX, goalY, 1);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("saitan map\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	print_map();
+	while (map[startX + startY * MAP_X_MAX].step > step_buf) {
+		//1最短の可能性があり未探索の場所を探索
+		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
+		//
+		check_searchBlock(&searchX, &searchY);
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("adachi to searchX=%d,searchY=%d\n", searchX, searchY);
+			osMutexRelease(UART_MutexHandle);
+		}
+		adachi(RUN_config, searchX, searchY);
+		make_smap(goalX, goalY, 0);
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("tansaku map\n");
+			osMutexRelease(UART_MutexHandle);
+		}
+		print_map();
+		step_buf = map[startX + startY * MAP_X_MAX].step;
+		make_smap(goalX, goalY, 1);
+	}
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("adachi to start\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	adachi(RUN_config, startX, startY);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("tansaku fin\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	turn_u();
+	Delay_ms(10);
+	sirituke();
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 2000, BLOCK_LENGTH };
-	adachi(RUN_config);
+
 	return;
 }
 void mode14(void) {
@@ -297,70 +413,70 @@ void mode14(void) {
 	Delay_ms(100);
 
 	run_block(RUN_config);			//5kukaku
-			/*
+	/*
 
-			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 turn_config.direction = TURN_R;
-			 turn(turn_config);
-			 chenge_head(turn_config);
-			 sirituke();
+	 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 turn_config.direction = TURN_R;
+	 turn(turn_config);
+	 chenge_head(turn_config);
+	 sirituke();
 
-			 RUN_config.value = BLOCK_LENGTH;
-			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 run_block(RUN_config);			//5kukaku
+	 RUN_config.value = BLOCK_LENGTH;
+	 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 run_block(RUN_config);			//5kukaku
 
-			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 turn_config.direction = TURN_R;
-			 turn(turn_config);
-			 chenge_head(turn_config);
-			 sirituke();
+	 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 turn_config.direction = TURN_R;
+	 turn(turn_config);
+	 chenge_head(turn_config);
+	 sirituke();
 
-			 RUN_config.value = BLOCK_LENGTH * 5;
-			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 run_block(RUN_config); //5kukaku
+	 RUN_config.value = BLOCK_LENGTH * 5;
+	 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 run_block(RUN_config); //5kukaku
 
-			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 turn_config.direction = TURN_L;
-			 turn(turn_config);
-			 chenge_head(turn_config);
-			 sirituke();
+	 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 turn_config.direction = TURN_L;
+	 turn(turn_config);
+	 chenge_head(turn_config);
+	 sirituke();
 
-			 RUN_config.value = BLOCK_LENGTH;
-			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 run_block(RUN_config); //5kukaku
+	 RUN_config.value = BLOCK_LENGTH;
+	 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 run_block(RUN_config); //5kukaku
 
-			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 turn_config.direction = TURN_L;
-			 turn(turn_config);
-			 chenge_head(turn_config);
-			 sirituke();
+	 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 turn_config.direction = TURN_L;
+	 turn(turn_config);
+	 chenge_head(turn_config);
+	 sirituke();
 
-			 RUN_config.value = BLOCK_LENGTH * 5;
-			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 run_block(RUN_config); //5kukaku
+	 RUN_config.value = BLOCK_LENGTH * 5;
+	 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 run_block(RUN_config); //5kukaku
 
-			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 turn_config.direction = TURN_R;
-			 turn(turn_config);
-			 chenge_head(turn_config);
-			 sirituke();
+	 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 turn_config.direction = TURN_R;
+	 turn(turn_config);
+	 chenge_head(turn_config);
+	 sirituke();
 
-			 RUN_config.value = BLOCK_LENGTH;
-			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 run_block(RUN_config); //5kukaku
+	 RUN_config.value = BLOCK_LENGTH;
+	 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 run_block(RUN_config); //5kukaku
 
-			 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 turn_config.direction = TURN_R;
-			 turn(turn_config);
-			 chenge_head(turn_config);
-			 sirituke();
+	 turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 turn_config.direction = TURN_R;
+	 turn(turn_config);
+	 chenge_head(turn_config);
+	 sirituke();
 
-			 RUN_config.value = BLOCK_LENGTH * 5;
-			 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			 run_block(RUN_config); //5kukaku
+	 RUN_config.value = BLOCK_LENGTH * 5;
+	 RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	 run_block(RUN_config); //5kukaku
 
-			 turn_u();
-			 */
+	 turn_u();
+	 */
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	return;
@@ -368,6 +484,7 @@ void mode14(void) {
 void mode15(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 1000, BLOCK_LENGTH };
 	RUNConfig turn_config = { TURN_R, 0, 0, 300, 500, 90 };
+
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("guruguru\n");
 		osMutexRelease(UART_MutexHandle);
@@ -378,6 +495,7 @@ void mode15(void) {
 	for (;;) {
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 			MOTORSPEED_R = MOTORSPEED_L = 0;
+//			mortor_sleep();
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
@@ -387,7 +505,7 @@ void mode15(void) {
 		}
 		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
-		turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+
 		turn(turn_config);
 	}
 }

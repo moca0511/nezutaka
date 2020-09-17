@@ -107,6 +107,13 @@ const osThreadAttr_t SENSOR_PRINT_TA_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 256 * 4
 };
+/* Definitions for MORTOR_SLEEP_CH */
+osThreadId_t MORTOR_SLEEP_CHHandle;
+const osThreadAttr_t MORTOR_SLEEP_CH_attributes = {
+  .name = "MORTOR_SLEEP_CH",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 /* Definitions for UART_Mutex */
 osMutexId_t UART_MutexHandle;
 const osMutexAttr_t UART_Mutex_attributes = {
@@ -150,6 +157,7 @@ void MOTOR_L(void *argument);
 void BUZZER(void *argument);
 void BatteryCheck(void *argument);
 void SENSOR_PRINT(void *argument);
+void MORTOR_SLEEP_CHECK(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -255,6 +263,9 @@ int main(void)
 
   /* creation of SENSOR_PRINT_TA */
   SENSOR_PRINT_TAHandle = osThreadNew(SENSOR_PRINT, NULL, &SENSOR_PRINT_TA_attributes);
+
+  /* creation of MORTOR_SLEEP_CH */
+  MORTOR_SLEEP_CHHandle = osThreadNew(MORTOR_SLEEP_CHECK, NULL, &MORTOR_SLEEP_CH_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -863,6 +874,7 @@ void StartDefaultTask(void *argument)
 	}
   /* USER CODE END 5 */
 }
+
 
 /**
   * @brief  This function is executed in case of error occurrence.

@@ -12,8 +12,8 @@
 #define MAP_X_MAX 4
 #define MAP_Y_MAX 6
 #define MAP_SIZE	MAP_X_MAX*MAP_Y_MAX	//　マップマスの数
-#define goalX 3
-#define goalY 5
+#define goalX 2
+#define goalY 3
 #define startX 0
 #define startY 0
 #define goal (goalY * MAP_X_MAX + goalX) //ｓゴールの添え字
@@ -32,5 +32,6 @@ void wall_set(uint8_t mode);
 void wall_set_around(void);
 uint8_t wall_check(uint8_t direction);
 int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction);
+void check_searchBlock(uint16_t *searchX,uint16_t *searchY);
 
 #endif /* INC_MAZE_H_ */

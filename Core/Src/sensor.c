@@ -149,10 +149,10 @@ extern void Sensor(void *argument) {
 uint32_t read_wall(uint32_t *pADCdata) {
 	uint32_t value = 0;
 	value = *pADCdata;
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 5; i++) {
 		value += *pADCdata;
 		value /= 2;
-		Delay_ms(10);
+		Delay_ms(1);
 	}
 	return value;
 }
@@ -251,6 +251,7 @@ void wall_calibration(void) {
 	turn_config.direction = TURN_R;
 	turn(turn_config);
 	sirituke();
+//	mortor_sleep();
 	wall_calibration_F=1;
 
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {

@@ -394,18 +394,23 @@ void wall_set(uint8_t mode) {
 
 	//printf("wallset Y=%d,X=%d\n", posY, posX);
 	uint8_t wall_info = 0;
+	SensorData sensor_buf;
 
 	if ((mode & 0x01) == 0x01) {
-		if (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]
-				&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold]) {
+		sensor_buf.ADC_DATA_LF = read_wall(&sensorData.ADC_DATA_LF);
+		sensor_buf.ADC_DATA_RF = read_wall(&sensorData.ADC_DATA_RF);
+		if (sensor_buf.ADC_DATA_LF >= wall_config[LF_threshold]
+				|| sensor_buf.ADC_DATA_RF >= wall_config[RF_threshold]) {
 			wall_info += 0x88;
 		}
 	}
 	if ((mode & 0x02) == 0x02) {
-		if (sensorData.ADC_DATA_LS >= wall_config[LS_threshold]) {
+		sensor_buf.ADC_DATA_LS = read_wall(&sensorData.ADC_DATA_LS);
+		sensor_buf.ADC_DATA_RS = read_wall(&sensorData.ADC_DATA_RS);
+		if (sensor_buf.ADC_DATA_LS >= wall_config[LS_threshold]) {
 			wall_info += 0x11;
 		}
-		if (sensorData.ADC_DATA_RS >= wall_config[RS_threshold]) {
+		if (sensor_buf.ADC_DATA_RS >= wall_config[RS_threshold]) {
 			wall_info += 0x44;
 		}
 	}
@@ -420,7 +425,6 @@ void wall_set(uint8_t mode) {
 	} else if (mode == 0x03) {
 		wall_info |= (((0xdd >> head) & 0x0f) << 4);
 	}
-
 
 	/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 	 printf("wall:0x%2x | info:0x%2x = %2x \n",
@@ -797,5 +801,140 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 		break;
 	}
 	return step;
+}
+
+void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
+	*searchX = startX;
+	*searchY = startY;
+	int16_t value = 0;
+	int16_t buf1[MAP_SIZE];
+	int16_t cnt1 = 0;
+	int16_t buf2[MAP_SIZE];
+	int16_t cnt2 = 0;
+	int16_t pos;
+
+	/* ｓ目標区画に値を設定する。 */
+	buf1[cnt1++] = *searchX + *searchY * MAP_X_MAX;
+
+	while (1) {
+		do {
+			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
+			pos = buf1[--cnt1];
+
+			/* ｓ隣接区画に値を設定する。 */
+			/* ｓ北。 */
+			if (pos + MAP_X_MAX < MAP_SIZE) {
+				if ((map[pos + MAP_X_MAX].wall & 0xf0) == 0xf0) {
+					buf2[cnt2++] = pos + MAP_X_MAX;
+				} else {
+					*searchX = (pos + MAP_X_MAX) % MAP_X_MAX;
+					*searchY = (pos + MAP_X_MAX) / MAP_X_MAX;
+					return;
+				}
+			}
+			/* ｓ東。 */
+			if ((pos + 1) % MAP_X_MAX != 0) {
+				if ((map[pos + 1].wall & 0xf0) == 0xf0) {
+					buf2[cnt2++] = pos + 1;
+				} else {
+					*searchX = (pos + 1) % MAP_X_MAX;
+					*searchY = (pos + 1) / MAP_X_MAX;
+					return;
+				}
+			}
+			/* ｓ南。 */
+			if (pos - MAP_X_MAX >= 0) {
+				if (map[pos - MAP_X_MAX].step < map[pos].step) {
+					if ((map[pos - MAP_X_MAX].wall & 0xf0) == 0xf0) {
+						buf2[cnt2++] = pos - MAP_X_MAX;
+					} else {
+						*searchX = (pos - MAP_X_MAX) % MAP_X_MAX;
+						*searchY = (pos - MAP_X_MAX) / MAP_X_MAX;
+						return;
+					}
+				}
+			}
+			/* ｓ西。 */
+			if (pos % MAP_X_MAX != 0) {
+				if (map[pos - 1].step < map[pos].step) {
+					if ((map[pos - 1].wall & 0xf0) == 0xf0) {
+						buf2[cnt2++] = pos - 1;
+					} else {
+						*searchX = (pos - 1) % MAP_X_MAX;
+						*searchY = (pos - 1) / MAP_X_MAX;
+						return;
+					}
+				}
+			}
+
+		} while (cnt1 != 0); /* ｓバッファが空になるまで繰り返す。 */
+
+		/* ｓもう一方のバッファが空なら終了する。 */
+		if (cnt2 == 0) {
+			break;
+		}
+
+		/* ｓ設定する値を更新する。 */
+		++value;
+
+		do {
+			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
+			pos = buf2[--cnt2];
+			/* ｓ隣接区画に値を設定する。 */
+			/* ｓ北。 */
+			if (pos + MAP_X_MAX < MAP_SIZE) {
+				if ((map[pos + MAP_X_MAX].wall & 0xf0) == 0xf0) {
+					buf1[cnt1++] = pos + MAP_X_MAX;
+				} else {
+					*searchX = (pos + MAP_X_MAX) % MAP_X_MAX;
+					*searchY = (pos + MAP_X_MAX) / MAP_X_MAX;
+					return;
+				}
+			}
+			/* ｓ東。 */
+			if ((pos + 1) % MAP_X_MAX != 0) {
+				if ((map[pos + 1].wall & 0xf0) == 0xf0) {
+					buf1[cnt1++] = pos + 1;
+				} else {
+					*searchX = (pos + 1) % MAP_X_MAX;
+					*searchY = (pos + 1) / MAP_X_MAX;
+					return;
+				}
+			}
+			/* ｓ南。 */
+			if (pos - MAP_X_MAX >= 0) {
+				if (map[pos - MAP_X_MAX].step < map[pos].step) {
+					if ((map[pos - MAP_X_MAX].wall & 0xf0) == 0xf0) {
+						buf1[cnt1++] = pos - MAP_X_MAX;
+					} else {
+						*searchX = (pos - MAP_X_MAX) % MAP_X_MAX;
+						*searchY = (pos - MAP_X_MAX) / MAP_X_MAX;
+						return;
+					}
+				}
+			}
+			/* ｓ西。 */
+			if (pos % MAP_X_MAX != 0) {
+				if (map[pos - 1].step < map[pos].step) {
+					if ((map[pos - 1].wall & 0xf0) == 0xf0) {
+						buf1[cnt1++] = pos - 1;
+					} else {
+						*searchX = (pos - 1) % MAP_X_MAX;
+						*searchY = (pos - 1) / MAP_X_MAX;
+						return;
+					}
+				}
+			}
+		} while (cnt2 != 0); /* ｓバッファが空になるまで繰り返す。 */
+
+		/* ｓもう一方のバッファが空なら終了する。 */
+		if (cnt1 == 0) {
+			break;
+		}
+
+		/* ｓ設定する値を更新する。 */
+		++value;
+	}
+
 }
 

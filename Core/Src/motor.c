@@ -41,7 +41,7 @@ extern void MOTOR_R(void *argument) {
 		if (MOTORSPEED_R != speed_prev) {
 
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("MOTORSPEED_R:%d \n", MOTORSPEED_R);
+//				printf("MOTORSPEED_R:%ld \n", MOTORSPEED_R);
 //				osMutexRelease(UART_MutexHandle);
 //			}
 			speed_prev = MOTORSPEED_R;
@@ -91,7 +91,7 @@ extern void MOTOR_L(void *argument) {
 		if (MOTORSPEED_L != speed_prev) {
 
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("MOTORSPEED_L:%d \n", MOTORSPEED_L);
+//				printf("MOTORSPEED_L:%ld \n", MOTORSPEED_L);
 //				osMutexRelease(UART_MutexHandle);
 //			}
 			speed_prev = MOTORSPEED_L;
@@ -111,27 +111,28 @@ extern void MOTOR_L(void *argument) {
 	}
 	/* USER CODE END MOTER_SLEEP_CHECK */
 }
-/*
- extern void MOTER_SLEEP_CHECK(void *argument) {
- Delay_ms(10);
- int16_t sleepcount = 10;
- for (;;) {
- if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
- if (sleepcount <= 0) {
- HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
- HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
- sleepcount = 10;
- } else {
- sleepcount--;
- }
- } else {
- HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
- HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
- }
- Delay_ms(10);
- //		osThreadYield();
- }
- }*/
+
+extern void MORTOR_SLEEP_CHECK(void *argument) {
+	Delay_ms(10);
+	int16_t sleepcount = 30;
+	for (;;) {
+		if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
+			if (sleepcount <= 0) {
+				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
+				sleepcount = 30;
+			} else {
+				sleepcount--;
+			}
+		} else {
+			HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
+			sleepcount = 30;
+		}
+		Delay_ms(10);
+		//		osThreadYield();
+	}
+}
 
 uint32_t SPEEDtoHz(uint32_t speed) {
 	return speed / STEP_LENGTH;
@@ -158,6 +159,4 @@ void mortor_stop(void) {
 	Delay_ms(5);
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
-	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
 }

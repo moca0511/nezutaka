@@ -80,21 +80,37 @@ uint16_t straight(RUNConfig config) {
 		speed_R = speed;
 		speed_L = speed;
 		//PID
-		if (wall_calibration_F == 1) {
+		if (wall_calibration_F == 1 && speed != 0) {
 			if (config.direction == MOVE_FORWARD) {
-				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]) { // *　壁がある時だけPID操作
-					speed_L = PD(speed, wall_config[LS_WALL],
-							sensorData.ADC_DATA_LS, &deviation_prevL);
-				} else {
-					deviation_prevL = 0;
-
-				}
-				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
-
-					speed_R = PD(speed, wall_config[RS_WALL],
-							sensorData.ADC_DATA_RS, &deviation_prevR);
+				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
+						&& sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
+					speed_L = PD(speed,
+							wall_config[LS_WALL] - wall_config[LS_WALL] % 100,
+							sensorData.ADC_DATA_LS
+									- sensorData.ADC_DATA_LS % 100,
+							&deviation_prevR);
+//					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//						printf("R PD\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 				} else {
 					deviation_prevR = 0;
+
+				}
+				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]
+						&& sensorData.ADC_DATA_LS < sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
+
+					speed_R = PD(speed,
+							wall_config[RS_WALL] - wall_config[RS_WALL] % 100,
+							sensorData.ADC_DATA_RS
+									- sensorData.ADC_DATA_RS % 100,
+							&deviation_prevL);
+//					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//						printf("L PD\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
+				} else {
+					deviation_prevL = 0;
 				}
 			}/* else {
 			 if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
@@ -108,7 +124,13 @@ uint16_t straight(RUNConfig config) {
 			 }
 			 }*/
 		}
-		//printf("R:%ld,L:%ld,gensoku:%ld,plpl:%ld,step:%ld\n",speed_R,speed_L,gensoku,plpl,(MotorStepCount_R + MotorStepCount_L) / 2);
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf("R:%ld,L:%ld,gensoku:%ld,plpl:%ld,step:%ld\n", speed_R,
+//					speed_L, gensoku, plpl,
+//					(MotorStepCount_R + MotorStepCount_L) / 2);
+//			osMutexRelease(UART_MutexHandle);
+//		}
+
 		//1各モータスピードに代入
 
 		MOTORSPEED_R = speed_R;
@@ -136,9 +158,9 @@ uint16_t straight(RUNConfig config) {
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
 						&& sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
 			config.finish_speed = 0;
-			if (stopcount * 0.5 > (MotorStepCount_R + MotorStepCount_L) / 2) {
-				chenge_pos(-1);
-			}
+//			if (stopcount * 0.5 > (MotorStepCount_R + MotorStepCount_L) / 2) {
+//				chenge_pos(-1);
+//			}
 			mortor_stop();
 			MotorStepCount_R = 0;
 			MotorStepCount_L = 0;
@@ -175,9 +197,9 @@ uint16_t straight(RUNConfig config) {
 		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
 	}
 	move = (((MotorStepCount_R + MotorStepCount_L) / 2) * STEP_LENGTH)
-			/ BLOCK_LENGTH;
+			/ config.value;
 	if (((uint16_t) (((MotorStepCount_R + MotorStepCount_L) / 2) * STEP_LENGTH)
-			% (uint16_t) BLOCK_LENGTH) > BLOCK_LENGTH * 0.5) {
+			% (uint16_t) config.value) > config.value * 0.5) {
 		move++;
 	}
 	MotorStepCount_R = 0;
@@ -343,9 +365,18 @@ void slalom(RUNConfig config) {
 }
 
 void sirituke(void) {
-	RUNConfig RUN_Config = { MOVE_BACK, (MOTORSPEED_L + MOTORSPEED_R) / 2, 0,
-			150, 1000, BLOCK_LENGTH / 2 };
+	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 2 };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("sirituke\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	straight(RUN_Config);
+	straight(tyousei_config);
+	/*	RUN_Config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5;
+	 RUN_Config.direction = MOVE_FORWARD;
+	 straight(RUN_Config);*/
 }
 
 int32_t PD(int32_t speed, int32_t target, int32_t sensor,
@@ -409,10 +440,9 @@ void run_block(RUNConfig config) {
 }
 
 void turn_u(void) {
-	RUNConfig turn_config = { TURN_L, (MOTORSPEED_L + MOTORSPEED_R) / 2, 0, 200,
-			500, 180 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 180 };
 	turn(turn_config);
-	sirituke();
+	//sirituke();
 	chenge_head(turn_config);
 }
 
