@@ -16,17 +16,11 @@
 #include "maze.h"
 #include"agent.h"
 extern osMutexId_t UART_MutexHandle;
-extern uint32_t MOTORSPEED_R;
-extern uint32_t MOTORSPEED_L;
-extern BuzzerConfig buzzer_config;
 extern SensorData sensorData;
-extern uint32_t us;
-extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
 uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 750, 750,
 		950, 950 };
 extern MAP map[MAP_SIZE];
-extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
 extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
@@ -252,8 +246,7 @@ void mode9(void) {
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	game_mode = 0;
-	make_smap(goalX, goalY, game_mode);
+	make_smap(goalX, goalY, 0);
 	print_map();
 	return;
 }
@@ -265,8 +258,7 @@ void mode10(void) {
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	game_mode = 1;
-	make_smap(goalX, goalY, game_mode);
+	make_smap(goalX, goalY, 1);
 	print_map();
 	return;
 }
@@ -409,7 +401,7 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 2000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 1000, BLOCK_LENGTH };
 	saitan(RUN_config,goalX,goalY,posX,posY,head);
 
 	RUN_config.finish_speed=RUN_config.max_speed=300;
@@ -419,7 +411,7 @@ void mode13(void) {
 	return;
 }
 void mode14(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 2500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 1500, BLOCK_LENGTH };
 		saitan(RUN_config,goalX,goalY,posX,posY,head);
 
 		RUN_config.finish_speed=RUN_config.max_speed=300;
@@ -429,31 +421,13 @@ void mode14(void) {
 		return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 1000, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 500, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 2000, BLOCK_LENGTH };
+			saitan(RUN_config,goalX,goalY,posX,posY,head);
 
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("guruguru\n");
-		osMutexRelease(UART_MutexHandle);
-	}
-
-	Delay_ms(500);
-	tone(tone_hiC, 10);
-	for (;;) {
-		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-			MOTORSPEED_R = MOTORSPEED_L = 0;
-//			mortor_sleep();
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-				Delay_ms(50);
-			}
-			tone(tone_hiC, 100);
-			break;
-		}
-		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-		straight(RUN_config);
-
-		turn(turn_config);
-	}
+			RUN_config.finish_speed=RUN_config.max_speed=300;
+			adachi(RUN_config, startX, startY);
+			turn_u();
+		//	saitan(RUN_config,startX,startY,posX,posY,head);
+			return;
 }
 
