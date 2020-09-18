@@ -18,11 +18,11 @@
 extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 750, 750,
-		950, 950 };
+uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 700, 700,
+		800, 800 };
 extern MAP map[MAP_SIZE];
 extern int16_t posX, posY;	//　現在の位置
-extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
+extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void nezutaka(void) {
 	int16_t mode = 0;
@@ -196,7 +196,7 @@ void mode4(void) {
 	tone(tone_hiC, 10);
 	turn(turn_config);
 //	mortor_sleep();
-	chenge_head(turn_config.direction,turn_config.value,&head);
+	chenge_head(turn_config.direction, turn_config.value, &head);
 	tone(tone_hiC, 50);
 }
 //turn 180° and sirituke
@@ -266,7 +266,7 @@ void mode11(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 200, 200, 1000, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 200, 200, 1000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -320,13 +320,17 @@ void mode11(void) {
 		printf("adachi to start\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	adachi(RUN_config, startX, startY);
+	RUN_config.finish_speed = RUN_config.initial_speed = 0;
+	RUN_config.acceleration = RUN_config.max_speed = 800;
+	saitan(RUN_config, startX, startY, posX, posY, head);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("tansaku fin\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	turn_u();
+	/*turn_u();
+	 sirituke();
+	 ajast();*/
 
 	//　最短走行
 	return;
@@ -336,7 +340,7 @@ void mode12(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 2000, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -390,44 +394,65 @@ void mode12(void) {
 		printf("adachi to start\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	adachi(RUN_config, startX, startY);
+	RUN_config.finish_speed = RUN_config.initial_speed = 0;
+	RUN_config.acceleration = RUN_config.max_speed = 800;
+	print_map();
+	saitan(RUN_config, startX, startY, posX, posY, head);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("tansaku fin\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	turn_u();
-	Delay_ms(10);
-//	sirituke();
+
+	/*turn_u();
+	 sirituke();
+	 ajast();*/
+
+	//　最短走行
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 1000, BLOCK_LENGTH };
-	saitan(RUN_config,goalX,goalY,posX,posY,head);
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 800, BLOCK_LENGTH };
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(50);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	ajast();
+	saitan(RUN_config, goalX, goalY, posX, posY, head);
 
-	RUN_config.finish_speed=RUN_config.max_speed=300;
-	adachi(RUN_config, startX, startY);
-	turn_u();
+	RUN_config.acceleration = RUN_config.max_speed = 800;
+	saitan(RUN_config, startX, startY, goalX, goalY, head);
+	//turn_u();
 //	saitan(RUN_config,startX,startY,posX,posY,head);
 	return;
 }
 void mode14(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 1500, BLOCK_LENGTH };
-		saitan(RUN_config,goalX,goalY,posX,posY,head);
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(50);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	ajast();
+	saitan(RUN_config, goalX, goalY, posX, posY, head);
 
-		RUN_config.finish_speed=RUN_config.max_speed=300;
-		adachi(RUN_config, startX, startY);
-		turn_u();
+	RUN_config.acceleration = RUN_config.max_speed = 800;
+	saitan(RUN_config, startX, startY, goalX, goalY, head);
+	//	turn_u();
 	//	saitan(RUN_config,startX,startY,posX,posY,head);
-		return;
+	return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 2000, BLOCK_LENGTH };
-			saitan(RUN_config,goalX,goalY,posX,posY,head);
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1500, 2500, BLOCK_LENGTH };
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(50);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	ajast();
+	saitan(RUN_config, goalX, goalY, posX, posY, head);
 
-			RUN_config.finish_speed=RUN_config.max_speed=300;
-			adachi(RUN_config, startX, startY);
-			turn_u();
-		//	saitan(RUN_config,startX,startY,posX,posY,head);
-			return;
+	RUN_config.acceleration = RUN_config.max_speed = 800;
+	saitan(RUN_config, startX, startY, goalX, goalY, head);
+	//	turn_u();
+	//	saitan(RUN_config,startX,startY,posX,posY,head);
+	return;
 }
 

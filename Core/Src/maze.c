@@ -13,7 +13,7 @@
 extern osMutexId_t UART_MutexHandle;
 MAP map[MAP_SIZE]; //ｓマップ情報
 int16_t posX = 0, posY = 0;	//　現在の位置
-uint8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
+int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
 uint8_t game_mode = 0;	//　探索(0)・最短(1)　選択
 extern SensorData sensorData;
 extern uint32_t wall_config[12];

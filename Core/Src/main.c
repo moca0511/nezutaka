@@ -63,28 +63,28 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512 * 4
+  .stack_size = 1024 * 4
 };
 /* Definitions for Sensor_Task */
 osThreadId_t Sensor_TaskHandle;
 const osThreadAttr_t Sensor_Task_attributes = {
   .name = "Sensor_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .stack_size = 512 * 4
 };
 /* Definitions for MOTOR_R_Task */
 osThreadId_t MOTOR_R_TaskHandle;
 const osThreadAttr_t MOTOR_R_Task_attributes = {
   .name = "MOTOR_R_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .stack_size = 512 * 4
 };
 /* Definitions for MOTOR_L_Task */
 osThreadId_t MOTOR_L_TaskHandle;
 const osThreadAttr_t MOTOR_L_Task_attributes = {
   .name = "MOTOR_L_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .stack_size = 512 * 4
 };
 /* Definitions for BUZZER_Task */
 osThreadId_t BUZZER_TaskHandle;
@@ -112,7 +112,7 @@ osThreadId_t MORTOR_SLEEP_CHHandle;
 const osThreadAttr_t MORTOR_SLEEP_CH_attributes = {
   .name = "MORTOR_SLEEP_CH",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for UART_Mutex */
 osMutexId_t UART_MutexHandle;

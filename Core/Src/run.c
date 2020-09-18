@@ -22,7 +22,7 @@ extern uint8_t wall_calibration_F;
 
 extern int16_t posX, posY;	//　現在の位置
 int32_t posX_buf = 0, posY_buf = 0;	//　現在の位置
-extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
+extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 uint16_t straight(RUNConfig config) {
 	uint16_t move = 0;
@@ -365,18 +365,20 @@ void slalom(RUNConfig config) {
 }
 
 void sirituke(void) {
-	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 3 };
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
+	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 2 };
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("sirituke\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 	straight(RUN_Config);
-	straight(tyousei_config);
 	/*	RUN_Config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5;
 	 RUN_Config.direction = MOVE_FORWARD;
 	 straight(RUN_Config);*/
+}
+void ajast(void) {
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+	straight(tyousei_config);
 }
 
 int32_t PD(int32_t speed, int32_t target, int32_t sensor,
@@ -392,7 +394,7 @@ int32_t PD(int32_t speed, int32_t target, int32_t sensor,
 
 	speed -= (kp * deviation + kd * (*deviation_prev));
 	if (speed < SPEED_MIN) {
-		speed = SPEED_MIN;
+		speed = 0;
 	}
 	if (speed > SPEED_MAX) {
 		speed = SPEED_MAX;
@@ -417,7 +419,7 @@ void chenge_pos(int16_t block) {
 	}
 }
 
-void chenge_head(uint16_t direction,uint32_t value,int8_t* head_buf) {
+void chenge_head(uint16_t direction, uint32_t value, int8_t *head_buf) {
 	if (direction == TURN_R) {
 		*head_buf += value / 90;
 	} else {
@@ -441,7 +443,7 @@ void turn_u(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 180 };
 	turn(turn_config);
 	//sirituke();
-	chenge_head(turn_config.direction,turn_config.value,&head);
+	chenge_head(turn_config.direction, turn_config.value, &head);
 }
 
 /*extern void POS_CHECK(void *argument) {

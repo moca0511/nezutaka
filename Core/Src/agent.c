@@ -50,7 +50,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	Delay_ms(500);
+	//Delay_ms(500);
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	/*Delay_ms(10);
@@ -75,6 +75,13 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			mortor_stop();
+			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
+					== 0x20) {
+				turn_u();
+				sirituke();
+				ajast();
+			}
 			music();
 			break;
 		}
@@ -161,6 +168,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 					== 0x20) {
 				mortor_stop();
 				sirituke();
+				ajast();
 				/*RUN_config.value = BLOCK_LENGTH
 				 + ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);*/
 			}/* else {
@@ -264,7 +272,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 	uint16_t x = sx, y = sy;
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1500, 90 };
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("saitan\n");
 		osMutexRelease(UART_MutexHandle);
@@ -316,12 +324,14 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 				osMutexRelease(UART_MutexHandle);
 			}
 			//			mortor_sleep();
-//		mortor_stop();
+			mortor_stop();
 //		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //		tone(tone_C, 1000);
 //		Delay_ms(1000);
 //		break;
 			//ERR
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			return;
 		}
 
@@ -354,11 +364,11 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		case 2:
 			//	printf("U\n");
 			rute[i].direction = temp_head;
-			rute[i].value = 90;
-			i++;
-			rute[i].direction = temp_head;
-			rute[i].value = 90;
+			rute[i].value = 180;
 			chenge_head(TURN_R, 180, &head_buf);
+			i++;
+			rute[i].direction = 0;
+			rute[i].value = BLOCK_LENGTH;
 
 			break;
 		case 3:
@@ -397,7 +407,6 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		printf("saitan to goal\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	rute[0].value += (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5;
 
 	for (int f = 0; f < i; f++) {
 		switch (rute[f].direction) {
@@ -408,26 +417,27 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 			break;
 		case 1:
 			//printf("TURN R\n");
-			mortor_stop();
+			//mortor_stop();
 			turn_config.direction = TURN_R;
+			turn_config.value = rute[f].value;
 			turn(turn_config);
 			chenge_head(TURN_R, 90, &head);
 			break;
 		case 2:
 			//	printf("U\n");
-			mortor_stop();
+			//mortor_stop();
 			turn_config.direction = TURN_R;
+			turn_config.value = rute[f].value;
 			turn(turn_config);
-			mortor_stop();
-			turn_config.direction = TURN_R;
-			turn(turn_config);
+			//mortor_stop();
 			chenge_head(TURN_R, 180, &head);
 
 			break;
 		case 3:
 			//	printf("TURNL\n");
-			mortor_stop();
+			//mortor_stop();
 			turn_config.direction = TURN_L;
+			turn_config.value = rute[f].value;
 			turn(turn_config);
 			chenge_head(TURN_L, 90, &head);
 			break;
@@ -441,7 +451,10 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 			== 0x20) {
 		mortor_stop();
 		sirituke();
+		ajast();
 	}
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	music();
 
 }
