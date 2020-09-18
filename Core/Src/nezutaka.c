@@ -18,7 +18,7 @@
 extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 700, 700,
+uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 650, 650,
 		800, 800 };
 extern MAP map[MAP_SIZE];
 extern int16_t posX, posY;	//　現在の位置
@@ -337,10 +337,10 @@ void mode11(void) {
 }
 
 void mode12(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 2000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 250, 250, 2000, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1000, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 250, 250, 1000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);

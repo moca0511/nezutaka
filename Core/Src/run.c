@@ -34,6 +34,7 @@ uint16_t straight(RUNConfig config) {
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
+	int32_t deviation_sumR = 0, deviation_sumL = 0;
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 	if (config.max_speed > SPEED_MAX) {
@@ -81,36 +82,48 @@ uint16_t straight(RUNConfig config) {
 		speed_L = speed;
 		//PID
 		if (wall_calibration_F == 1 && speed != 0) {
+
 			if (config.direction == MOVE_FORWARD) {
+				if (sensorData.ADC_DATA_LS <= wall_config[LS_WALL] * 0.95
+						&& sensorData.ADC_DATA_LS
+								>= wall_config[LS_WALL] * 1.05) {
+					deviation_sumL = 0;
+				}
 				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
 						&& sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
-					speed_L = PD(speed,
+					speed_R = PID(speed,
 							wall_config[LS_WALL] - wall_config[LS_WALL] % 10,
 							sensorData.ADC_DATA_LS
 									- sensorData.ADC_DATA_LS % 10,
-							&deviation_prevR);
+							&deviation_prevL, &deviation_sumL);
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //						printf("R PD\n");
 //						osMutexRelease(UART_MutexHandle);
 //					}
 				} else {
-					deviation_prevR = 0;
+					deviation_prevL = 0;
+					deviation_sumL = 0;
 
 				}
 				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]
 						&& sensorData.ADC_DATA_LS < sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
-
-					speed_R = PD(speed,
+					if (sensorData.ADC_DATA_RS <= wall_config[RS_WALL] * 0.95
+							&& sensorData.ADC_DATA_RS
+									>= wall_config[RS_WALL] * 1.05) {
+						deviation_sumR = 0;
+					}
+					speed_L = PID(speed,
 							wall_config[RS_WALL] - wall_config[RS_WALL] % 10,
 							sensorData.ADC_DATA_RS
 									- sensorData.ADC_DATA_RS % 10,
-							&deviation_prevL);
+							&deviation_prevR,&deviation_sumR);
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //						printf("L PD\n");
 //						osMutexRelease(UART_MutexHandle);
 //					}
 				} else {
-					deviation_prevL = 0;
+					deviation_prevR = 0;
+					deviation_sumR = 0;
 				}
 			}/* else {
 			 if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
@@ -383,10 +396,11 @@ void ajast(void) {
 	straight(tyousei_config);
 }
 
-int32_t PD(int32_t speed, int32_t target, int32_t sensor,
-		int32_t *deviation_prev) {
+int32_t PID(int32_t speed, int32_t target, int32_t sensor,
+        int32_t *deviation_prev, int32_t *devaition_sum) {
 	int32_t deviation;
 	deviation = target - sensor;
+    *devaition_sum += deviation;
 	/*	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 	 printf("devaition=%d\n", deviation);
 	 osMutexRelease(UART_MutexHandle);
@@ -394,7 +408,7 @@ int32_t PD(int32_t speed, int32_t target, int32_t sensor,
 
 	*deviation_prev = deviation - (*deviation_prev);
 
-	speed -= (kp * deviation + kd * (*deviation_prev));
+    speed += (kp * deviation + kd * (*deviation_prev) + ki * (*devaition_sum));
 	if (speed < SPEED_MIN) {
 		speed = 0;
 	}
