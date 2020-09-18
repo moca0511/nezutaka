@@ -40,7 +40,7 @@ void slalom(RUNConfig config);
 void sirituke(void);
 int32_t PD(int32_t speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev);
-void chenge_head(RUNConfig config) ;
+void chenge_head(uint16_t direction,uint32_t value,int8_t* head_buf);
 void chenge_pos(int16_t block);
 void turn_u(void);
 void run_block(RUNConfig config);

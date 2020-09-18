@@ -14,6 +14,8 @@
 #include"nezutaka.h"
 #include"run.h"
 #include "maze.h"
+#include"agent.h"
+
 extern osMutexId_t UART_MutexHandle;
 extern uint32_t MOTORSPEED_R;
 extern uint32_t MOTORSPEED_L;
@@ -26,7 +28,7 @@ extern uint32_t wall_config[12];
 extern MAP map[MAP_SIZE];
 extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
-extern uint8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
+extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 //足立法探索　ゴール
 //1.目標地点確認　現在位置よりステップ数が少なく　未到達かつ壁情報読んでなくてゴールじゃない場所で　一番近い場所
@@ -52,8 +54,8 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	/*Delay_ms(10);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);*/
+	 wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	 wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);*/
 
 	for (;;) {
 
@@ -136,7 +138,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			mortor_stop();
 			turn_config.direction = TURN_R;
 			turn(turn_config);
-			chenge_head(turn_config);
+			chenge_head(turn_config.direction, turn_config.value, &head);
 			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 			 == 0x20) {
@@ -153,17 +155,18 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			//	printf("U\n");
 			mortor_stop();
 			turn(U_config);
-			chenge_head(U_config);
-			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			chenge_head(U_config.direction, U_config.value, &head);
+			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 					== 0x20) {
+				mortor_stop();
 				sirituke();
-//				RUN_config.value = BLOCK_LENGTH;
-			}*//* else {
-			 RUN_config.value = BLOCK_LENGTH
-			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
-			 }*/
-
+				/*RUN_config.value = BLOCK_LENGTH
+				 + ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);*/
+			}/* else {
+			 RUN_config.value = BLOCK_LENGTH;
+			 }
+			 */
 			break;
 		case 3:
 			//	printf("TURNL\n");
@@ -173,7 +176,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			turn_config.direction = TURN_L;
 			mortor_stop();
 			turn(turn_config);
-			chenge_head(turn_config);
+			chenge_head(turn_config.direction, turn_config.value, &head);
 			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 			 == 0x20) {
@@ -226,7 +229,7 @@ void hidarite(void) {
 			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_L;
 			turn(turn_config);
-			chenge_head(turn_config);
+			chenge_head(turn_config.direction, turn_config.value, &head);
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
@@ -242,7 +245,7 @@ void hidarite(void) {
 			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			turn_config.direction = TURN_R;
 			turn(turn_config);
-			chenge_head(turn_config);
+			chenge_head(turn_config.direction, turn_config.value, &head);
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 			straight(RUN_config);
 			chenge_pos(1);
@@ -253,4 +256,192 @@ void hidarite(void) {
 
 		tone(tone_hiC, 100);
 	}
+}
+
+void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
+		uint16_t sy, int8_t shead) {
+	RUTE rute[100] = { 0 };
+	uint16_t x = sx, y = sy;
+	uint16_t i = 0;
+	int8_t temp_head = 0, head_buf = shead;
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("saitan\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
+	make_smap(gx, gy, 1);
+	print_map();
+	//進行方向決定
+	while (x != gx || y != gy) {
+		if ((map[x + y * MAP_X_MAX].wall & 0x88) == 0x80
+				&& map[x + y * MAP_X_MAX].step
+						> map[x + (y + 1) * MAP_X_MAX].step) {
+			temp_head = 0;
+			y++;
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("kita\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+		} else if ((map[x + y * MAP_X_MAX].wall & 0x11) == 0x10
+				&& map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX - 1].step) {
+			temp_head = 3;
+			x--;
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("nisi\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+		} else if ((map[x + y * MAP_X_MAX].wall & 0x44) == 0x40
+				&& map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX + 1].step) {
+			temp_head = 1;
+			x++;
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("higasi\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+		} else if ((map[x + y * MAP_X_MAX].wall & 0x22) == 0x20
+				&& map[x + y * MAP_X_MAX].step
+						> map[x + (y - 1) * MAP_X_MAX].step) {
+			temp_head = 2;
+			y--;
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("minami\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+		} else {
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("errer\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+			//			mortor_sleep();
+//		mortor_stop();
+//		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//		tone(tone_C, 1000);
+//		Delay_ms(1000);
+//		break;
+			//ERR
+			return;
+		}
+
+		temp_head += 4;         //マイナス数防止
+		temp_head -= head_buf;    //headの考慮
+		if (temp_head >= 4) {    //桁上がりの考慮
+			temp_head -= 4;
+		}
+
+		switch (temp_head) {
+		case 0:
+			//printf("straight\n");
+			if (i > 0 && rute[i - 1].direction == MOVE_FORWARD) {
+				rute[i - 1].value += BLOCK_LENGTH;
+				i--;
+			} else {
+				rute[i].direction = temp_head;
+				rute[i].value = BLOCK_LENGTH;
+			}
+			break;
+		case 1:
+			//printf("TURN R\n");
+			rute[i].direction = temp_head;
+			rute[i].value = 90;
+			chenge_head(TURN_R, 90, &head_buf);
+			i++;
+			rute[i].direction = 0;
+			rute[i].value = BLOCK_LENGTH;
+			break;
+		case 2:
+			//	printf("U\n");
+			rute[i].direction = temp_head;
+			rute[i].value = 90;
+			i++;
+			rute[i].direction = temp_head;
+			rute[i].value = 90;
+			chenge_head(TURN_R, 180, &head_buf);
+
+			break;
+		case 3:
+			//	printf("TURNL\n");
+			rute[i].direction = temp_head;
+			rute[i].value = 90;
+			chenge_head(TURN_L, 90, &head_buf);
+			i++;
+			rute[i].direction = 0;
+			rute[i].value = BLOCK_LENGTH;
+			break;
+		}
+		i++;
+		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			printf("x=%d,y=%d,i=%d\n", x, y, i);
+			osMutexRelease(UART_MutexHandle);
+		}
+	}
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		for (int f = 0; f < i; f++) {
+			printf("%d:direction=%d,value=%ld\n", f, rute[f].direction,
+					rute[f].value);
+		}
+		osMutexRelease(UART_MutexHandle);
+	}
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("end\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(50);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("saitan to goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
+	rute[0].value += (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5;
+
+	for (int f = 0; f < i; f++) {
+		switch (rute[f].direction) {
+		case 0:
+			//printf("straight\n");
+			RUN_config.value = rute[f].value;
+			straight(RUN_config);
+			break;
+		case 1:
+			//printf("TURN R\n");
+			mortor_stop();
+			turn_config.direction = TURN_R;
+			turn(turn_config);
+			chenge_head(TURN_R, 90, &head);
+			break;
+		case 2:
+			//	printf("U\n");
+			mortor_stop();
+			turn_config.direction = TURN_R;
+			turn(turn_config);
+			mortor_stop();
+			turn_config.direction = TURN_R;
+			turn(turn_config);
+			chenge_head(TURN_R, 180, &head);
+
+			break;
+		case 3:
+			//	printf("TURNL\n");
+			mortor_stop();
+			turn_config.direction = TURN_L;
+			turn(turn_config);
+			chenge_head(TURN_L, 90, &head);
+			break;
+		}
+	}
+	turn_u();
+	posX = gx;
+	posY = gy;
+	if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
+			| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
+			== 0x20) {
+		mortor_stop();
+		sirituke();
+	}
+	music();
+
 }

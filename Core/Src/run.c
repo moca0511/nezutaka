@@ -417,20 +417,18 @@ void chenge_pos(int16_t block) {
 	}
 }
 
-void chenge_head(RUNConfig config) {
-	int8_t head_buf = head;
-	if (config.direction == TURN_R) {
-		head_buf += config.value / 90;
+void chenge_head(uint16_t direction,uint32_t value,int8_t* head_buf) {
+	if (direction == TURN_R) {
+		*head_buf += value / 90;
 	} else {
-		head_buf -= config.value / 90;
+		*head_buf -= value / 90;
 	}
-	if (head_buf > 3) {
-		head_buf -= 4;
+	if (*head_buf > 3) {
+		*head_buf -= 4;
 	}
-	if (head_buf < 0) {
-		head_buf += 4;
+	if (*head_buf < 0) {
+		*head_buf += 4;
 	}
-	head = head_buf;
 }
 
 void run_block(RUNConfig config) {
@@ -443,7 +441,7 @@ void turn_u(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 180 };
 	turn(turn_config);
 	//sirituke();
-	chenge_head(turn_config);
+	chenge_head(turn_config.direction,turn_config.value,&head);
 }
 
 /*extern void POS_CHECK(void *argument) {

@@ -10,9 +10,15 @@
 
 #include"main.h"
 
+typedef struct RUTE {
+	uint8_t direction;	//　ゴールまでの距離
+	uint32_t value;	//　進行距離
+} RUTE;
+
 
 void adachi(RUNConfig RUN_config,uint16_t gx,uint16_t gy);
 void hidarite(void);
+void saitan(RUNConfig RUN_config,uint16_t gx,uint16_t gy,uint16_t sx,uint16_t sy,int8_t shead);
 
 
 #endif /* INC_AGENT_H_ */
