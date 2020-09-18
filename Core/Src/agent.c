@@ -143,9 +143,11 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 //			straight(tyousei_config);
 //			turn_config.initial_speed = 0;
 			mortor_stop();
+//			osDelay(50);
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config.direction, turn_config.value, &head);
+//			osDelay(50);
 			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 			 == 0x20) {
@@ -161,6 +163,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 		case 2:
 			//	printf("U\n");
 			mortor_stop();
+//			osDelay(50);
 			turn(U_config);
 			chenge_head(U_config.direction, U_config.value, &head);
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
@@ -175,16 +178,19 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			 RUN_config.value = BLOCK_LENGTH;
 			 }
 			 */
+//			osDelay(50);
 			break;
 		case 3:
 			//	printf("TURNL\n");
 //			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 //			straight(tyousei_config);
 //			turn_config.initial_speed = 0;
+//			osDelay(50);
 			turn_config.direction = TURN_L;
 			mortor_stop();
 			turn(turn_config);
 			chenge_head(turn_config.direction, turn_config.value, &head);
+//			osDelay(50);
 			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 			 == 0x20) {
@@ -272,6 +278,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 	uint16_t x = sx, y = sy;
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
+	uint8_t temp_wall;
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1500, 90 };
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("saitan\n");
@@ -281,44 +288,145 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 	make_smap(gx, gy, 1);
 	print_map();
 	//進行方向決定
+
 	while (x != gx || y != gy) {
-		if ((map[x + y * MAP_X_MAX].wall & 0x88) == 0x80
-				&& map[x + y * MAP_X_MAX].step
+		temp_wall = ((map[x + y * MAP_X_MAX].wall & 0x0f)
+				| (map[x + y * MAP_X_MAX].wall << 4)) << head_buf;
+		temp_head = 4;
+		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			printf("temp_wall=0x%2x\n", temp_wall);
+			osMutexRelease(UART_MutexHandle);
+		}
+		if ((temp_wall & 0x80) == 0x00) {
+			switch (head_buf) {
+			case 0:
+				if (map[x + y * MAP_X_MAX].step
 						> map[x + (y + 1) * MAP_X_MAX].step) {
-			temp_head = 0;
-			y++;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("kita\n");
-				osMutexRelease(UART_MutexHandle);
-			}
-		} else if ((map[x + y * MAP_X_MAX].wall & 0x11) == 0x10
-				&& map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX - 1].step) {
-			temp_head = 3;
-			x--;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("nisi\n");
-				osMutexRelease(UART_MutexHandle);
-			}
-		} else if ((map[x + y * MAP_X_MAX].wall & 0x44) == 0x40
-				&& map[x + y * MAP_X_MAX].step
+					y++;
+					temp_head = 0;
+				}
+				break;
+			case 1:
+				if (map[x + y * MAP_X_MAX].step
 						> map[x + y * MAP_X_MAX + 1].step) {
-			temp_head = 1;
-			x++;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("higasi\n");
-				osMutexRelease(UART_MutexHandle);
-			}
-		} else if ((map[x + y * MAP_X_MAX].wall & 0x22) == 0x20
-				&& map[x + y * MAP_X_MAX].step
+					x++;
+					temp_head = 0;
+				}
+				break;
+			case 2:
+				if (map[x + y * MAP_X_MAX].step
 						> map[x + (y - 1) * MAP_X_MAX].step) {
-			temp_head = 2;
-			y--;
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("minami\n");
-				osMutexRelease(UART_MutexHandle);
+					y--;
+					temp_head = 0;
+				}
+				break;
+			case 3:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX - 1].step) {
+					x--;
+					temp_head = 0;
+				}
+				break;
 			}
-		} else {
+		}
+		if ((temp_wall & 0x40) == 0x00 && temp_head == 4) {
+			switch (head_buf) {
+			case 0:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX + 1].step) {
+					x++;
+					temp_head = 1;
+				}
+				break;
+			case 1:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + (y - 1) * MAP_X_MAX].step) {
+					y--;
+					temp_head = 1;
+				}
+				break;
+			case 2:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX - 1].step) {
+					x--;
+					temp_head = 1;
+				}
+				break;
+			case 3:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + (y + 1) * MAP_X_MAX].step) {
+					y++;
+					temp_head = 1;
+				}
+				break;
+			}
+		}
+		if ((temp_wall & 0x10) == 0x00 && temp_head == 4) {
+			switch (head_buf) {
+			case 0:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX - 1].step) {
+					x--;
+					temp_head = 3;
+				}
+				break;
+			case 1:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + (y + 1) * MAP_X_MAX].step) {
+					y++;
+					temp_head = 3;
+				}
+				break;
+			case 2:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX + 1].step) {
+					x++;
+					temp_head = 3;
+				}
+				break;
+			case 3:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + (y - 1) * MAP_X_MAX].step) {
+					y--;
+					temp_head = 3;
+				}
+				break;
+			}
+		}
+		if ((temp_wall & 0x20) == 0x00 && temp_head == 4) {
+
+			switch (head_buf) {
+			case 0:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + (y - 1) * MAP_X_MAX].step) {
+					y--;
+					temp_head = 2;
+				}
+				break;
+			case 1:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX - 1].step) {
+					x--;
+					temp_head = 2;
+				}
+				break;
+			case 2:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + y * MAP_X_MAX + 1].step) {
+					x++;
+					temp_head = 2;
+				}
+				break;
+			case 3:
+				if (map[x + y * MAP_X_MAX].step
+						> map[x + (y + 1) * MAP_X_MAX].step) {
+					y++;
+					temp_head = 2;
+				}
+				break;
+			}
+		}
+		if(temp_head==4){
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 				printf("errer\n");
 				osMutexRelease(UART_MutexHandle);
@@ -335,14 +443,18 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 			return;
 		}
 
-		temp_head += 4;         //マイナス数防止
-		temp_head -= head_buf;    //headの考慮
-		if (temp_head >= 4) {    //桁上がりの考慮
-			temp_head -= 4;
-		}
+//		temp_head += 4;         //マイナス数防止
+//		temp_head -= head_buf;    //headの考慮
+//		if (temp_head >= 4) {    //桁上がりの考慮
+//			temp_head -= 4;
+//		}
 
 		switch (temp_head) {
 		case 0:
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("S\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			//printf("straight\n");
 			if (i > 0 && rute[i - 1].direction == MOVE_FORWARD) {
 				rute[i - 1].value += BLOCK_LENGTH;
@@ -354,6 +466,10 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 			break;
 		case 1:
 			//printf("TURN R\n");
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("R\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_R, 90, &head_buf);
@@ -363,6 +479,10 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 			break;
 		case 2:
 			//	printf("U\n");
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("U\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			rute[i].direction = temp_head;
 			rute[i].value = 180;
 			chenge_head(TURN_R, 180, &head_buf);
@@ -372,6 +492,10 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 
 			break;
 		case 3:
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("L\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			//	printf("TURNL\n");
 			rute[i].direction = temp_head;
 			rute[i].value = 90;

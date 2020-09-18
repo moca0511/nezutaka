@@ -221,6 +221,7 @@ void turn(RUNConfig config) {
 //1回転方向設定
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
+
 //on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
@@ -231,6 +232,7 @@ void turn(RUNConfig config) {
 		mortor_direction(MR, MOVE_FORWARD);
 		mortor_direction(ML, MOVE_BACK);
 	}
+	MOTORSPEED_R = MOTORSPEED_L = config.initial_speed;
 
 	if (plpl / 100 < 1 && plpl != 0) {
 		plpl = 1;

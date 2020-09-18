@@ -114,20 +114,20 @@ extern void MOTOR_L(void *argument) {
 
 extern void MORTOR_SLEEP_CHECK(void *argument) {
 	Delay_ms(10);
-	int16_t sleepcount = 30;
+	int16_t sleepcount = 10;
 	for (;;) {
 		if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
 			if (sleepcount <= 0) {
 				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
-				sleepcount = 30;
+				sleepcount = 10;
 			} else {
 				sleepcount--;
 			}
 		} else {
 			HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
-			sleepcount = 30;
+			sleepcount = 10;
 		}
 		Delay_ms(10);
 		//		osThreadYield();
@@ -156,7 +156,7 @@ void mortor_stop(void) {
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 	MOTORSPEED_R = 0;
 	MOTORSPEED_L = 0;
-	Delay_ms(5);
+	Delay_ms(10);
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
