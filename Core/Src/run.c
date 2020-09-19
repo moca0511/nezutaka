@@ -182,7 +182,7 @@ uint16_t straight(RUNConfig config) {
 			return 0;
 		}
 
-		if (stop == 0 && wall_calibration_F == 1
+		/*if (stop == 0 && wall_calibration_F == 1
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
 						&& sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -192,14 +192,14 @@ uint16_t straight(RUNConfig config) {
 			stop = 1;
 			plpl = -10;
 			config.finish_speed = 0;
-			/*if (speed >= 400) {		//　速度が早ければ間に合わない？？
+			if (speed >= 400) {		//　速度が早ければ間に合わない？？
 			 break;
 			 } else {
 			 plpl_count /= 2;
 			 stopcount = (MotorStepCount_R + MotorStepCount_L)
 			 / 2 + 5 / STEP_LENGTH;
-			 }*/
-		}
+			 }
+		}*/
 		//osThreadYield();
 		Delay_ms(5);
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
@@ -391,7 +391,7 @@ void sirituke(void) {
 	 straight(RUN_Config);*/
 }
 void ajast(void) {
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 300, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	straight(tyousei_config);
 }

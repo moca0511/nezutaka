@@ -280,7 +280,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
 	uint8_t temp_wall;
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1500, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("saitan\n");
 		osMutexRelease(UART_MutexHandle);
