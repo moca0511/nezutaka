@@ -30,7 +30,7 @@ uint16_t straight(RUNConfig config) {
 	int32_t speed_R = speed;
 	int32_t speed_L = speed;
 	int32_t plpl = config.acceleration, plpl_count = 2, loop_count = 0;
-	int32_t stopcount = config.value / STEP_LENGTH;
+	int32_t stopcount = config.value / STEP_LENGTH - (MotorStepCount_R + MotorStepCount_L) / 2;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ

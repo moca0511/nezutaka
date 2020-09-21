@@ -38,24 +38,19 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //5.1に戻る
 
 void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 500, 2000, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
-	uint8_t value_buf = 0;
+	int32_t speed_buf = RUN_config.max_speed;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("adachi\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	//Delay_ms(500);
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	/*Delay_ms(10);
-	 wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	 wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);*/
+
 
 	for (;;) {
 
@@ -70,8 +65,6 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 		}
 
 		if (posX == gx && posY == gy) {
-			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-//			straight(tyousei_config);
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			mortor_stop();
@@ -106,7 +99,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 						> map[posX + (posY - 1) * MAP_X_MAX].step) {
 			temp_head = 2;
 		} else {
-//			mortor_sleep();
+
 			mortor_stop();
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
@@ -124,47 +117,36 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 		switch (temp_head) {
 		case 0:
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			value_buf = RUN_config.value;
-			RUN_config.value = value_buf * 0.5;
+			RUN_config.value = BLOCK_LENGTH * 0.5;
 			//printf("straight\n");
 
 			chenge_pos(straight(RUN_config));
 			wall_set(0x02);
 			tone(tone_C, 50);
 			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = value_buf * 0.5;
+			RUN_config.value = BLOCK_LENGTH * 0.2;
 			straight(RUN_config);
 			wall_set(0x01);
 			wall_set_around();
 			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 1:
-			//printf("TURN R\n");
-//			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-//			straight(tyousei_config);
-//			turn_config.initial_speed = 0;
-//			mortor_stop();
-//			osDelay(50);
+			RUN_config.finish_speed = 0;
+			RUN_config.value = BLOCK_LENGTH * 0.3;
+			straight(RUN_config);
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config.direction, turn_config.value, &head);
-//			osDelay(50);
-			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
-			 == 0x20) {
-			 sirituke();
-			 RUN_config.value = BLOCK_LENGTH;
-			 } else {
-			 RUN_config.value = BLOCK_LENGTH
-			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
-			 }*/
+			RUN_config.finish_speed = speed_buf;
 			U_config.direction = TURN_L;
 
 			break;
 		case 2:
 			//	printf("U\n");
+			RUN_config.finish_speed = 0;
+			RUN_config.value = BLOCK_LENGTH * 0.3;
+			straight(RUN_config);
 			mortor_stop();
-//			osDelay(50);
 			turn(U_config);
 			chenge_head(U_config.direction, U_config.value, &head);
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
@@ -173,34 +155,19 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 				mortor_stop();
 				sirituke();
 				ajast();
-				/*RUN_config.value = BLOCK_LENGTH
-				 + ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);*/
-			}/* else {
-			 RUN_config.value = BLOCK_LENGTH;
-			 }
-			 */
-//			osDelay(50);
+			}
+			RUN_config.finish_speed = speed_buf;
 			break;
 		case 3:
-			//	printf("TURNL\n");
-//			tyousei_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-//			straight(tyousei_config);
-//			turn_config.initial_speed = 0;
-//			osDelay(50);
+
+			RUN_config.finish_speed = 0;
+			RUN_config.value = BLOCK_LENGTH * 0.3;
+			straight(RUN_config);
 			turn_config.direction = TURN_L;
 //			mortor_stop();
 			turn(turn_config);
 			chenge_head(turn_config.direction, turn_config.value, &head);
-//			osDelay(50);
-			/*if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-			 | (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
-			 == 0x20) {
-			 sirituke();
-			 RUN_config.value = BLOCK_LENGTH;
-			 } else {
-			 RUN_config.value = BLOCK_LENGTH
-			 - ((BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5);
-			 }*/
+			RUN_config.finish_speed = speed_buf;
 			U_config.direction = TURN_R;
 		}
 		tone(tone_hiC, 50);
@@ -292,9 +259,11 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 
 	while (x != gx || y != gy) {
 		temp_wall = (((((map[x + y * MAP_X_MAX].wall & 0x0f)
-				+ ((map[x + y * MAP_X_MAX].wall & 0x0f) << 4)) << head_buf)&0xf0)
-				>> 4)+((((map[x + y * MAP_X_MAX].wall & 0xf0)
-				+ (map[x + y * MAP_X_MAX].wall >> 4)) << head_buf) & 0xf0);
+				+ ((map[x + y * MAP_X_MAX].wall & 0x0f) << 4)) << head_buf)
+				& 0xf0) >> 4)
+				+ ((((map[x + y * MAP_X_MAX].wall & 0xf0)
+						+ (map[x + y * MAP_X_MAX].wall >> 4)) << head_buf)
+						& 0xf0);
 		temp_head = 4;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 			printf("temp_wall=0x%2x\n", temp_wall);
