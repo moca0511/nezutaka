@@ -41,7 +41,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
-	int32_t speed_buf = RUN_config.max_speed;
+	int32_t speed_buf = RUN_config.finish_speed;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("adachi\n");
@@ -242,7 +242,7 @@ void hidarite(void) {
 
 void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		uint16_t sy, int8_t shead) {
-	RUTE rute[100] = { 0 };
+	RUTE rute[256] = { 0 };
 	uint16_t x = sx, y = sy;
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
@@ -545,7 +545,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 	if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 			| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
 			== 0x20) {
-		mortor_stop();
+//		mortor_stop();
 		sirituke();
 		ajast();
 	}

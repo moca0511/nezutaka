@@ -15,6 +15,8 @@
 #include"run.h"
 #include "maze.h"
 #include"agent.h"
+extern uint32_t MOTORSPEED_R;
+extern uint32_t MOTORSPEED_L;
 extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
@@ -186,44 +188,78 @@ void mode3(void) {
 }
 //turn R 90°
 void mode4(void) {
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
+	/*	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("turn 90°\n");
-		osMutexRelease(UART_MutexHandle);
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("turn 90°\n");
+	 osMutexRelease(UART_MutexHandle);
+	 }
+	 Delay_ms(500);
+	 tone(tone_hiC, 10);
+	 turn(turn_config);
+	 //	mortor_sleep();
+	 chenge_head(turn_config.direction, turn_config.value, &head);
+	 tone(tone_hiC, 50);*/
+	RUNConfig turn_config = { TURN_R, 500, 500, 2000, 900, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 1000, BLOCK_LENGTH };
+	Delay_ms(1000);
+	for (int i = 0; i < 8; i++) {
+		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		straight(RUN_config);
+		slalom(turn_config);
 	}
-	Delay_ms(500);
-	tone(tone_hiC, 10);
-	turn(turn_config);
-//	mortor_sleep();
-	chenge_head(turn_config.direction, turn_config.value, &head);
-	tone(tone_hiC, 50);
+	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	RUN_config.finish_speed = 0;
+	straight(RUN_config);
 }
 //turn 180° and sirituke
 void mode5(void) {
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("turn 180° and sirituke\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+	/*	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("turn 180° and sirituke\n");
+	 osMutexRelease(UART_MutexHandle);
+	 }
 
-	Delay_ms(500);
-	tone(tone_hiC, 10);
-	turn_u();
-//	mortor_sleep();
-	tone(tone_hiC, 50);
+	 Delay_ms(500);
+	 tone(tone_hiC, 10);
+	 turn_u();
+	 //	mortor_sleep();
+	 tone(tone_hiC, 50);*/
+
+	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH };
+	Delay_ms(1000);
+	for (int i = 0; i < 8; i++) {
+		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		straight(RUN_config);
+		slalom(turn_config);
+	}
+	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	RUN_config.finish_speed = 0;
+	straight(RUN_config);
 }
 //SLALOM_R
 void mode6(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(5000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	ajast();
-	saitan(RUN_config, goalX, goalY, posX, posY, head);
-	Delay_ms(100);
-	RUN_config.acceleration = RUN_config.max_speed = 800;
-	saitan(RUN_config, startX, startY, goalX, goalY, head);
+	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 500, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	Delay_ms(1000);
+	for (int i = 0; i < 8; i++) {
+		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+		straight(RUN_config);
+		slalom(turn_config);
+	}
+	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+	RUN_config.finish_speed = 0;
+	straight(RUN_config);
+//	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };
+//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+//	Delay_ms(5000);
+//	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+//	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+//	ajast();
+//	saitan(RUN_config, goalX, goalY, posX, posY, head);
+//	Delay_ms(100);
+//	RUN_config.acceleration = RUN_config.max_speed = 800;
+//	saitan(RUN_config, startX, startY, goalX, goalY, head);
 	//	turn_u();
 	//	saitan(RUN_config,startX,startY,posX,posY,head);
 	return;
