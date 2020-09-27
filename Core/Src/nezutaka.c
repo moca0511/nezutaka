@@ -15,6 +15,8 @@
 #include"run.h"
 #include "maze.h"
 #include"agent.h"
+#include "arm_math.h"
+#include "arm_const_structs.h"
 extern uint32_t MOTORSPEED_R;
 extern uint32_t MOTORSPEED_L;
 extern osMutexId_t UART_MutexHandle;
@@ -27,10 +29,12 @@ extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void nezutaka(void) {
+
 	int16_t mode = 0;
 	tone(tone_C, 10);
 	Delay_ms(10);
 	tone(tone_G, 10);
+
 	for (;;) {
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("mode select\n");
@@ -174,7 +178,7 @@ void mode2(void) {
 }
 //1block run
 void mode3(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 3000, BLOCK_LENGTH * 1 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 500, BLOCK_LENGTH * 1 };
 
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("1block run(180mm)\n");
@@ -206,7 +210,9 @@ void mode4(void) {
 	for (int i = 0; i < 8; i++) {
 		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
+		tone(tone_E, 10);
 		slalom(turn_config);
+		tone(tone_E, 10);
 	}
 	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	RUN_config.finish_speed = 0;
@@ -231,7 +237,9 @@ void mode5(void) {
 	for (int i = 0; i < 8; i++) {
 		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
+		tone(tone_E, 10);
 		slalom(turn_config);
+		tone(tone_E, 10);
 	}
 	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	RUN_config.finish_speed = 0;
@@ -239,13 +247,15 @@ void mode5(void) {
 }
 //SLALOM_R
 void mode6(void) {
-	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 500, 90 };
+	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 1000, 90 };
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
 	Delay_ms(1000);
 	for (int i = 0; i < 8; i++) {
 		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 		straight(RUN_config);
+		tone(tone_E, 10);
 		slalom(turn_config);
+		tone(tone_E, 10);
 	}
 	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
 	RUN_config.finish_speed = 0;

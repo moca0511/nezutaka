@@ -63,7 +63,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024 * 4
+  .stack_size = 2048 * 4
 };
 /* Definitions for Sensor_Task */
 osThreadId_t Sensor_TaskHandle;
@@ -865,6 +865,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
 	osSemaphoreAcquire(wait_usSemHandle, 0);
+	portTASK_USES_FLOATING_POINT();
 	Delay_ms(10);
 
 	/* Infinite loop */
