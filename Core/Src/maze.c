@@ -400,7 +400,7 @@ void wall_set(uint8_t mode) {
 		sensor_buf.ADC_DATA_LF = read_wall(&sensorData.ADC_DATA_LF);
 		sensor_buf.ADC_DATA_RF = read_wall(&sensorData.ADC_DATA_RF);
 		if (sensor_buf.ADC_DATA_LF >= wall_config[LF_threshold]
-				|| sensor_buf.ADC_DATA_RF >= wall_config[RF_threshold]) {
+				&& sensor_buf.ADC_DATA_RF >= wall_config[RF_threshold]) {
 			wall_info += 0x88;
 		}
 	}

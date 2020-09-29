@@ -30,6 +30,6 @@ void wait_us(int32_t wait) {
 }
 
 void Delay_ms(uint32_t ms){
-	osDelay((uint32_t)configTICK_RATE_HZ /1000 * ms);
+	osDelayUntil(osKernelGetTickCount()+(uint32_t)configTICK_RATE_HZ /1000 * ms);
 }
 

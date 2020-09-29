@@ -9,6 +9,8 @@
 #define INC_MOTOR_H_
 
 #include "main.h"
+#include "arm_math.h"
+#include "arm_const_structs.h"
 
 
 
@@ -23,8 +25,8 @@
 
 
 
-uint32_t SPEEDtoHz(uint32_t speed);
-uint32_t HztoSPEED(uint32_t Hz);
+float32_t SPEEDtoHz(float32_t speed);
+float32_t HztoSPEED(float32_t Hz);
 void mortor_direction(uint8_t motor,uint8_t direction);
 void mortor_stop(void);
 #endif /* INC_MOTOR_H_ */

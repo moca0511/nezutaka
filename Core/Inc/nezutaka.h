@@ -12,7 +12,7 @@
 //　機体パラメータ
 #define TIRE_DIAMETER   52.0					//　タイヤの直径　52mm
 #define TIRE_CIRCUIT    (PI * TIRE_DIAMETER)	//　タイヤの円周 163.363mm
-#define TREAD_WIDTH     87.8					//　トレッド幅　87.0mm(再計測)
+#define TREAD_WIDTH     89.0					//　トレッド幅　87.0mm(再計測)
 #define TREAD_CIRCUIT   (TREAD_WIDTH * PI)		//360度旋回時にタイヤが動く距離　87*3.14mm 273.18mm
 #define	STEP_DEGREE  (1.8 / 2.0)				//　ステッピングモータ1-2相励ステップ角（度/step) 0.9°
 #define	STEP_LENGTH	(TIRE_CIRCUIT * STEP_DEGREE / 360.0)	//1ステップで進む距離　0.408mm

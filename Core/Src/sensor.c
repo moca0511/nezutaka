@@ -294,7 +294,7 @@ extern void SENSOR_PRINT(void *argument) {
 			osWaitForever) != TASK_START)
 				;
 		}
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
 					sensorData.ADC_DATA_LF);

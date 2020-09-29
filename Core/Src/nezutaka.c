@@ -17,13 +17,13 @@
 #include"agent.h"
 #include "arm_math.h"
 #include "arm_const_structs.h"
-extern uint32_t MOTORSPEED_R;
-extern uint32_t MOTORSPEED_L;
+extern uint32_t MotorHz_R;
+extern uint32_t MotorHz_L;
 extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 900, 900, 2660, 2660, 500, 500, 500, 500, 700, 700,
-		800, 800 };
+uint32_t wall_config[12] = { 1200, 1200, 2600, 2600, 500, 500, 500, 500, 700, 700,
+		600, 600 };
 extern MAP map[MAP_SIZE];
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
@@ -178,7 +178,7 @@ void mode2(void) {
 }
 //1block run
 void mode3(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 500, BLOCK_LENGTH * 1 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 3000, BLOCK_LENGTH * 0.5 };
 
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("1block run(180mm)\n");
@@ -186,6 +186,7 @@ void mode3(void) {
 	}
 	Delay_ms(500);
 	tone(tone_hiC, 10);
+	ajast();
 	run_block(RUN_config);
 //	mortor_sleep();
 	tone(tone_hiC, 50);
@@ -204,19 +205,22 @@ void mode4(void) {
 	 //	mortor_sleep();
 	 chenge_head(turn_config.direction, turn_config.value, &head);
 	 tone(tone_hiC, 50);*/
-	RUNConfig turn_config = { TURN_R, 500, 500, 2000, 900, 90 };
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 1000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 500, 500, 2000, 800, 90 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 2000, BLOCK_LENGTH };
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
-	for (int i = 0; i < 8; i++) {
-		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+
+		RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
 		straight(RUN_config);
 		tone(tone_E, 10);
 		slalom(turn_config);
 		tone(tone_E, 10);
-	}
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	RUN_config.finish_speed = 0;
-	straight(RUN_config);
+
+//	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
+//	RUN_config.finish_speed = 0;
+//	straight(RUN_config);
+		mortor_stop();
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //turn 180° and sirituke
 void mode5(void) {
@@ -233,33 +237,37 @@ void mode5(void) {
 
 	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH };
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
-	for (int i = 0; i < 8; i++) {
-		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+
+		RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
 		straight(RUN_config);
 		tone(tone_E, 10);
 		slalom(turn_config);
 		tone(tone_E, 10);
-	}
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	RUN_config.finish_speed = 0;
-	straight(RUN_config);
+//	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
+//	RUN_config.finish_speed = 0;
+//	straight(RUN_config);
+		mortor_stop();
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //SLALOM_R
 void mode6(void) {
-	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 1000, 90 };
+	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 800, 90 };
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
-	for (int i = 0; i < 8; i++) {
-		RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+
+		RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 		straight(RUN_config);
 		tone(tone_E, 10);
 		slalom(turn_config);
 		tone(tone_E, 10);
-	}
-	RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-	RUN_config.finish_speed = 0;
-	straight(RUN_config);
+//	RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+//	RUN_config.finish_speed = 0;
+//	straight(RUN_config);
+		mortor_stop();
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };
 //	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 //	Delay_ms(5000);
@@ -377,7 +385,8 @@ void mode11(void) {
 		printf("adachi to start\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	RUN_config.finish_speed = RUN_config.initial_speed = 0;
+	RUN_config.finish_speed = 400;
+	RUN_config.initial_speed = 0;
 	RUN_config.acceleration = RUN_config.max_speed = 800;
 	saitan(RUN_config, startX, startY, posX, posY, head);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -394,11 +403,11 @@ void mode11(void) {
 }
 
 void mode12(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 250, 250, 500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1500, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 250, 250, 500, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1500, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.6 };
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(5000);
@@ -453,7 +462,7 @@ void mode12(void) {
 		printf("adachi to start\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	RUN_config.finish_speed = RUN_config.initial_speed = 0;
+	RUN_config.finish_speed = RUN_config.initial_speed = 400;
 	RUN_config.acceleration = RUN_config.max_speed = 800;
 	print_map();
 	saitan(RUN_config, startX, startY, posX, posY, head);
@@ -470,7 +479,7 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 500, 1000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 500, 1000, BLOCK_LENGTH };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(5000);
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
@@ -484,7 +493,7 @@ void mode13(void) {
 	return;
 }
 void mode14(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 1500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 1000, 2500, BLOCK_LENGTH };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(5000);
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
@@ -498,11 +507,11 @@ void mode14(void) {
 	return;
 }
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 350, 350, 500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 2200, BLOCK_LENGTH };
 	uint16_t step_buf = 0;
 	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 350, 350, 500, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 2200, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.6 };
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(5000);
@@ -557,7 +566,7 @@ void mode15(void) {
 		printf("adachi to start\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	RUN_config.finish_speed = RUN_config.initial_speed = 0;
+	RUN_config.finish_speed = RUN_config.initial_speed = 400;
 	RUN_config.acceleration = RUN_config.max_speed = 800;
 	print_map();
 	saitan(RUN_config, startX, startY, posX, posY, head);

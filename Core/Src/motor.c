@@ -16,8 +16,6 @@ uint32_t MotorHz_R = 0;
 uint32_t MotorHz_L = 0;
 uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
-uint32_t MOTORSPEED_R = 0;
-uint32_t MOTORSPEED_L = 0;
 extern osThreadId_t MOTOR_R_TaskHandle;
 extern osThreadId_t MOTOR_L_TaskHandle;
 
@@ -38,14 +36,14 @@ extern void MOTOR_R(void *argument) {
 			osWaitForever) != TASK_START)
 				;
 		}
-		if (MOTORSPEED_R != speed_prev) {
+		if (MotorHz_R != speed_prev) {
 
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("MOTORSPEED_R:%ld \n", MOTORSPEED_R);
+//				printf("MotorHz_R:%ld \n", MotorHz_R);
 //				osMutexRelease(UART_MutexHandle);
 //			}
-			speed_prev = MOTORSPEED_R;
-			hz = SPEEDtoHz(MOTORSPEED_R);
+			speed_prev = MotorHz_R;
+			hz = MotorHz_R;
 			if (hz == 0) {
 				HAL_TIM_PWM_Stop_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
 			} else {
@@ -88,14 +86,14 @@ extern void MOTOR_L(void *argument) {
 			osWaitForever) != TASK_START)
 				;
 		}
-		if (MOTORSPEED_L != speed_prev) {
+		if (MotorHz_L != speed_prev) {
 
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("MOTORSPEED_L:%ld \n", MOTORSPEED_L);
+//				printf("MotorHz_L:%ld \n", MotorHz_L);
 //				osMutexRelease(UART_MutexHandle);
 //			}
-			speed_prev = MOTORSPEED_L;
-			hz = SPEEDtoHz(MOTORSPEED_L);
+			speed_prev = MotorHz_L;
+			hz = MotorHz_L;
 			if (hz == 0) {
 				HAL_TIMEx_PWMN_Stop_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
 			} else {
@@ -116,7 +114,7 @@ extern void MORTOR_SLEEP_CHECK(void *argument) {
 	Delay_ms(10);
 	int16_t sleepcount = 10;
 	for (;;) {
-		if (MOTORSPEED_R == 0 && MOTORSPEED_L == 0) {
+		if (MotorHz_R == 0 && MotorHz_L == 0) {
 			if (sleepcount <= 0) {
 				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
@@ -134,10 +132,10 @@ extern void MORTOR_SLEEP_CHECK(void *argument) {
 	}
 }
 
-uint32_t SPEEDtoHz(uint32_t speed) {
+float32_t SPEEDtoHz(float32_t speed) {
 	return speed / STEP_LENGTH;
 }
-uint32_t HztoSPEED(uint32_t Hz) {
+float32_t HztoSPEED(float32_t Hz) {
 	return Hz * STEP_LENGTH;
 }
 
@@ -154,8 +152,8 @@ void mortor_direction(uint8_t motor, uint8_t direction) {
 void mortor_stop(void) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
-	MOTORSPEED_R = 0;
-	MOTORSPEED_L = 0;
+	MotorHz_R = 0;
+	MotorHz_L = 0;
 	Delay_ms(10);
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);

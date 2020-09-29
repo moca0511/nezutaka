@@ -8,14 +8,13 @@
 #include "cmsis_os.h"
 #include "sensor.h"
 #include "maze.h"
-#include "arm_math.h"
-#include "arm_const_structs.h"
+
 extern osMutexId_t UART_MutexHandle;
 extern osThreadId_t POS_CHECK_TASKHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
-extern uint32_t MOTORSPEED_R;
-extern uint32_t MOTORSPEED_L;
+extern uint32_t MotorHz_R;
+extern uint32_t MotorHz_L;
 extern SensorData sensorData;
 extern uint32_t wall_config[12];
 extern osThreadId_t MOTOR_R_TaskHandle;
@@ -28,24 +27,26 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 uint16_t straight(RUNConfig config) {
 	uint16_t move = 0;
-	float32_t fspeed = config.initial_speed;
-	int32_t speed = config.initial_speed;
-	int32_t speed_R = speed;
-	int32_t speed_L = speed;
-	float32_t plpl = (float32_t) config.acceleration
-			/ (uint32_t) configTICK_RATE_HZ;
+	float32_t fspeed = SPEEDtoHz(config.initial_speed), fspeed_L = SPEEDtoHz(
+			config.initial_speed), fspeed_R = SPEEDtoHz(config.initial_speed);
+
+	float32_t plpl = SPEEDtoHz(
+			(float32_t) config.acceleration / (uint32_t) configTICK_RATE_HZ);
 	int32_t stopcount = config.value / STEP_LENGTH
 			- (MotorStepCount_R + MotorStepCount_L) / 2;
 	int32_t gensoku = -1;
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
-	int32_t tick_plpl = osKernelGetTickCount() - 10, tick_prev =
-			osKernelGetTickCount();
+	int32_t tick_prev = osKernelGetTickCount();
+	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), INITIAL_Hz = SPEEDtoHz(
+			config.initial_speed), FINISH_Hz = SPEEDtoHz(config.finish_speed);
+
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 	if (config.max_speed > SPEED_MAX) {
 		config.max_speed = SPEED_MAX;
+		MAX_Hz = SPEEDtoHz(SPEED_MAX);
 	}
 
 	//1進行方向設定
@@ -60,32 +61,39 @@ uint16_t straight(RUNConfig config) {
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
 				&& gensoku != -1)
 				|| (((MotorStepCount_R + MotorStepCount_L) / 2
-						>= (stopcount / 2)) && gensoku == -1)
+						>= (stopcount * 0.48)) && gensoku == -1)
 				|| (config.max_speed == config.initial_speed
 						&& config.finish_speed < config.initial_speed))
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
 
-		speed = fspeed += plpl * (osKernelGetTickCount() - tick_prev);
-		tick_prev = osKernelGetTickCount();
+		fspeed += plpl * 5;
+//		tick_prev = osKernelGetTickCount();
 
-		if (speed >= config.max_speed) {
-			speed = config.max_speed;
+		if (fspeed >= MAX_Hz) {
+			fspeed = MAX_Hz;
 			if (gensoku == -1 && config.initial_speed == config.finish_speed) {
-				gensoku = stopcount - (MotorStepCount_R + MotorStepCount_L) / 2;
+				gensoku = stopcount
+						- ((MotorStepCount_R + MotorStepCount_L) / 2) * 1.02;
 			}
 		}
-		if (speed < config.finish_speed && plpl < 0) {
-			fspeed = speed = config.finish_speed;
+		if (fspeed < FINISH_Hz && plpl < 0) {
+			fspeed = FINISH_Hz;
 		}
-		if (speed < SPEED_MIN) {
-			fspeed = speed = SPEED_MIN;
+		if (fspeed < SPEEDtoHz(150)
+				&& SPEEDtoHz(5)
+						< (stopcount - (MotorStepCount_R + MotorStepCount_L) / 2)) {
+			fspeed = SPEEDtoHz(150);
 		}
-		speed_R = speed;
-		speed_L = speed;
+		if (fspeed < SPEEDtoHz(SPEED_MIN)
+				&& SPEEDtoHz(5)
+						> (stopcount - (MotorStepCount_R + MotorStepCount_L) / 2)) {
+			fspeed = SPEEDtoHz(SPEED_MIN);
+		}
+		fspeed_L = fspeed_R = fspeed;
 		//PID
-		if (wall_calibration_F == 1 && speed != 0) {
+		if (wall_calibration_F == 1 && fspeed != 0) {
 
 			if (config.direction == MOVE_FORWARD) {
 				if (sensorData.ADC_DATA_LS <= wall_config[LS_WALL] * 0.95
@@ -95,7 +103,7 @@ uint16_t straight(RUNConfig config) {
 				}
 				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
 						&& sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
-					speed_R = PID(speed,
+					fspeed_R = PID(fspeed_R,
 							wall_config[LS_WALL] - wall_config[LS_WALL] % 10,
 							sensorData.ADC_DATA_LS
 									- sensorData.ADC_DATA_LS % 10,
@@ -112,7 +120,7 @@ uint16_t straight(RUNConfig config) {
 									>= wall_config[RS_WALL] * 1.05) {
 						deviation_sumR = 0;
 					}
-					speed_L = PID(speed,
+					fspeed_L = PID(fspeed_L,
 							wall_config[RS_WALL] - wall_config[RS_WALL] % 10,
 							sensorData.ADC_DATA_RS
 									- sensorData.ADC_DATA_RS % 10,
@@ -126,36 +134,48 @@ uint16_t straight(RUNConfig config) {
 
 		//1各モータスピードに代入
 
-		MOTORSPEED_R = speed_R;
-		MOTORSPEED_L = speed_L;
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf(
-					"speedL=%ld,speedR=%ld,plpl=%d,(((MotorStepCount_R + MotorStepCount_L) / 2 = %d,stop_count=%d\n",
-					speed_L, speed_R, (int32_t) plpl,
-					(MotorStepCount_R + MotorStepCount_L) / 2, stopcount);
-			osMutexRelease(UART_MutexHandle);
-		}
+		MotorHz_R = (int32_t) fspeed_R;
+		MotorHz_L = (int32_t) fspeed_L;
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf(
+//					"speedL=%ld,speedR=%ld,plpl=%d,(((MotorStepCount_R + MotorStepCount_L) / 2 = %d,stop_count=%d\n",
+//					(int32_t) fspeed_L, (int32_t) fspeed_R, (int32_t) plpl,
+//					(MotorStepCount_R + MotorStepCount_L) / 2, stopcount);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 
 		//　前壁判定
 		if (wall_calibration_F == 1
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_WALL]
 						&& sensorData.ADC_DATA_RF >= wall_config[RF_WALL])) {
 			config.finish_speed = 0;
-			mortor_stop();
-			MotorStepCount_R = 0;
-			MotorStepCount_L = 0;
-			osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
-			osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
-			return 0;
+			break;
+		}
+		//　前壁判定
+		if (wall_calibration_F == 1
+				&& (sensorData.ADC_DATA_LF
+						>= (wall_config[LF_threshold]
+								+ wall_config[LF_threshold]) * 0.7
+						&& sensorData.ADC_DATA_RF
+								>= (wall_config[RF_threshold]
+										+ wall_config[RF_threshold]) * 0.7)
+				&& stop == 0 && config.direction == MOVE_FORWARD) {
+			if (plpl > 0) {
+				plpl *= -1;
+			}
+			stop = 1;
 		}
 
-		osThreadYield();
-	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
+		osDelayUntil(osKernelGetTickCount() + 5);
+	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2
+			|| (stop == 1
+					&& (sensorData.ADC_DATA_LF < wall_config[LF_WALL]
+							&& sensorData.ADC_DATA_RF < wall_config[RF_WALL])));
 //1走行距離判定　ループ１へ
 	if (config.finish_speed == 0) {
 		mortor_stop();
 	} else {
-		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+		MotorHz_R = MotorHz_L = FINISH_Hz;
 	}
 	move = (((MotorStepCount_R + MotorStepCount_L) / 2) * STEP_LENGTH)
 			/ config.value;
@@ -175,12 +195,14 @@ void turn(RUNConfig config) {
 //1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
 	uint32_t stopcount = move / STEP_LENGTH; //step
-	float32_t plpl = (float32_t) config.acceleration
-			/ (uint32_t) configTICK_RATE_HZ;
+	float32_t plpl = SPEEDtoHz(
+			(float32_t) config.acceleration / (uint32_t) configTICK_RATE_HZ);
 	int32_t gensoku = -1;
-	float32_t speed = config.initial_speed;
+	float32_t speed = SPEEDtoHz(config.initial_speed);
 	int32_t tick_prev = osKernelGetTickCount();
-	;
+	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), INITIAL_Hz = SPEEDtoHz(
+			config.initial_speed), FINISH_Hz = SPEEDtoHz(config.finish_speed);
+
 //printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 //1回転方向設定
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
@@ -196,7 +218,7 @@ void turn(RUNConfig config) {
 		mortor_direction(MR, MOVE_FORWARD);
 		mortor_direction(ML, MOVE_BACK);
 	}
-	MOTORSPEED_R = MOTORSPEED_L = config.initial_speed;
+	MotorHz_R = MotorHz_L = INITIAL_Hz;
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
@@ -208,32 +230,31 @@ void turn(RUNConfig config) {
 						>= (stopcount / 2)) && gensoku == -1)) && plpl >= 0) {
 			plpl *= -1;
 		}
-		speed += plpl * (osKernelGetTickCount() - tick_prev);
-		tick_prev = osKernelGetTickCount();
-		if (speed >= config.max_speed) {
-			speed = config.max_speed;
+		speed += plpl * 5;
+		if (speed >= MAX_Hz) {
+			speed = MAX_Hz;
 			if (gensoku == -1) {
 				gensoku = stopcount - (MotorStepCount_R + MotorStepCount_L) / 2;
 			}
 		}
-		if (speed < config.finish_speed && plpl < 0) {
-			speed = config.finish_speed;
+		if (speed < FINISH_Hz && plpl < 0) {
+			speed = FINISH_Hz;
 		}
-		if (speed < SPEED_MIN) {
-			speed = SPEED_MIN;
+		if (speed < SPEEDtoHz(SPEED_MIN)) {
+			speed = SPEEDtoHz(SPEED_MIN);
 		}
 		//printf("R:%ld,L:%ld,gensoku:%ld,plpl:%ld,step:%ld\n",speed_R,speed_L,gensoku,plpl,(MotorStepCount_R + MotorStepCount_L) / 2);
 		//1各モータスピードに代入
-		MOTORSPEED_L = speed;
-		MOTORSPEED_R = speed;
-		osThreadYield();
+		MotorHz_L = speed;
+		MotorHz_R = speed;
+		osDelayUntil(osKernelGetTickCount() + 5);
 
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	if (config.finish_speed == 0) {
 		mortor_stop();
 	} else {
-		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+		MotorHz_R = MotorHz_L = FINISH_Hz;
 	}
 
 	MotorStepCount_R = 0;
@@ -244,16 +265,16 @@ void turn(RUNConfig config) {
 
 void slalom(RUNConfig config) {
 	//1移動用パラメータ設定
-	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
-	uint32_t stopcount = move / STEP_LENGTH; //step
-	float32_t plpl = (float32_t) config.acceleration
-			/ (uint32_t) configTICK_RATE_HZ;
-	int32_t gensoku = -1;
-	float32_t fspeedR = config.initial_speed, fspeedL = config.initial_speed;
-	int32_t speedR = 0, speedL = 0;
+
+	float32_t plpl = SPEEDtoHz(
+			(float32_t) config.acceleration / (uint32_t) configTICK_RATE_HZ);
+	float32_t fspeedR = SPEEDtoHz(config.initial_speed), fspeedL = SPEEDtoHz(
+			config.initial_speed);
 	float32_t deg_speed = 0, deg = 0;
-	int32_t tick_prev = osKernelGetTickCount(), tick_plpl =
-			osKernelGetTickCount() - 10, tick = osKernelGetTickCount();
+//	int32_t tick_prev = osKernelGetTickCount(),tick = osKernelGetTickCount();
+	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), INITIAL_Hz = SPEEDtoHz(
+			config.initial_speed), FINISH_Hz = SPEEDtoHz(config.finish_speed);
+
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
@@ -273,89 +294,78 @@ void slalom(RUNConfig config) {
 //				printf("plpl\n");
 //				osMutexRelease(UART_MutexHandle);
 //			}
+//
+//		tick_prev = tick;
+//		tick = osKernelGetTickCount();
+		if (deg_speed > 0) {
+			deg += HztoSPEED(deg_speed);
+		} else {
+			deg -= HztoSPEED(deg_speed);
+		}
+
 		//1スピード変更処理
-		if ((int32_t) (deg
-				* ((tick - tick_prev) * (1.000 / (uint32_t) configTICK_RATE_HZ))
-				* 180 / PI) >= config.value / 2 && plpl >= 0) {
+		if ((int32_t) (deg * 0.0053 * 180 / PI) >= config.value * 0.5
+				&& plpl >= 0) {
 			plpl *= -1;
 		}
 
-		deg_speed += plpl * (osKernelGetTickCount() - tick_prev);
+		deg_speed += plpl * 5;
 		if (config.direction == TURN_R) {
-			speedL = fspeedL = config.initial_speed
-					+ deg_speed * TREAD_WIDTH / 2;
-			speedR = fspeedR = config.initial_speed
-					- deg_speed * TREAD_WIDTH / 2;
+			fspeedL = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
+			fspeedR = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
 //				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //					printf("R=%ld,L=%ld\n",speedR,speedL);
 //					osMutexRelease(UART_MutexHandle);
 //				}
 
-			if (speedL
-					<= config.finish_speed|| speedR >= config.finish_speed ||speedL >= config.max_speed||speedR < SPEED_MIN) {
-				deg_speed -= plpl * (osKernelGetTickCount() - tick_prev);
-				speedL = fspeedL = config.initial_speed
-						+ deg_speed * TREAD_WIDTH / 2;
-				speedR = fspeedR = config.initial_speed
-						- deg_speed * TREAD_WIDTH / 2;
+			if (fspeedL <= FINISH_Hz || fspeedR >= FINISH_Hz
+					|| fspeedL >= MAX_Hz || fspeedR < SPEEDtoHz(SPEED_MIN)) {
+				deg_speed -= plpl * 5;
+				fspeedL = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
+				fspeedR = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //						printf("re\n");
 //						osMutexRelease(UART_MutexHandle);
 //					}
 			}
 		} else {
-			speedL = fspeedL = config.initial_speed
-					- deg_speed * TREAD_WIDTH / 2;
-			speedR = fspeedR = config.initial_speed
-					+ deg_speed * TREAD_WIDTH / 2;
-			if (speedR
-					<= config.finish_speed|| speedL >= config.finish_speed||speedR >= config.max_speed||speedL < SPEED_MIN) {
-				deg_speed -= plpl * (osKernelGetTickCount() - tick_prev);
-				speedL = fspeedL = config.initial_speed
-						- deg_speed * TREAD_WIDTH / 2;
-				speedR = fspeedR = config.initial_speed
-						+ deg_speed * TREAD_WIDTH / 2;
+			fspeedL = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
+			fspeedR = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
+			if (fspeedR <= FINISH_Hz || fspeedL >= FINISH_Hz
+					|| fspeedR >= MAX_Hz || fspeedL < SPEEDtoHz(SPEED_MIN)) {
+				deg_speed -= plpl * 5;
+				fspeedL = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
+				fspeedR = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
 			}
 		}
 
 		//printf("R:%ld,L:%ld,gensoku:%ld,plpl:%ld,step:%ld\n",speed_R,speed_L,gensoku,plpl,(MotorStepCount_R + MotorStepCount_L) / 2);
 		//1各モータスピードに代入
-		MOTORSPEED_L = speedL;
-		MOTORSPEED_R = speedR;
+		MotorHz_L = fspeedL;
+		MotorHz_R = fspeedR;
+		//角度変更処理
 
 		//tick_prev = osKernelGetTickCount();
-		Delay_ms(1);
-		//	osThreadYield();
+		osDelayUntil(osKernelGetTickCount() + 5);
+//		osThreadYield();
 
-		//角度変更処理
-		if (deg_speed > 0) {
-			deg += deg_speed;
-		} else {
-			deg -= deg_speed;
-		}
-		tick_prev = tick;
-		tick = osKernelGetTickCount();
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf(
+//					"deg=%ld,deg_do=%ld,speedL=%ld,speedR=%ld,plpl=%d,deg_speed=%ld\n",
+//					(int32_t) deg,
+//					(int32_t) (deg
+//							* 0.005
+//							* 180 / PI), (int32_t)fspeedL, (int32_t)fspeedR, (int32_t) plpl,
+//					(int32_t) deg_speed);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf(
-					"deg=%ld,deg_do=%ld,speedL=%ld,speedR=%ld,plpl=%d,deg_speed=%ld\n",
-					(int32_t) deg,
-					(int32_t) (deg
-							* ((tick - tick_prev)
-									* (1.000 / (uint32_t) configTICK_RATE_HZ)) * 180
-							/ PI), speedL, speedR, (int32_t) plpl,
-					(int32_t) deg_speed);
-			osMutexRelease(UART_MutexHandle);
-		}
-
-	} while ((int32_t) (deg
-			* ((tick - tick_prev) * (1.000 / (uint32_t) configTICK_RATE_HZ)) * 180
-			/ PI) < config.value);
+	} while ((int32_t) (deg * 0.0053 * 180 / PI) < config.value);
 
 	if (config.finish_speed == 0) {
 		mortor_stop();
 	} else {
-		MOTORSPEED_R = MOTORSPEED_L = config.finish_speed;
+		MotorHz_R = MotorHz_L = FINISH_Hz;
 	}
 
 	MotorStepCount_R = 0;
@@ -377,11 +387,11 @@ void sirituke(void) {
 }
 void ajast(void) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 300, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
+			- NEZUTAKA_LENGTH) * 0.6 };
 	straight(tyousei_config);
 }
 
-int32_t PID(int32_t speed, int32_t target, int32_t sensor,
+float32_t PID(float32_t speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev, int32_t *devaition_sum) {
 	int32_t deviation;
 	deviation = target - sensor;
@@ -394,11 +404,11 @@ int32_t PID(int32_t speed, int32_t target, int32_t sensor,
 	*deviation_prev = deviation - (*deviation_prev);
 
 	speed += (kp * deviation + kd * (*deviation_prev) + ki * (*devaition_sum));
-	if (speed < SPEED_MIN) {
+	if (speed < SPEEDtoHz(SPEED_MIN)) {
 		speed = 0;
 	}
-	if (speed > SPEED_MAX) {
-		speed = SPEED_MAX;
+	if (speed > SPEEDtoHz(SPEED_MAX)) {
+		speed = SPEEDtoHz(SPEED_MAX);
 	}
 	return speed;
 }

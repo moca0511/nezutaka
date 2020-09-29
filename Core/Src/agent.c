@@ -17,8 +17,8 @@
 #include"agent.h"
 
 extern osMutexId_t UART_MutexHandle;
-extern uint32_t MOTORSPEED_R;
-extern uint32_t MOTORSPEED_L;
+extern uint32_t MotorHz_R;
+extern uint32_t MotorHz_L;
 extern BuzzerConfig buzzer_config;
 extern SensorData sensorData;
 extern uint32_t us;
@@ -38,10 +38,11 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //5.1に戻る
 
 void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
+	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 800, 90 };
 	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
 	int32_t speed_buf = RUN_config.finish_speed;
+	int8_t move_f = -1;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("adachi\n");
@@ -50,7 +51,6 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 
 	tone(tone_hiC, 10);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-
 
 	for (;;) {
 
@@ -65,8 +65,11 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 		}
 
 		if (posX == gx && posY == gy) {
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+			RUN_config.finish_speed = 0;
+			RUN_config.value = BLOCK_LENGTH * 0.5;
+			straight(RUN_config);
+
 			mortor_stop();
 			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
 					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x80)
@@ -76,7 +79,13 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 				sirituke();
 				ajast();
 			}
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			music();
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("G\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			break;
 		}
 
@@ -99,7 +108,10 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 						> map[posX + (posY - 1) * MAP_X_MAX].step) {
 			temp_head = 2;
 		} else {
-
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("err\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			mortor_stop();
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
@@ -116,36 +128,83 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 
 		switch (temp_head) {
 		case 0:
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("S\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			RUN_config.value = BLOCK_LENGTH * 0.5;
 			//printf("straight\n");
+			if (straight(RUN_config) != 1 && move_f == -1) {
+				wall_set(0x01);
+				wall_set_around();
+			} else if ((move_f *= -1) == 1) {
+				chenge_pos(1);
+				wall_set(0x03);
+				wall_set_around();
+			}
+//			tone(tone_C, 50);
+//			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+//			RUN_config.value = BLOCK_LENGTH * 0.2;
+//			straight(RUN_config);
+//			wall_set(0x01);
 
-			chenge_pos(straight(RUN_config));
-			wall_set(0x02);
-			tone(tone_C, 50);
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
-			RUN_config.value = BLOCK_LENGTH * 0.2;
-			straight(RUN_config);
-			wall_set(0x01);
-			wall_set_around();
 			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 1:
-			RUN_config.finish_speed = 0;
-			RUN_config.value = BLOCK_LENGTH * 0.3;
-			straight(RUN_config);
-			turn_config.direction = TURN_R;
-			turn(turn_config);
-			chenge_head(turn_config.direction, turn_config.value, &head);
-			RUN_config.finish_speed = speed_buf;
-			U_config.direction = TURN_L;
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("R\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+			if (move_f == -1) {
+				RUN_config.initial_speed = HztoSPEED(
+						(MotorHz_L + MotorHz_R) / 2);
+				RUN_config.finish_speed = 0;
+				RUN_config.value = BLOCK_LENGTH * 0.5;
+				straight(RUN_config);
+				turn_config.direction = TURN_R;
+				turn_config.finish_speed=turn_config.initial_speed=0;
+				turn(turn_config);
+				chenge_head(turn_config.direction, turn_config.value, &head);
+				RUN_config.finish_speed = speed_buf;
+				U_config.direction = TURN_L;
+				turn_config.finish_speed=turn_config.initial_speed=300;
+			} else {
+				turn_config.direction = TURN_R;
+				slalom(turn_config);
+				chenge_head(turn_config.direction, turn_config.value, &head);
+				RUN_config.finish_speed = speed_buf;
+				U_config.direction = TURN_L;
+				chenge_pos(1);
+				wall_set(0x03);
+				wall_set_around();
+				move_f = 1;
+			}
+
+//			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+//			RUN_config.finish_speed = 0;
+//			RUN_config.value = BLOCK_LENGTH * 0.5;
+//			straight(RUN_config);
+//			move_f = -1;
+//			turn_config.direction = TURN_R;
+//			turn(turn_config);
+
+//			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+//			RUN_config.value = BLOCK_LENGTH * 0.05;
+//			straight(RUN_config);
 
 			break;
 		case 2:
 			//	printf("U\n");
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("U\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			RUN_config.finish_speed = 0;
-			RUN_config.value = BLOCK_LENGTH * 0.3;
+			RUN_config.value = BLOCK_LENGTH * 0.6;
 			straight(RUN_config);
+			move_f = -1;
 			mortor_stop();
 			turn(U_config);
 			chenge_head(U_config.direction, U_config.value, &head);
@@ -159,16 +218,37 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 			RUN_config.finish_speed = speed_buf;
 			break;
 		case 3:
-
-			RUN_config.finish_speed = 0;
-			RUN_config.value = BLOCK_LENGTH * 0.3;
-			straight(RUN_config);
-			turn_config.direction = TURN_L;
-//			mortor_stop();
-			turn(turn_config);
-			chenge_head(turn_config.direction, turn_config.value, &head);
-			RUN_config.finish_speed = speed_buf;
-			U_config.direction = TURN_R;
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("L\n");
+				osMutexRelease(UART_MutexHandle);
+			}
+			if (move_f == -1) {
+				RUN_config.initial_speed = HztoSPEED(
+						(MotorHz_L + MotorHz_R) / 2);
+				RUN_config.finish_speed = 0;
+				RUN_config.value = BLOCK_LENGTH * 0.5;
+				straight(RUN_config);
+				turn_config.direction = TURN_L;
+				turn_config.finish_speed=turn_config.initial_speed=0;
+				turn(turn_config);
+				chenge_head(turn_config.direction, turn_config.value, &head);
+				RUN_config.finish_speed = speed_buf;
+				U_config.direction = TURN_R;
+				turn_config.finish_speed=turn_config.initial_speed=300;
+			} else {
+				turn_config.direction = TURN_L;
+				slalom(turn_config);
+				chenge_head(turn_config.direction, turn_config.value, &head);
+				RUN_config.finish_speed = speed_buf;
+				U_config.direction = TURN_R;
+				chenge_pos(1);
+				wall_set(0x03);
+				wall_set_around();
+				move_f = 1;
+			}
+//			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+//			RUN_config.value = BLOCK_LENGTH * 0.05;
+//			straight(RUN_config);
 		}
 		tone(tone_hiC, 50);
 
@@ -177,7 +257,7 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 
 void hidarite(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 2000, 90 };
+	RUNConfig turn_config = { TURN_R, 0, 200, 300, 2000, 90 };
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("hidarite\n");
 		osMutexRelease(UART_MutexHandle);
@@ -208,15 +288,15 @@ void hidarite(void) {
 
 		if (wall_check(1) == 0) {
 			//	printf("TURNL\n");
-			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			turn_config.direction = TURN_L;
 			turn(turn_config);
 			chenge_head(turn_config.direction, turn_config.value, &head);
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			straight(RUN_config);
 			chenge_pos(1);
 		} else if (wall_check(0) == 0) {
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			//	printf("straight\n");
 			straight(RUN_config);
 			chenge_pos(1);
@@ -224,11 +304,11 @@ void hidarite(void) {
 			//	printf("TURN R\n");
 			//			RUN_config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) / 3;
 			//			straight(RUN_config);
-			turn_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			turn_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			turn_config.direction = TURN_R;
 			turn(turn_config);
 			chenge_head(turn_config.direction, turn_config.value, &head);
-			RUN_config.initial_speed = (MOTORSPEED_L + MOTORSPEED_R) / 2;
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			straight(RUN_config);
 			chenge_pos(1);
 		} else {
@@ -247,7 +327,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
 	uint8_t temp_wall;
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
+	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("saitan\n");
 		osMutexRelease(UART_MutexHandle);
@@ -433,8 +513,15 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 				i--;
 			} else {
 				rute[i].direction = temp_head;
-				rute[i].value = BLOCK_LENGTH;
+				if (i > 0
+						&& (rute[i - 1].direction == 1
+								|| rute[i - 1].direction == 3)) {
+					rute[i].value = BLOCK_LENGTH;
+				} else {
+					rute[i].value = BLOCK_LENGTH / 2;
+				}
 			}
+
 			break;
 		case 1:
 			//printf("TURN R\n");
@@ -442,12 +529,16 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
+//			if (rute[i - 1].direction == MOVE_FORWARD) {
+//				rute[i - 1].value -= BLOCK_LENGTH / 2;
+//
+//			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_R, 90, &head_buf);
-			i++;
-			rute[i].direction = 0;
-			rute[i].value = BLOCK_LENGTH;
+//			i++;
+//			rute[i].direction = 0;
+//			rute[i].value = BLOCK_LENGTH;
 			break;
 		case 2:
 			//	printf("U\n");
@@ -469,12 +560,16 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 				osMutexRelease(UART_MutexHandle);
 			}
 			//	printf("TURNL\n");
+//			if (rute[i - 1].direction == MOVE_FORWARD) {
+//				rute[i - 1].value -= BLOCK_LENGTH / 2;
+//
+//			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_L, 90, &head_buf);
-			i++;
-			rute[i].direction = 0;
-			rute[i].value = BLOCK_LENGTH;
+//			i++;
+//			rute[i].direction = 0;
+//			rute[i].value = BLOCK_LENGTH;
 			break;
 		}
 		i++;
@@ -508,6 +603,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		switch (rute[f].direction) {
 		case 0:
 			//printf("straight\n");
+			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
 			RUN_config.value = rute[f].value;
 			straight(RUN_config);
 			break;
@@ -516,29 +612,28 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 			//mortor_stop();
 			turn_config.direction = TURN_R;
 			turn_config.value = rute[f].value;
-			turn(turn_config);
+			slalom(turn_config);
 			chenge_head(TURN_R, 90, &head);
 			break;
 		case 2:
 			//	printf("U\n");
 			//mortor_stop();
-			turn_config.direction = TURN_R;
-			turn_config.value = rute[f].value;
-			turn(turn_config);
-			//mortor_stop();
-			chenge_head(TURN_R, 180, &head);
-
+			turn_u();
 			break;
 		case 3:
 			//	printf("TURNL\n");
 			//mortor_stop();
 			turn_config.direction = TURN_L;
 			turn_config.value = rute[f].value;
-			turn(turn_config);
+			slalom(turn_config);
 			chenge_head(TURN_L, 90, &head);
 			break;
 		}
 	}
+	RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+	RUN_config.finish_speed = 0;
+	RUN_config.value = BLOCK_LENGTH / 2;
+	straight(RUN_config);
 	turn_u();
 	posX = gx;
 	posY = gy;
