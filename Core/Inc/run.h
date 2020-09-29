@@ -10,8 +10,7 @@
 #include"main.h"
 #include"motor.h"
 #include"nezutaka.h"
-#include "arm_math.h"
-#include "arm_const_structs.h"
+
 
 typedef struct {
 	uint8_t direction;	//進行方向 (前後)
@@ -21,6 +20,12 @@ typedef struct {
 	uint32_t acceleration;	//加速度
 	uint32_t value;	//各設定値
 } RUNConfig;
+
+typedef struct {
+	RUNConfig config;
+	uint32_t before_ofset;
+	uint32_t after_ofset;
+} SLALOMConfig;
 
 //進行方向
 #define MOVE_FORWARD GPIO_PIN_RESET	//前進
@@ -39,7 +44,7 @@ typedef struct {
 
 uint16_t straight(RUNConfig config);
 void turn(RUNConfig config);
-void slalom(RUNConfig config);
+void slalom(SLALOMConfig config);
 void sirituke(void);
 float32_t PID(float32_t speed, int32_t target, int32_t sensor,
         int32_t *deviation_prev,int32_t *devaition_sum);

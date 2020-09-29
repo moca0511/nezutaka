@@ -19,7 +19,7 @@
 //　迷路のパラメータ
 #define	BLOCK_LENGTH  180.0					//1区画 180mm
 //　定数定義
-#define	PI            3.14159265358979		//円周率
+//#define	PI            3.14159265358979		//円周率
 //　最大速度
 #define MAX_SPEED 1000
 

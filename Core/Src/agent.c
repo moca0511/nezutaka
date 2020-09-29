@@ -37,8 +37,9 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //4.ゴールなら終了
 //5.1に戻る
 
-void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
-	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 800, 90 };
+void adachi(RUNConfig RUN_config, RUNConfig turn_config,
+		SLALOMConfig slalom90_config, uint16_t gx, uint16_t gy) {
+//	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 800, 90 };
 	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
 	int32_t speed_buf = RUN_config.finish_speed;
@@ -163,15 +164,15 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 				RUN_config.value = BLOCK_LENGTH * 0.5;
 				straight(RUN_config);
 				turn_config.direction = TURN_R;
-				turn_config.finish_speed=turn_config.initial_speed=0;
+				turn_config.finish_speed = turn_config.initial_speed = 0;
 				turn(turn_config);
 				chenge_head(turn_config.direction, turn_config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_L;
-				turn_config.finish_speed=turn_config.initial_speed=300;
+				turn_config.finish_speed = turn_config.initial_speed = 300;
 			} else {
-				turn_config.direction = TURN_R;
-				slalom(turn_config);
+				slalom90_config.config.direction = TURN_R;
+				slalom(slalom90_config);
 				chenge_head(turn_config.direction, turn_config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_L;
@@ -229,15 +230,15 @@ void adachi(RUNConfig RUN_config, uint16_t gx, uint16_t gy) {
 				RUN_config.value = BLOCK_LENGTH * 0.5;
 				straight(RUN_config);
 				turn_config.direction = TURN_L;
-				turn_config.finish_speed=turn_config.initial_speed=0;
+				turn_config.finish_speed = turn_config.initial_speed = 0;
 				turn(turn_config);
 				chenge_head(turn_config.direction, turn_config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_R;
-				turn_config.finish_speed=turn_config.initial_speed=300;
+				turn_config.finish_speed = turn_config.initial_speed = 300;
 			} else {
-				turn_config.direction = TURN_L;
-				slalom(turn_config);
+				slalom90_config.config.direction = TURN_L;
+				slalom(slalom90_config);
 				chenge_head(turn_config.direction, turn_config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_R;
@@ -320,14 +321,15 @@ void hidarite(void) {
 	}
 }
 
-void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
+void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
+		SLALOMConfig slalom180_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		uint16_t sy, int8_t shead) {
-	RUTE rute[256] = { 0 };
+	RUTE rute[100]={0};
 	uint16_t x = sx, y = sy;
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
 	uint8_t temp_wall;
-	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
+//	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("saitan\n");
 		osMutexRelease(UART_MutexHandle);
@@ -335,7 +337,7 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 
 	make_smap(gx, gy, 1);
 	print_map();
-	//進行方向決定
+//進行方向決定
 
 	while (x != gx || y != gy) {
 		temp_wall = (((((map[x + y * MAP_X_MAX].wall & 0x0f)
@@ -610,9 +612,9 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		case 1:
 			//printf("TURN R\n");
 			//mortor_stop();
-			turn_config.direction = TURN_R;
-			turn_config.value = rute[f].value;
-			slalom(turn_config);
+			slalom90_config.config.direction = TURN_R;
+			slalom90_config.config.value = rute[f].value;
+			slalom(slalom90_config);
 			chenge_head(TURN_R, 90, &head);
 			break;
 		case 2:
@@ -623,9 +625,9 @@ void saitan(RUNConfig RUN_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		case 3:
 			//	printf("TURNL\n");
 			//mortor_stop();
-			turn_config.direction = TURN_L;
-			turn_config.value = rute[f].value;
-			slalom(turn_config);
+			slalom90_config.config.direction = TURN_L;
+			slalom90_config.config.value = rute[f].value;
+			slalom(slalom90_config);
 			chenge_head(TURN_L, 90, &head);
 			break;
 		}

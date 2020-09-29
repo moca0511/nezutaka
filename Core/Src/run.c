@@ -38,9 +38,7 @@ uint16_t straight(RUNConfig config) {
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
-	int32_t tick_prev = osKernelGetTickCount();
-	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), INITIAL_Hz = SPEEDtoHz(
-			config.initial_speed), FINISH_Hz = SPEEDtoHz(config.finish_speed);
+	float32_t MAX_Hz = SPEEDtoHz(config.max_speed),FINISH_Hz = SPEEDtoHz(config.finish_speed);
 
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
@@ -199,7 +197,6 @@ void turn(RUNConfig config) {
 			(float32_t) config.acceleration / (uint32_t) configTICK_RATE_HZ);
 	int32_t gensoku = -1;
 	float32_t speed = SPEEDtoHz(config.initial_speed);
-	int32_t tick_prev = osKernelGetTickCount();
 	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), INITIAL_Hz = SPEEDtoHz(
 			config.initial_speed), FINISH_Hz = SPEEDtoHz(config.finish_speed);
 
@@ -263,17 +260,17 @@ void turn(RUNConfig config) {
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
 
-void slalom(RUNConfig config) {
+void slalom(SLALOMConfig config) {
 	//1移動用パラメータ設定
 
 	float32_t plpl = SPEEDtoHz(
-			(float32_t) config.acceleration / (uint32_t) configTICK_RATE_HZ);
-	float32_t fspeedR = SPEEDtoHz(config.initial_speed), fspeedL = SPEEDtoHz(
-			config.initial_speed);
+			(float32_t) config.config.acceleration / (uint32_t) configTICK_RATE_HZ);
+	float32_t fspeedR = SPEEDtoHz(config.config.initial_speed), fspeedL = SPEEDtoHz(
+			config.config.initial_speed);
 	float32_t deg_speed = 0, deg = 0;
 //	int32_t tick_prev = osKernelGetTickCount(),tick = osKernelGetTickCount();
-	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), INITIAL_Hz = SPEEDtoHz(
-			config.initial_speed), FINISH_Hz = SPEEDtoHz(config.finish_speed);
+	float32_t MAX_Hz = SPEEDtoHz(config.config.max_speed), INITIAL_Hz = SPEEDtoHz(
+			config.config.initial_speed), FINISH_Hz = SPEEDtoHz(config.config.finish_speed);
 
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
@@ -285,6 +282,7 @@ void slalom(RUNConfig config) {
 
 	mortor_direction(MR, MOVE_FORWARD);
 	mortor_direction(ML, MOVE_FORWARD);
+	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.before_ofset));
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
@@ -304,15 +302,15 @@ void slalom(RUNConfig config) {
 		}
 
 		//1スピード変更処理
-		if ((int32_t) (deg * 0.0053 * 180 / PI) >= config.value * 0.5
+		if ((int32_t) (deg * 0.0053 * 180 / PI) >= config.config.value * 0.5
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
 
-		deg_speed += plpl * 5;
-		if (config.direction == TURN_R) {
-			fspeedL = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
-			fspeedR = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
+		deg_speed += plpl * 5.0;
+		if (config.config.direction == TURN_R) {
+			fspeedL = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2.0;
+			fspeedR = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2.0;
 //				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //					printf("R=%ld,L=%ld\n",speedR,speedL);
 //					osMutexRelease(UART_MutexHandle);
@@ -320,22 +318,22 @@ void slalom(RUNConfig config) {
 
 			if (fspeedL <= FINISH_Hz || fspeedR >= FINISH_Hz
 					|| fspeedL >= MAX_Hz || fspeedR < SPEEDtoHz(SPEED_MIN)) {
-				deg_speed -= plpl * 5;
-				fspeedL = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
-				fspeedR = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
+				deg_speed -= plpl * 5.0;
+				fspeedL = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2.0;
+				fspeedR = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2.0;
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //						printf("re\n");
 //						osMutexRelease(UART_MutexHandle);
 //					}
 			}
 		} else {
-			fspeedL = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
-			fspeedR = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
+			fspeedL = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2.0;
+			fspeedR = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2.0;
 			if (fspeedR <= FINISH_Hz || fspeedL >= FINISH_Hz
 					|| fspeedR >= MAX_Hz || fspeedL < SPEEDtoHz(SPEED_MIN)) {
-				deg_speed -= plpl * 5;
-				fspeedL = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2;
-				fspeedR = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2;
+				deg_speed -= plpl * 5.0;
+				fspeedL = INITIAL_Hz - deg_speed * TREAD_WIDTH / 2.0;
+				fspeedR = INITIAL_Hz + deg_speed * TREAD_WIDTH / 2.0;
 			}
 		}
 
@@ -360,9 +358,9 @@ void slalom(RUNConfig config) {
 //			osMutexRelease(UART_MutexHandle);
 //		}
 
-	} while ((int32_t) (deg * 0.0053 * 180 / PI) < config.value);
+	} while ((int32_t) (deg * 0.0053 * 180 / PI) < config.config.value);
 
-	if (config.finish_speed == 0) {
+	if (config.config.finish_speed == 0) {
 		mortor_stop();
 	} else {
 		MotorHz_R = MotorHz_L = FINISH_Hz;
@@ -370,6 +368,7 @@ void slalom(RUNConfig config) {
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
+	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.after_ofset));
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }

@@ -35,6 +35,8 @@ extern "C" {
 #include"uart.h"
 #include<stdio.h>
 #include"timer.h"
+#include "arm_math.h"
+#include "arm_const_structs.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
