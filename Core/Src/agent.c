@@ -173,7 +173,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			} else {
 				slalom90_config.config.direction = TURN_R;
 				slalom(slalom90_config);
-				chenge_head(turn_config.direction, turn_config.value, &head);
+				chenge_head(slalom90_config.config.direction, slalom90_config.config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_L;
 				chenge_pos(1);
@@ -239,7 +239,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			} else {
 				slalom90_config.config.direction = TURN_L;
 				slalom(slalom90_config);
-				chenge_head(turn_config.direction, turn_config.value, &head);
+				chenge_head(slalom90_config.config.direction, slalom90_config.config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_R;
 				chenge_pos(1);

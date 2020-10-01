@@ -36,7 +36,7 @@ extern void Sensor(void *argument) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 				0U) == TASK_STOP) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("SSTOP\n");
+//				printf("SSTOP\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
@@ -44,14 +44,14 @@ extern void Sensor(void *argument) {
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("Sn\n\n");
+//				printf("Sn\n\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 			osWaitForever) != TASK_START)
 				;
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("Sstart\n");
+//				printf("Sstart\n");
 				osMutexRelease(UART_MutexHandle);
 
 			}
@@ -295,7 +295,7 @@ extern void SENSOR_PRINT(void *argument) {
 				;
 		}
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("\nRS=%ld,LS=%ld,RF=%ld,LF=%ld\n\n", sensorData.ADC_DATA_RS,
+			printf("%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
 					sensorData.ADC_DATA_LF);
 			osMutexRelease(UART_MutexHandle);

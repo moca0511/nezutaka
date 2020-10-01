@@ -207,7 +207,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	setbuf(stdout, NULL); //buff不使用
 //HAL_TIM_Base_Stop_IT(&htim2);
-	printf("hello!\n");
+//	printf("hello!\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */

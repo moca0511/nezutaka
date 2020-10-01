@@ -282,7 +282,9 @@ void slalom(SLALOMConfig config) {
 
 	mortor_direction(MR, MOVE_FORWARD);
 	mortor_direction(ML, MOVE_FORWARD);
-	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.before_ofset));
+	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.before_ofset)){
+		osDelay(1);
+	}
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
@@ -368,7 +370,9 @@ void slalom(SLALOMConfig config) {
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
-	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.after_ofset));
+	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.after_ofset)){
+		osDelay(1);
+	}
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
