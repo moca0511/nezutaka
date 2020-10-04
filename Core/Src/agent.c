@@ -26,7 +26,7 @@ extern uint32_t us;
 extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
 extern uint32_t wall_config[12];
-extern MAP map[MAP_SIZE];
+extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
@@ -73,8 +73,8 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			straight(RUN_config);
 
 			mortor_stop();
-			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x80)
+			if (((((map[posX][posY].wall & 0x0f)
+					| (map[posX][posY].wall << 4)) << head) & 0x80)
 					== 0x80) {
 				turn_u();
 				mortor_stop();
@@ -93,21 +93,21 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 
 		make_smap(gx, gy, 0);
 
-		if ((map[posX + posY * MAP_X_MAX].wall & 0x88) == 0x80
-				&& map[posX + posY * MAP_X_MAX].step
-						> map[posX + (posY + 1) * MAP_X_MAX].step) {
+		if ((map[posX][posY].wall & 0x88) == 0x80
+				&& map[posX][posY].step
+						> map[posX][posY+1].step) {
 			temp_head = 0;
-		} else if ((map[posX + posY * MAP_X_MAX].wall & 0x11) == 0x10
-				&& map[posX + posY * MAP_X_MAX].step
-						> map[posX + posY * MAP_X_MAX - 1].step) {
+		} else if ((map[posX][posY].wall & 0x11) == 0x10
+				&& map[posX][posY].step
+						> map[posX-1][posY].step) {
 			temp_head = 3;
-		} else if ((map[posX + posY * MAP_X_MAX].wall & 0x44) == 0x40
-				&& map[posX + posY * MAP_X_MAX].step
-						> map[posX + posY * MAP_X_MAX + 1].step) {
+		} else if ((map[posX][posY].wall & 0x44) == 0x40
+				&& map[posX][posY].step
+						> map[posX+1][posY].step) {
 			temp_head = 1;
-		} else if ((map[posX + posY * MAP_X_MAX].wall & 0x22) == 0x20
-				&& map[posX + posY * MAP_X_MAX].step
-						> map[posX + (posY - 1) * MAP_X_MAX].step) {
+		} else if ((map[posX][posY].wall & 0x22) == 0x20
+				&& map[posX][posY].step
+						> map[posX][posY-1].step) {
 			temp_head = 2;
 		} else {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -126,7 +126,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		if (temp_head >= 4) {    //桁上がりの考慮
 			temp_head -= 4;
 		}
-		//print_map();
+//		print_map();
 
 		switch (temp_head) {
 		case 0:
@@ -209,8 +209,8 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			mortor_stop();
 			turn(U_config);
 			chenge_head(U_config.direction, U_config.value, &head);
-			if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-					| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
+			if (((((map[posX][posY].wall & 0x0f)
+					| (map[posX][posY].wall << 4)) << head) & 0x20)
 					== 0x20) {
 				mortor_stop();
 				sirituke();
@@ -340,11 +340,11 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 //進行方向決定
 
 	while (x != gx || y != gy) {
-		temp_wall = (((((map[x + y * MAP_X_MAX].wall & 0x0f)
-				+ ((map[x + y * MAP_X_MAX].wall & 0x0f) << 4)) << head_buf)
+		temp_wall = (((((map[x][y].wall & 0x0f)
+				+ ((map[x][y].wall & 0x0f) << 4)) << head_buf)
 				& 0xf0) >> 4)
-				+ ((((map[x + y * MAP_X_MAX].wall & 0xf0)
-						+ (map[x + y * MAP_X_MAX].wall >> 4)) << head_buf)
+				+ ((((map[x][y].wall & 0xf0)
+						+ (map[x][y].wall >> 4)) << head_buf)
 						& 0xf0);
 		temp_head = 4;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
@@ -354,29 +354,29 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		if ((temp_wall & 0x88) == 0x80) {
 			switch (head_buf) {
 			case 0:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y + 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y+1].step) {
 					y++;
 					temp_head = 0;
 				}
 				break;
 			case 1:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX + 1].step) {
+				if (map[x][y].step
+						> map[x+1][y].step) {
 					x++;
 					temp_head = 0;
 				}
 				break;
 			case 2:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y - 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y-1].step) {
 					y--;
 					temp_head = 0;
 				}
 				break;
 			case 3:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX - 1].step) {
+				if (map[x][y].step
+						> map[x-1][y].step) {
 					x--;
 					temp_head = 0;
 				}
@@ -386,29 +386,29 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		if ((temp_wall & 0x44) == 0x40 && temp_head == 4) {
 			switch (head_buf) {
 			case 0:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX + 1].step) {
+				if (map[x][y].step
+						> map[x+1][y].step) {
 					x++;
 					temp_head = 1;
 				}
 				break;
 			case 1:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y - 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y-1].step) {
 					y--;
 					temp_head = 1;
 				}
 				break;
 			case 2:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX - 1].step) {
+				if (map[x][y].step
+						> map[x-1][y].step) {
 					x--;
 					temp_head = 1;
 				}
 				break;
 			case 3:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y + 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y+1].step) {
 					y++;
 					temp_head = 1;
 				}
@@ -418,29 +418,29 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		if ((temp_wall & 0x11) == 0x10 && temp_head == 4) {
 			switch (head_buf) {
 			case 0:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX - 1].step) {
+				if (map[x][y].step
+						> map[x-1][y].step) {
 					x--;
 					temp_head = 3;
 				}
 				break;
 			case 1:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y + 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y+1].step) {
 					y++;
 					temp_head = 3;
 				}
 				break;
 			case 2:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX + 1].step) {
+				if (map[x][y].step
+						> map[x+1][y].step) {
 					x++;
 					temp_head = 3;
 				}
 				break;
 			case 3:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y - 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y-1].step) {
 					y--;
 					temp_head = 3;
 				}
@@ -451,29 +451,29 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 
 			switch (head_buf) {
 			case 0:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y - 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y-1].step) {
 					y--;
 					temp_head = 2;
 				}
 				break;
 			case 1:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX - 1].step) {
+				if (map[x][y].step
+						> map[x-1][y].step) {
 					x--;
 					temp_head = 2;
 				}
 				break;
 			case 2:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + y * MAP_X_MAX + 1].step) {
+				if (map[x][y].step
+						> map[x+1][y].step) {
 					x++;
 					temp_head = 2;
 				}
 				break;
 			case 3:
-				if (map[x + y * MAP_X_MAX].step
-						> map[x + (y + 1) * MAP_X_MAX].step) {
+				if (map[x][y].step
+						> map[x][y+1].step) {
 					y++;
 					temp_head = 2;
 				}
@@ -639,8 +639,8 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	turn_u();
 	posX = gx;
 	posY = gy;
-	if (((((map[posX + posY * MAP_X_MAX].wall & 0x0f)
-			| (map[posX + posY * MAP_X_MAX].wall << 4)) << head) & 0x20)
+	if (((((map[posX][posY].wall & 0x0f)
+			| (map[posX][posY].wall << 4)) << head) & 0x20)
 			== 0x20) {
 //		mortor_stop();
 		sirituke();

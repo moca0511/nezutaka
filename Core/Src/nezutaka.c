@@ -25,7 +25,7 @@ extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
 uint32_t wall_config[12] = { 1200, 1200, 2600, 2600, 500, 500, 500, 500, 700,
 		700, 600, 600 };
-extern MAP map[MAP_SIZE];
+extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
@@ -348,14 +348,14 @@ void mode11(void) {
 		osMutexRelease(UART_MutexHandle);
 	}
 //	print_map();
-	step_buf = map[startX + startY * MAP_X_MAX].step;
+	step_buf = map[startX][startY].step;
 	make_smap(goalX, goalY, 1);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("saitan map\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 //	print_map();
-	while (map[startX + startY * MAP_X_MAX].step > step_buf) {
+	while (map[startX][startY].step > step_buf) {
 		//1最短の可能性があり未探索の場所を探索
 		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
 		//
@@ -371,7 +371,7 @@ void mode11(void) {
 			osMutexRelease(UART_MutexHandle);
 		}
 //		print_map();
-		step_buf = map[startX + startY * MAP_X_MAX].step;
+		step_buf = map[startX][startY].step;
 		make_smap(goalX, goalY, 1);
 		Delay_ms(100);
 	}
@@ -431,14 +431,14 @@ void mode12(void) {
 		osMutexRelease(UART_MutexHandle);
 	}
 	print_map();
-	step_buf = map[startX + startY * MAP_X_MAX].step;
+	step_buf = map[startX][startY].step;
 	make_smap(goalX, goalY, 1);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("saitan map\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 	print_map();
-	while (map[startX + startY * MAP_X_MAX].step > step_buf) {
+	while (map[startX][startY].step > step_buf) {
 		//1最短の可能性があり未探索の場所を探索
 		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
 		//
@@ -454,7 +454,7 @@ void mode12(void) {
 			osMutexRelease(UART_MutexHandle);
 		}
 		print_map();
-		step_buf = map[startX + startY * MAP_X_MAX].step;
+		step_buf = map[startX][startY].step;
 		make_smap(goalX, goalY, 1);
 		Delay_ms(100);
 	}

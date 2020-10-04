@@ -22,7 +22,6 @@
 typedef struct MAP {
 	uint8_t step;	//　ゴールまでの距離
 	uint8_t wall;	//　北東南西北東南西
-	uint8_t check :1;	//　探査済み
 } MAP;
 
 void smap_Init(void);  // 歩数マップ初期化
