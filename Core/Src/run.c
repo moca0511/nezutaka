@@ -38,7 +38,8 @@ uint16_t straight(RUNConfig config) {
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop = 0; //　移動距離補正フラグ
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
-	float32_t MAX_Hz = SPEEDtoHz(config.max_speed),FINISH_Hz = SPEEDtoHz(config.finish_speed);
+	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), FINISH_Hz = SPEEDtoHz(
+			config.finish_speed);
 
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
@@ -94,13 +95,14 @@ uint16_t straight(RUNConfig config) {
 		if (wall_calibration_F == 1 && fspeed != 0) {
 
 			if (config.direction == MOVE_FORWARD) {
-				if (sensorData.ADC_DATA_LS <= wall_config[LS_WALL] * 0.95
-						&& sensorData.ADC_DATA_LS
-								>= wall_config[LS_WALL] * 1.05) {
-					deviation_sumL = 0;
-				}
+
 				if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
-						&& sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
+						&& (sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS||sensorData.ADC_DATA_RS < wall_config[RS_threshold])) { // *　壁がある時だけPID操作
+					if (sensorData.ADC_DATA_LS <= wall_config[LS_WALL] * 0.95
+											&& sensorData.ADC_DATA_LS
+													>= wall_config[LS_WALL] * 1.05) {
+										deviation_sumL = 0;
+									}
 					fspeed_R = PID(fspeed_R,
 							wall_config[LS_WALL] - wall_config[LS_WALL] % 10,
 							sensorData.ADC_DATA_LS
@@ -112,7 +114,7 @@ uint16_t straight(RUNConfig config) {
 
 				}
 				if (sensorData.ADC_DATA_RS > wall_config[RS_threshold]
-						&& sensorData.ADC_DATA_LS < sensorData.ADC_DATA_RS) { // *　壁がある時だけPID操作
+						&& (sensorData.ADC_DATA_LS < sensorData.ADC_DATA_RS||sensorData.ADC_DATA_LS < wall_config[LS_threshold])) { // *　壁がある時だけPID操作
 					if (sensorData.ADC_DATA_RS <= wall_config[RS_WALL] * 0.95
 							&& sensorData.ADC_DATA_RS
 									>= wall_config[RS_WALL] * 1.05) {
@@ -134,6 +136,8 @@ uint16_t straight(RUNConfig config) {
 
 		MotorHz_R = (int32_t) fspeed_R;
 		MotorHz_L = (int32_t) fspeed_L;
+
+
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //			printf(
 //					"speedL=%ld,speedR=%ld,plpl=%d,(((MotorStepCount_R + MotorStepCount_L) / 2 = %d,stop_count=%d\n",
@@ -150,14 +154,13 @@ uint16_t straight(RUNConfig config) {
 			break;
 		}
 		//　前壁判定
-		if (wall_calibration_F == 1
-				&& (sensorData.ADC_DATA_LF
-						>= (wall_config[LF_threshold]
-								+ wall_config[LF_threshold]) * 0.7
-						&& sensorData.ADC_DATA_RF
-								>= (wall_config[RF_threshold]
-										+ wall_config[RF_threshold]) * 0.7)
-				&& stop == 0 && config.direction == MOVE_FORWARD) {
+		if (wall_calibration_F == 1 && (sensorData.ADC_DATA_LF
+				>= (wall_config[LF_threshold]
+						+ wall_config[LF_threshold]) * 0.7
+				&& sensorData.ADC_DATA_RF
+				>= (wall_config[RF_threshold]
+						+ wall_config[RF_threshold]) * 0.7)
+		&& stop == 0 && config.direction == MOVE_FORWARD) {
 			if (plpl > 0) {
 				plpl *= -1;
 			}
@@ -264,13 +267,15 @@ void slalom(SLALOMConfig config) {
 	//1移動用パラメータ設定
 
 	float32_t plpl = SPEEDtoHz(
-			(float32_t) config.config.acceleration / (uint32_t) configTICK_RATE_HZ);
-	float32_t fspeedR = SPEEDtoHz(config.config.initial_speed), fspeedL = SPEEDtoHz(
-			config.config.initial_speed);
+			(float32_t) config.config.acceleration
+					/ (uint32_t) configTICK_RATE_HZ);
+	float32_t fspeedR = SPEEDtoHz(config.config.initial_speed), fspeedL =
+			SPEEDtoHz(config.config.initial_speed);
 	float32_t deg_speed = 0, deg = 0;
 //	int32_t tick_prev = osKernelGetTickCount(),tick = osKernelGetTickCount();
-	float32_t MAX_Hz = SPEEDtoHz(config.config.max_speed), INITIAL_Hz = SPEEDtoHz(
-			config.config.initial_speed), FINISH_Hz = SPEEDtoHz(config.config.finish_speed);
+	float32_t MAX_Hz = SPEEDtoHz(config.config.max_speed), INITIAL_Hz =
+			SPEEDtoHz(config.config.initial_speed), FINISH_Hz = SPEEDtoHz(
+			config.config.finish_speed);
 
 	//printf("move:%ld,stopcount:%ld,speed:%ld,direction:%d\n",move,stopcount,speed,direction);
 	//1回転方向設定
@@ -282,9 +287,9 @@ void slalom(SLALOMConfig config) {
 
 	mortor_direction(MR, MOVE_FORWARD);
 	mortor_direction(ML, MOVE_FORWARD);
-	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.before_ofset)){
-		osDelay(1);
-	}
+	while ((MotorStepCount_R + MotorStepCount_L) / 2
+			< SPEEDtoHz(config.before_ofset))
+		;
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
@@ -370,9 +375,11 @@ void slalom(SLALOMConfig config) {
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
-	while((MotorStepCount_R+MotorStepCount_L)/2 < SPEEDtoHz(config.after_ofset)){
-		osDelay(1);
-	}
+	while ((MotorStepCount_R + MotorStepCount_L) / 2
+			< SPEEDtoHz(config.after_ofset))
+		;
+	MotorStepCount_R = 0;
+	MotorStepCount_L = 0;
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
@@ -380,7 +387,7 @@ void slalom(SLALOMConfig config) {
 void sirituke(void) {
 	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 2 };
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("sirituke\n");
+//		printf("sirituke\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 	straight(RUN_Config);

@@ -9,10 +9,10 @@
 #define INC_MAZE_H_
 #include"main.h"
 
-#define MAP_X_MAX 2
-#define MAP_Y_MAX 2
+#define MAP_X_MAX 4
+#define MAP_Y_MAX 6
 #define MAP_SIZE	MAP_X_MAX*MAP_Y_MAX	//　マップマスの数
-#define goalX 1
+#define goalX 2
 #define goalY 0
 #define startX 0
 #define startY 0

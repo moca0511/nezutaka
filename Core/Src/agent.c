@@ -46,7 +46,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 	int8_t move_f = -1;
 	game_mode = 0;
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("adachi\n");
+//		printf("adachi\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
@@ -84,7 +84,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			music();
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("G\n");
+//				printf("G\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			break;
@@ -110,7 +110,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			temp_head = 2;
 		} else {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("err\n");
+//				printf("err\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			mortor_stop();
@@ -130,7 +130,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		switch (temp_head) {
 		case 0:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("S\n");
+//				printf("S\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
@@ -150,11 +150,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 //			straight(RUN_config);
 //			wall_set(0x01);
 
-			RUN_config.value = BLOCK_LENGTH;
 			break;
 		case 1:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("R\n");
+//				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			if (move_f == -1) {
@@ -198,7 +197,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		case 2:
 			//	printf("U\n");
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("U\n");
+//				printf("U\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
@@ -220,7 +219,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			break;
 		case 3:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("L\n");
+//				printf("L\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			if (move_f == -1) {
@@ -331,12 +330,12 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	uint8_t temp_wall;
 //	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		printf("saitan\n");
+//		printf("saitan\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
 	make_smap(gx, gy, 1);
-	print_map();
+//	print_map();
 //進行方向決定
 
 	while (x != gx || y != gy) {
@@ -348,7 +347,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 						& 0xf0);
 		temp_head = 4;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("temp_wall=0x%2x\n", temp_wall);
+//			printf("temp_wall=0x%2x\n", temp_wall);
 			osMutexRelease(UART_MutexHandle);
 		}
 		if ((temp_wall & 0x88) == 0x80) {
@@ -482,7 +481,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		}
 		if (temp_head == 4) {
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("errer\n");
+//				printf("errer\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			//			mortor_sleep();
@@ -506,7 +505,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		switch (temp_head) {
 		case 0:
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("S\n");
+//				printf("S\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			//printf("straight\n");
@@ -528,7 +527,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		case 1:
 			//printf("TURN R\n");
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("R\n");
+//				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 //			if (rute[i - 1].direction == MOVE_FORWARD) {
@@ -545,7 +544,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		case 2:
 			//	printf("U\n");
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("U\n");
+//				printf("U\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			rute[i].direction = temp_head;
@@ -558,7 +557,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			break;
 		case 3:
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("L\n");
+//				printf("L\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			//	printf("TURNL\n");
@@ -576,19 +575,19 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		}
 		i++;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("x=%d,y=%d,i=%d\n", x, y, i);
+//			printf("x=%d,y=%d,i=%d\n", x, y, i);
 			osMutexRelease(UART_MutexHandle);
 		}
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
-			printf("%d:direction=%d,value=%ld\n", f, rute[f].direction,
-					rute[f].value);
+//			printf("%d:direction=%d,value=%ld\n", f, rute[f].direction,
+//					rute[f].value);
 		}
 		osMutexRelease(UART_MutexHandle);
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		printf("end\n");
+//		printf("end\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
@@ -597,7 +596,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
 	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("saitan to goal\n");
+//		printf("saitan to goal\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 
