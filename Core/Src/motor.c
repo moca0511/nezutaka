@@ -12,12 +12,15 @@
 extern osMutexId_t UART_MutexHandle;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
-uint32_t MotorHz_R = 0;
-uint32_t MotorHz_L = 0;
+
+uint32_t MotorSPEED_R = 0;
+uint32_t MotorSPEED_L = 0;
 uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
 extern osThreadId_t MOTOR_R_TaskHandle;
 extern osThreadId_t MOTOR_L_TaskHandle;
+extern osSemaphoreId_t SchengeRSemHandle;
+extern osSemaphoreId_t SchengeLSemHandle;
 
 extern void MOTOR_R(void *argument) {
 	/* USER CODE BEGIN MOTOR_R */
@@ -36,14 +39,14 @@ extern void MOTOR_R(void *argument) {
 			osWaitForever) != TASK_START)
 				;
 		}
-		if (MotorHz_R != speed_prev) {
+		if (MotorSPEED_R != speed_prev) {
 
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("MotorHz_R:%ld \n", MotorHz_R);
 //				osMutexRelease(UART_MutexHandle);
 //			}
-			speed_prev = MotorHz_R;
-			hz = MotorHz_R;
+			speed_prev = MotorSPEED_R;
+			hz = SPEEDtoHz(MotorSPEED_R);
 			if (hz == 0) {
 				HAL_TIM_PWM_Stop_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
 			} else {
@@ -55,6 +58,7 @@ extern void MOTOR_R(void *argument) {
 				HAL_TIM_PWM_Start_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
 			}
 		}
+		osSemaphoreRelease(SchengeRSemHandle);
 		osThreadYield();
 	}
 
@@ -86,14 +90,14 @@ extern void MOTOR_L(void *argument) {
 			osWaitForever) != TASK_START)
 				;
 		}
-		if (MotorHz_L != speed_prev) {
+		if (MotorSPEED_L != speed_prev) {
 
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("MotorHz_L:%ld \n", MotorHz_L);
 //				osMutexRelease(UART_MutexHandle);
 //			}
-			speed_prev = MotorHz_L;
-			hz = MotorHz_L;
+			speed_prev = MotorSPEED_L;
+			hz = SPEEDtoHz(MotorSPEED_L);
 			if (hz == 0) {
 				HAL_TIMEx_PWMN_Stop_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
 			} else {
@@ -105,6 +109,7 @@ extern void MOTOR_L(void *argument) {
 				HAL_TIMEx_PWMN_Start_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
 			}
 		}
+		osSemaphoreRelease(SchengeLSemHandle);
 		osThreadYield();
 	}
 	/* USER CODE END MOTER_SLEEP_CHECK */
@@ -112,22 +117,22 @@ extern void MOTOR_L(void *argument) {
 
 extern void MORTOR_SLEEP_CHECK(void *argument) {
 	Delay_ms(10);
-	int16_t sleepcount = 10;
+	int16_t sleepcount = 5;
 	for (;;) {
-		if (MotorHz_R == 0 && MotorHz_L == 0) {
+		if (MotorSPEED_R == 0 && MotorSPEED_L == 0) {
 			if (sleepcount <= 0) {
 				HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_SET);
 				HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_SET);
-				sleepcount = 10;
+				sleepcount = 5;
 			} else {
 				sleepcount--;
 			}
 		} else {
 			HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
-			sleepcount = 10;
+			sleepcount = 5;
 		}
-		Delay_ms(10);
+		Delay_ms(100);
 		//		osThreadYield();
 	}
 }
@@ -152,9 +157,14 @@ void mortor_direction(uint8_t motor, uint8_t direction) {
 void mortor_stop(void) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
-	MotorHz_R = 0;
-	MotorHz_L = 0;
-	Delay_ms(10);
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//		printf("stop\n");
+//		osMutexRelease(UART_MutexHandle);
+//	}
+	MotorSPEED_R = 0;
+	MotorSPEED_L = 0;
+	osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
+	osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }

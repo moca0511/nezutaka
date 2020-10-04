@@ -134,6 +134,16 @@ osSemaphoreId_t sensor_readSemHandle;
 const osSemaphoreAttr_t sensor_readSem_attributes = {
   .name = "sensor_readSem"
 };
+/* Definitions for SchengeRSem */
+osSemaphoreId_t SchengeRSemHandle;
+const osSemaphoreAttr_t SchengeRSem_attributes = {
+  .name = "SchengeRSem"
+};
+/* Definitions for SchengeLSem */
+osSemaphoreId_t SchengeLSemHandle;
+const osSemaphoreAttr_t SchengeLSem_attributes = {
+  .name = "SchengeLSem"
+};
 /* USER CODE BEGIN PV */
 
 
@@ -229,6 +239,12 @@ int main(void)
 
   /* creation of sensor_readSem */
   sensor_readSemHandle = osSemaphoreNew(1, 1, &sensor_readSem_attributes);
+
+  /* creation of SchengeRSem */
+  SchengeRSemHandle = osSemaphoreNew(1, 1, &SchengeRSem_attributes);
+
+  /* creation of SchengeLSem */
+  SchengeLSemHandle = osSemaphoreNew(1, 1, &SchengeLSem_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
@@ -865,6 +881,8 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
 	osSemaphoreAcquire(wait_usSemHandle, 0);
+	osSemaphoreAcquire(SchengeLSemHandle, 0);
+	osSemaphoreAcquire(SchengeRSemHandle, 0);
 	portTASK_USES_FLOATING_POINT();
 	Delay_ms(10);
 
@@ -875,7 +893,6 @@ void StartDefaultTask(void *argument)
 	}
   /* USER CODE END 5 */
 }
-
 
 /**
   * @brief  This function is executed in case of error occurrence.

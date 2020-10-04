@@ -17,8 +17,9 @@
 #include"agent.h"
 #include "arm_math.h"
 #include "arm_const_structs.h"
-extern uint32_t MotorHz_R;
-extern uint32_t MotorHz_L;
+
+extern uint32_t MotorSPEED_R;
+extern uint32_t MotorSPEED_L;
 extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
@@ -187,7 +188,7 @@ void mode3(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	ajast();
-	run_block(RUN_config);
+	straight(RUN_config);
 //	mortor_sleep();
 	tone(tone_hiC, 50);
 }
@@ -210,11 +211,9 @@ void mode4(void) {
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
 
-	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
+	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
 	straight(RUN_config);
-	tone(tone_E, 10);
 	slalom(slalom_config);
-	tone(tone_E, 10);
 
 //	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
 //	RUN_config.finish_speed = 0;
@@ -234,20 +233,15 @@ void mode5(void) {
 	 turn_u();
 	 //	mortor_sleep();
 	 tone(tone_hiC, 50);*/
-
-	SLALOMConfig slalom_config = { { TURN_R, 400, 400, 2000, 700, 90 }, 8, 8 };
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config =
+			{ { TURN_R, 400, 400, 2000, 700, 90 }, 15, 15 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH/2 };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
 
-	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
+	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
 	straight(RUN_config);
-	tone(tone_E, 10);
-	slalom(slalom_config);
-	tone(tone_E, 10);
-//	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
-//	RUN_config.finish_speed = 0;
-//	straight(RUN_config);
+	slalom(slalom90_config);
 	mortor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
@@ -259,12 +253,9 @@ void mode6(void) {
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
 
-	RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
+	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
 	straight(RUN_config);
 	slalom(slalom90_config);
-//	RUN_config.initial_speed = HztoSPEED((MotorHz_L + MotorHz_R) / 2);
-//	RUN_config.finish_speed = 0;
-//	straight(RUN_config);
 	mortor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };

@@ -22,8 +22,9 @@ extern osThreadId_t WALL_READ_TASKHandle;
 extern osThreadId_t SENSOR_PRINT_TAHandle;
 extern uint32_t wall_config[12];
 uint8_t wall_calibration_F = 1;
-extern uint32_t MotorHz_R;
-extern uint32_t MotorHz_L;
+
+extern uint32_t MotorSPEED_R;
+extern uint32_t MotorSPEED_L;
 
 extern void Sensor(void *argument) {
 	/* USER CODE BEGIN Sensor */
@@ -305,7 +306,7 @@ extern void SENSOR_PRINT(void *argument) {
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("%ld,%ld,%ld,%ld,%ld,%ld\n",sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-					sensorData.ADC_DATA_LF, MotorHz_L, MotorHz_R);
+					sensorData.ADC_DATA_LF, (int32_t)MotorSPEED_L, (int32_t)MotorSPEED_R);
 			osMutexRelease(UART_MutexHandle);
 		}
 		Delay_ms(100);
