@@ -480,7 +480,7 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 1000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 800, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config =
 			{ { TURN_R, 300, 300, 2000, 800, 90 }, 22, 22 }, slalom180_config =
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 14, 14 };
