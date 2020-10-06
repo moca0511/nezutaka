@@ -218,7 +218,7 @@ void mode4(void) {
 //	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
 //	RUN_config.finish_speed = 0;
 //	straight(RUN_config);
-	mortor_stop();
+	motor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //turn 180° and sirituke
@@ -242,7 +242,7 @@ void mode5(void) {
 	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
 	straight(RUN_config);
 	slalom(slalom90_config);
-	mortor_stop();
+	motor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //SLALOM_R
@@ -256,7 +256,7 @@ void mode6(void) {
 	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
 	straight(RUN_config);
 	slalom(slalom90_config);
-	mortor_stop();
+	motor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };
 //	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -322,7 +322,7 @@ void mode11(void) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	SLALOMConfig slalom90_config =
-			{ { TURN_R, 300, 300, 2000, 800, 90 }, 20, 25 }, slalom180_config =
+			{ { TURN_R, 300, 300, 2000, 800, 90 }, 22, 22 }, slalom180_config =
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 30, 30 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 
@@ -344,17 +344,17 @@ void mode11(void) {
 	Delay_ms(100);
 	make_smap(goalX, goalY, 0);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("tansaku map\n");
+		printf("tansaku map\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-//	print_map();
+	print_map();
 	step_buf = map[startX][startY].step;
 	make_smap(goalX, goalY, 1);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("saitan map\n");
+		printf("saitan map\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-//	print_map();
+	print_map();
 	while (map[startX][startY].step > step_buf) {
 		//1最短の可能性があり未探索の場所を探索
 		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
@@ -480,9 +480,9 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 1500, 2000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 800, 1000, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config =
-			{ { TURN_R, 300, 300, 2000, 800, 90 }, 30, 30 }, slalom180_config =
+			{ { TURN_R, 300, 300, 2000, 800, 90 }, 22, 22 }, slalom180_config =
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 14, 14 };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.6 };
@@ -503,7 +503,7 @@ void mode13(void) {
 	slalom90_config.config.acceleration = 800;
 	slalom180_config.config.acceleration = 700;
 	slalom90_config.after_ofset = slalom90_config.before_ofset =
-			slalom180_config.after_ofset = slalom180_config.before_ofset = 30;
+			slalom180_config.after_ofset = slalom180_config.before_ofset = 22;
 
 	saitan(RUN_config, slalom90_config, slalom180_config, startX, startY, goalX,
 	goalY, head);

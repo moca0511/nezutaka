@@ -28,5 +28,5 @@
 float32_t SPEEDtoHz(float32_t speed);
 float32_t HztoSPEED(float32_t Hz);
 void mortor_direction(uint8_t motor,uint8_t direction);
-void mortor_stop(void);
+void motor_stop(void);
 #endif /* INC_MOTOR_H_ */

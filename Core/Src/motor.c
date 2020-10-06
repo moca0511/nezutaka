@@ -154,7 +154,7 @@ void mortor_direction(uint8_t motor, uint8_t direction) {
 	return;
 }
 
-void mortor_stop(void) {
+void motor_stop(void) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {

@@ -20,14 +20,10 @@ extern osMutexId_t UART_MutexHandle;
 
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
-extern BuzzerConfig buzzer_config;
 extern SensorData sensorData;
-extern uint32_t us;
-extern uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
 extern uint32_t wall_config[12];
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
-extern uint8_t game_mode;	//　探索(0)・最短(1)　選択
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
@@ -45,7 +41,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 	uint8_t temp_head = 0;
 	int32_t speed_buf = RUN_config.finish_speed;
 	int8_t move_f = -1;
-	game_mode = 0;
+
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("adachi\n");
 		osMutexRelease(UART_MutexHandle);
@@ -58,7 +54,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			mortor_stop();
+			motor_stop();
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
 			}
@@ -72,12 +68,12 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			RUN_config.value = BLOCK_LENGTH * 0.5;
 			straight(RUN_config);
 
-			mortor_stop();
+			motor_stop();
 			if (((((map[posX][posY].wall & 0x0f)
 					| (map[posX][posY].wall << 4)) << head) & 0x80)
 					== 0x80) {
 				turn_u();
-				mortor_stop();
+				motor_stop();
 				sirituke();
 				ajast();
 			}
@@ -114,7 +110,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 //				printf("err\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			mortor_stop();
+			motor_stop();
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
 			Delay_ms(1000);
@@ -206,13 +202,13 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			RUN_config.value = BLOCK_LENGTH * 0.6;
 			straight(RUN_config);
 			move_f = -1;
-			mortor_stop();
+			motor_stop();
 			turn(U_config);
 			chenge_head(U_config.direction, U_config.value, &head);
 			if (((((map[posX][posY].wall & 0x0f)
 					| (map[posX][posY].wall << 4)) << head) & 0x20)
 					== 0x20) {
-				mortor_stop();
+				motor_stop();
 				sirituke();
 				ajast();
 			}
@@ -273,7 +269,7 @@ void hidarite(void) {
 
 		//print_map();
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-			mortor_stop();
+			motor_stop();
 			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
@@ -355,28 +351,28 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			switch (head_buf) {
 			case 0:
 				if (map[x][y].step
-						> map[x][y+1].step) {
+						> map[x][y+1].step&&(map[x][y+1].wall&0xf0)==0xf0) {
 					y++;
 					temp_head = 0;
 				}
 				break;
 			case 1:
 				if (map[x][y].step
-						> map[x+1][y].step) {
+						> map[x+1][y].step&&(map[x+1][y].wall&0xf0)==0xf0) {
 					x++;
 					temp_head = 0;
 				}
 				break;
 			case 2:
 				if (map[x][y].step
-						> map[x][y-1].step) {
+						> map[x][y-1].step&&(map[x][y-1].wall&0xf0)==0xf0) {
 					y--;
 					temp_head = 0;
 				}
 				break;
 			case 3:
 				if (map[x][y].step
-						> map[x-1][y].step) {
+						> map[x-1][y].step&&(map[x-1][y].wall&0xf0)==0xf0) {
 					x--;
 					temp_head = 0;
 				}
@@ -387,28 +383,28 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			switch (head_buf) {
 			case 0:
 				if (map[x][y].step
-						> map[x+1][y].step) {
+						> map[x+1][y].step&&(map[x+1][y].wall&0xf0)==0xf0) {
 					x++;
 					temp_head = 1;
 				}
 				break;
 			case 1:
 				if (map[x][y].step
-						> map[x][y-1].step) {
+						> map[x][y-1].step&&(map[x][y-1].wall&0xf0)==0xf0) {
 					y--;
 					temp_head = 1;
 				}
 				break;
 			case 2:
 				if (map[x][y].step
-						> map[x-1][y].step) {
+						> map[x-1][y].step&&(map[x-1][y].wall&0xf0)==0xf0) {
 					x--;
 					temp_head = 1;
 				}
 				break;
 			case 3:
 				if (map[x][y].step
-						> map[x][y+1].step) {
+						> map[x][y+1].step&&(map[x][y+1].wall&0xf0)==0xf0) {
 					y++;
 					temp_head = 1;
 				}
@@ -419,28 +415,28 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			switch (head_buf) {
 			case 0:
 				if (map[x][y].step
-						> map[x-1][y].step) {
+						> map[x-1][y].step&&(map[x-1][y].wall&0xf0)==0xf0) {
 					x--;
 					temp_head = 3;
 				}
 				break;
 			case 1:
 				if (map[x][y].step
-						> map[x][y+1].step) {
+						> map[x][y+1].step&&(map[x][y+1].wall&0xf0)==0xf0) {
 					y++;
 					temp_head = 3;
 				}
 				break;
 			case 2:
 				if (map[x][y].step
-						> map[x+1][y].step) {
+						> map[x+1][y].step&&(map[x+1][y].wall&0xf0)==0xf0) {
 					x++;
 					temp_head = 3;
 				}
 				break;
 			case 3:
 				if (map[x][y].step
-						> map[x][y-1].step) {
+						> map[x][y-1].step&&(map[x][y-1].wall&0xf0)==0xf0) {
 					y--;
 					temp_head = 3;
 				}
@@ -452,28 +448,28 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			switch (head_buf) {
 			case 0:
 				if (map[x][y].step
-						> map[x][y-1].step) {
+						> map[x][y-1].step&&(map[x][y-1].wall&0xf0)==0xf0) {
 					y--;
 					temp_head = 2;
 				}
 				break;
 			case 1:
 				if (map[x][y].step
-						> map[x-1][y].step) {
+						> map[x-1][y].step&&(map[x-1][y].wall&0xf0)==0xf0) {
 					x--;
 					temp_head = 2;
 				}
 				break;
 			case 2:
 				if (map[x][y].step
-						> map[x+1][y].step) {
+						> map[x+1][y].step&&(map[x+1][y].wall&0xf0)==0xf0) {
 					x++;
 					temp_head = 2;
 				}
 				break;
 			case 3:
 				if (map[x][y].step
-						> map[x][y+1].step) {
+						> map[x][y+1].step&&(map[x][y+1].wall&0xf0)==0xf0) {
 					y++;
 					temp_head = 2;
 				}
@@ -486,7 +482,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			//			mortor_sleep();
-			mortor_stop();
+			motor_stop();
 //		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //		tone(tone_C, 1000);
 //		Delay_ms(1000);
@@ -506,7 +502,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		switch (temp_head) {
 		case 0:
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//				printf("S\n");
+				printf("S\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			//printf("straight\n");
@@ -528,7 +524,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		case 1:
 			//printf("TURN R\n");
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//				printf("R\n");
+				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 //			if (rute[i - 1].direction == MOVE_FORWARD) {
@@ -545,7 +541,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		case 2:
 			//	printf("U\n");
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//				printf("U\n");
+				printf("U\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			rute[i].direction = temp_head;
@@ -558,7 +554,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			break;
 		case 3:
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//				printf("L\n");
+				printf("L\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			//	printf("TURNL\n");
@@ -576,14 +572,14 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		}
 		i++;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//			printf("x=%d,y=%d,i=%d\n", x, y, i);
+			printf("x=%d,y=%d,i=%d\n", x, y, i);
 			osMutexRelease(UART_MutexHandle);
 		}
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
-//			printf("%d:direction=%d,value=%ld\n", f, rute[f].direction,
-//					rute[f].value);
+			printf("%d:direction=%d,value=%ld\n", f, rute[f].direction,
+					rute[f].value);
 		}
 		osMutexRelease(UART_MutexHandle);
 	}
@@ -611,7 +607,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			break;
 		case 1:
 			//printf("TURN R\n");
-			//mortor_stop();
+			//motor_stop();
 			slalom90_config.config.direction = TURN_R;
 			slalom90_config.config.value = rute[f].value;
 			slalom(slalom90_config);
@@ -619,12 +615,12 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			break;
 		case 2:
 			//	printf("U\n");
-			//mortor_stop();
+			//motor_stop();
 			turn_u();
 			break;
 		case 3:
 			//	printf("TURNL\n");
-			//mortor_stop();
+			//motor_stop();
 			slalom90_config.config.direction = TURN_L;
 			slalom90_config.config.value = rute[f].value;
 			slalom(slalom90_config);
@@ -642,7 +638,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	if (((((map[posX][posY].wall & 0x0f)
 			| (map[posX][posY].wall << 4)) << head) & 0x20)
 			== 0x20) {
-//		mortor_stop();
+//		motor_stop();
 		sirituke();
 		ajast();
 	}

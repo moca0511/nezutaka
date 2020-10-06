@@ -16,7 +16,6 @@ extern osMutexId_t UART_MutexHandle;
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim3;
 SensorData sensorData = { 0, 0, 0, 0 };
-uint8_t sensor_debug_f;
 extern osThreadId_t Sensor_TaskHandle;
 extern osThreadId_t WALL_READ_TASKHandle;
 extern osThreadId_t SENSOR_PRINT_TAHandle;

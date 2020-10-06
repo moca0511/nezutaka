@@ -10,7 +10,6 @@
 #include "maze.h"
 
 extern osMutexId_t UART_MutexHandle;
-extern osThreadId_t POS_CHECK_TASKHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
 
@@ -26,7 +25,6 @@ extern osThreadId_t MOTOR_L_TaskHandle;
 extern uint8_t wall_calibration_F;
 
 extern int16_t posX, posY;	//　現在の位置
-int32_t posX_buf = 0, posY_buf = 0;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 uint16_t straight(RUNConfig config) {
@@ -194,7 +192,7 @@ uint16_t straight(RUNConfig config) {
 //			printf("st\n");
 //			osMutexRelease(UART_MutexHandle);
 //		}
-		mortor_stop();
+		motor_stop();
 	} else {
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //			printf("fin\n");
@@ -283,7 +281,7 @@ void turn(RUNConfig config) {
 	} while (stopcount > (MotorStepCount_R + MotorStepCount_L) / 2);
 
 	if (config.finish_speed == 0) {
-		mortor_stop();
+		motor_stop();
 	} else {
 		MotorSPEED_R = MotorSPEED_L = config.finish_speed;
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
@@ -412,7 +410,7 @@ void slalom(SLALOMConfig config) {
 	} while ((int32_t) (deg * 0.013 * 180 / PI) < config.config.value);
 
 	if (config.config.finish_speed == 0) {
-		mortor_stop();
+		motor_stop();
 	} else {
 		MotorSPEED_R = MotorSPEED_L = config.config.finish_speed;
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
@@ -431,11 +429,12 @@ void slalom(SLALOMConfig config) {
 }
 
 void sirituke(void) {
-	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 150, 1000, BLOCK_LENGTH / 2 };
+	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 100, 500, BLOCK_LENGTH / 2 };
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("sirituke\n");
 //		osMutexRelease(UART_MutexHandle);
 //	}
+	motor_stop();
 	straight(RUN_Config);
 	/*	RUN_Config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5;
 	 RUN_Config.direction = MOVE_FORWARD;
@@ -504,12 +503,6 @@ void chenge_head(uint16_t direction, uint32_t value, int8_t *head_buf) {
 	}
 }
 
-void run_block(RUNConfig config) {
-//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_START);
-	straight(config);
-//osThreadFlagsSet(POS_CHECK_TASKHandle, TASK_STOP);
-}
-
 void turn_u(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 180 };
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -520,79 +513,3 @@ void turn_u(void) {
 	//sirituke();
 	chenge_head(turn_config.direction, turn_config.value, &head);
 }
-
-/*extern void POS_CHECK(void *argument) {
- uint32_t move = 0, move_buf = 0, move_prev = 0;
- uint8_t wall_set_flag = 1;
- osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
- for (;;) {
- if (osThreadFlagsWait(TASK_STOP, osFlagsWaitAny, 1U) == TASK_STOP) {
- switch (head) {
- case 0:
- if (posY * 100 < posY_buf && posY_buf % 100 >= 50) {
- posY += 1;
- }
- break;
- case 1:
- if (posX * 100 < posX_buf && posX_buf % 100 >= 50) {
- posX += 1;
- }
- break;
- case 2:
- if (posY * 100 > posY_buf && posY_buf % 100 <= 50) {
- posY -= 1;
- }
- break;
- case 3:
- if (posX * 100 > posX_buf && posX_buf % 100 <= 50) {
- posY -= 1;
- }
- break;
- }
- posX_buf /= 100;
- posX_buf *= 100;
- posY_buf /= 100;
- posY_buf *= 100;
-
- osThreadFlagsWait(TASK_START, osFlagsWaitAny, osWaitForever);
- posX_buf = posX * 100;
- posY_buf = posY * 100;
- move = move_buf = move_prev = 0;
- wall_set_flag = 1;
- }
-
- move_buf = (uint32_t) ((((MotorStepCount_R + MotorStepCount_L) / 2)
- * 100) / (BLOCK_LENGTH / STEP_LENGTH));
- if (move_buf != 0) {
- move = move_buf - move_prev;
- switch (head) {
- case 0:
- posY_buf += move;
- break;
- case 1:
- posX_buf += move;
- break;
- case 2:
- posY_buf -= move;
- break;
- case 3:
- posX_buf -= move;
- break;
- }
-
- if (wall_set_flag && move_buf % 100 >= 50) {
- wall_set();
- wall_set_flag = 0;
- }
- if (posY_buf / 100 != posY || posX_buf / 100 != posX) {
- wall_set_flag = 1;
- }
- posY = posY_buf / 100;
- posX = posX_buf / 100;
- move_prev = move_buf;
- }
- osThreadYield();
- Delay_ms(5);
- }
- USER CODE END POS_CHECK
- }*/
