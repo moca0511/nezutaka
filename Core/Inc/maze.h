@@ -32,5 +32,8 @@ void wall_set_around(void);
 uint8_t wall_check(uint8_t direction);
 int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction);
 void check_searchBlock(uint16_t *searchX,uint16_t *searchY);
+void maze_save(void);
+void maze_load(void);
+
 
 #endif /* INC_MAZE_H_ */

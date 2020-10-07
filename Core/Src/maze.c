@@ -10,6 +10,7 @@
 #include "nezutaka.h"
 #include "cmsis_os.h"
 #include "UI.h"
+#include"flash.h"
 extern osMutexId_t UART_MutexHandle;
 MAP map[MAP_X_MAX][MAP_Y_MAX]; //ｓマップ情報
 int16_t posX = 0, posY = 0;	//　現在の位置
@@ -18,26 +19,6 @@ extern SensorData sensorData;
 extern uint32_t wall_config[12];
 
 void print_map(void) {
-	/*\	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-	 printf("posX=%d,posY=%d,head=%d\n\n", posX, posY, head);
-	 printf("    ");
-	 for (int i = 0; i < MAP_X_MAX; i++) {
-	 printf("  %d%d", i / 10, i % 10);
-	 }
-	 printf("\n");
-	 for (int i = 0; i <= MAP_X_MAX; i++) {
-	 printf("----");
-	 }
-	 printf("\n");
-	 for (int i = MAP_SIZE - MAP_X_MAX; i >= 0; i -= MAP_X_MAX) {
-	 printf("%3d|", i / MAP_X_MAX);
-	 for (int f = 0; f < MAP_X_MAX; f++) {
-	 printf("%4d", map[i + f].step);
-	 }
-	 printf("\n");
-	 }
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("\n");
 		printf("    ");
@@ -656,6 +637,11 @@ void wall_set_around(void) {
 	}
 }
 
+/*
+ * 説明：現在位置と隣接マスの歩数の差を返す
+ * 引数：posX 現在位置のX座標
+ * 戻り値：現在位置と隣接マスの歩数の差
+ */
 uint8_t wall_check(uint8_t direction) {
 	uint8_t and = 0x00;
 	switch (direction) {
@@ -719,6 +705,14 @@ uint8_t wall_check(uint8_t direction) {
 	return (map[posX][posY].wall & and) % 0x10;
 }
 
+
+/*
+ * 説明：現在位置と隣接マスの歩数の差を返す
+ * 引数：posX 現在位置のX座標
+ * 		posY　現在位置のY座標
+ * 		direction　進行方向
+ * 戻り値：現在位置と隣接マスの歩数の差
+ */
 int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 	int16_t step = -1;
 	switch (direction) {
@@ -798,9 +792,16 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 	return step;
 }
 
+
+/*
+ * 説明：searchX,searchYのマスから1番近い未探索で最短経路の可能性のある場所を探索しsearchX,searchYに結果を入れる
+ * 引数：*searchX 探索先のX座標を入れる変数のポインタ
+ * 		*searchY 探索先のY座標を入れる変数のポインタ
+ * 戻り値：無し
+ */
 void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
-	*searchX = startX;
-	*searchY = startY;
+	*searchX = goalX;
+	*searchY = goalY;
 	int16_t value = 0;
 	int16_t buf1[2][MAP_SIZE];
 	int16_t cnt1 = 0;
@@ -817,10 +818,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 			posX = buf1[0][--cnt1];
 			posY = buf1[1][cnt1];
-			/* ｓ隣接区画に値を設定する。 */
+			/* 最短の可能性があり未探索のマスを探索 */
 			/* ｓ北。 */
 			if (posY + 1 < MAP_SIZE) {
-				if (map[posX][posY + 1].step < map[posX][posY].step) {
+				if (map[posX][posY + 1].step == map[posX][posY].step+1) {
 					if ((map[posX][posY + 1].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = posX;
 						buf2[1][cnt2++] = posY + 1;
@@ -833,7 +834,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 			/* ｓ東。 */
 			if (posX != MAP_X_MAX - 1) {
-				if (map[posX + 1][posY].step < map[posX][posY].step) {
+				if (map[posX + 1][posY].step == map[posX][posY].step+1) {
 					if ((map[posX + 1][posY].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = posX + 1;
 						buf2[1][cnt2++] = posY;
@@ -846,7 +847,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 			/* ｓ南。 */
 			if (posY != 0) {
-				if (map[posX][posY - 1].step < map[posX][posY].step) {
+				if (map[posX][posY - 1].step == map[posX][posY].step+1) {
 					if ((map[posX][posY].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = posX;
 						buf2[1][cnt2++] = posY - 1;
@@ -859,7 +860,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 			/* ｓ西。 */
 			if (posX != 0) {
-				if (map[posX - 1][posY].step < map[posX][posY].step) {
+				if (map[posX - 1][posY].step == map[posX][posY].step+1) {
 					if ((map[posX - 1][posY].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = posX - 1;
 						buf2[1][cnt2++] = posY;
@@ -885,10 +886,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 			posX = buf2[0][--cnt2];
 			posY = buf2[1][cnt2];
-			/* ｓ隣接区画に値を設定する。 */
+			/* 最短の可能性があり未探索のマスを探索 */
 			/* ｓ北。 */
 			if (posY + 1 < MAP_SIZE) {
-				if (map[posX][posY + 1].step < map[posX][posY].step) {
+				if (map[posX][posY + 1].step == map[posX][posY].step+1) {
 					if ((map[posX][posY + 1].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = posX;
 						buf1[1][cnt1++] = posY + 1;
@@ -901,7 +902,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 			/* ｓ東。 */
 			if (posX != MAP_X_MAX - 1) {
-				if (map[posX + 1][posY].step < map[posX][posY].step) {
+				if (map[posX + 1][posY].step == map[posX][posY].step+1) {
 					if ((map[posX + 1][posY].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = posX + 1;
 						buf1[1][cnt1++] = posY;
@@ -914,7 +915,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 			/* ｓ南。 */
 			if (posY != 0) {
-				if (map[posX][posY - 1].step < map[posX][posY].step) {
+				if (map[posX][posY - 1].step == map[posX][posY].step+1) {
 					if ((map[posX][posY].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = posX;
 						buf1[1][cnt1++] = posY - 1;
@@ -927,7 +928,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 			/* ｓ西。 */
 			if (posX != 0) {
-				if (map[posX - 1][posY].step < map[posX][posY].step) {
+				if (map[posX - 1][posY].step == map[posX][posY].step+1) {
 					if ((map[posX - 1][posY].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = posX - 1;
 						buf1[1][cnt1++] = posY;
@@ -949,5 +950,13 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 		++value;
 	}
 
+}
+
+void maze_save(void){
+	writeFlash(MAZE_FLASH_START_ADD,(uint8_t*)map,sizeof(map));
+}
+
+void maze_load(void){
+	loadFlash(MAZE_FLASH_START_ADD,(uint8_t*)map,sizeof(map));
 }
 

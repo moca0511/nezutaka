@@ -330,17 +330,19 @@ void mode11(void) {
 	Delay_ms(5000);
 	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
 	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("adachi to goal\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//		osMutexRelease(UART_MutexHandle);
+//	}
 	//sirituke();
 	straight(tyousei_config);
 	adachi(RUN_config, turn_config, slalom90_config, goalX, goalY);
+/*
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("goal\n");
+		printf("goal\n");
 		osMutexRelease(UART_MutexHandle);
 	}
+*/
 	Delay_ms(100);
 	make_smap(goalX, goalY, 0);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -359,6 +361,7 @@ void mode11(void) {
 		//1最短の可能性があり未探索の場所を探索
 		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
 		//
+
 		check_searchBlock(&searchX, &searchY);
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //			printf("adachi to searchX=%d,searchY=%d\n", searchX, searchY);

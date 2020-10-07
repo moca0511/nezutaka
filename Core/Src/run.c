@@ -27,6 +27,11 @@ extern uint8_t wall_calibration_F;
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
+/*
+ * 説明：configのパラメータ通りに台形加速しながら直進
+ * 引数：config 走行パラメータ
+ * 戻り値:config.value＊ｘ進んだ　のx
+ */
 uint16_t straight(RUNConfig config) {
 	uint16_t move = 0;
 	float32_t fspeed = config.initial_speed, fspeed_L = config.initial_speed,
@@ -219,6 +224,11 @@ uint16_t straight(RUNConfig config) {
 	return move;
 }
 
+/*
+ * 説明：configの通りに超新地旋回
+ * 引数:config 走行パラメータ
+ * 戻り値：　無し
+ */
 void turn(RUNConfig config) {
 //1移動用パラメータ設定
 	uint32_t move = TREAD_CIRCUIT / 360 * config.value; //mm
@@ -294,6 +304,11 @@ void turn(RUNConfig config) {
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
 
+/*
+ * 説明：configの通りにslalom走行
+ * 引数：config 走行パラメータ
+ * 戻り値：無し
+ */
 void slalom(SLALOMConfig config) {
 	//1移動用パラメータ設定
 
@@ -423,39 +438,40 @@ void slalom(SLALOMConfig config) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 }
-
+/*
+ * 説明：尻付け動作
+ * 引数：無し
+ * 戻り値：無し
+ */
 void sirituke(void) {
 	RUNConfig RUN_Config = { MOVE_BACK, 0, 0, 100, 500, BLOCK_LENGTH / 2 };
-//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("sirituke\n");
-//		osMutexRelease(UART_MutexHandle);
-//	}
 	motor_stop();
 	straight(RUN_Config);
-	/*	RUN_Config.value = (BLOCK_LENGTH - NEZUTAKA_LENGTH) * 0.5;
-	 RUN_Config.direction = MOVE_FORWARD;
-	 straight(RUN_Config);*/
 }
+/*
+ * 説明：マスの端から中央へ移動
+ * 引数：無し
+ * 戻り値：無し
+ */
 void ajast(void) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 300, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.6 };
-//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("ajast\n");
-//		osMutexRelease(UART_MutexHandle);
-//	}
 	straight(tyousei_config);
 }
-
+/*
+ * 説明：PID制御
+ * 引数：speed 制御対象
+ * 		target 目標値
+ * 		sensor　現在値
+ * 		*deviation_prev 前回の偏差
+ * 		*deviation_sum これまでの偏差の合計
+ * 戻り値：PID制御後の数値
+ */
 float32_t PID(float32_t speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev, int32_t *devaition_sum) {
 	int32_t deviation;
 	deviation = target - sensor;
 	*devaition_sum += deviation;
-	/*	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-	 printf("devaition=%d\n", deviation);
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
-
 	*deviation_prev = deviation - (*deviation_prev);
 
 	speed += (kp * deviation + kd * (*deviation_prev) + ki * (*devaition_sum));
@@ -467,7 +483,11 @@ float32_t PID(float32_t speed, int32_t target, int32_t sensor,
 	}
 	return speed;
 }
-
+/*
+ * 説明：現在位置変更処理
+ * 引数：block 移動マス数
+ * 戻り値：無し
+ */
 void chenge_pos(int16_t block) {
 	switch (head) {
 	case 0:
@@ -485,6 +505,13 @@ void chenge_pos(int16_t block) {
 	}
 }
 
+/*
+ * 説明：車体の向き変更
+ * 引数：direction 旋回方向
+ * 		value 旋回角度
+ * 		*head_buf 変更したい進行方向を持つ変数のポインタ
+ * 戻り値：無し
+ */
 void chenge_head(uint16_t direction, uint32_t value, int8_t *head_buf) {
 	if (direction == TURN_R) {
 		*head_buf += value / 90;
@@ -499,13 +526,13 @@ void chenge_head(uint16_t direction, uint32_t value, int8_t *head_buf) {
 	}
 }
 
+/*
+ * 説明：Uターン
+ * 引数：無し
+ * 戻り値：無し
+ */
 void turn_u(void) {
 	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 180 };
-//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("U\n");
-//		osMutexRelease(UART_MutexHandle);
-//	}
 	turn(turn_config);
-	//sirituke();
 	chenge_head(turn_config.direction, turn_config.value, &head);
 }

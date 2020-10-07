@@ -100,6 +100,9 @@ void Error_Handler(void);
 #define DOWN_GPIO_Port GPIOB
 #define OK_Pin GPIO_PIN_12
 #define OK_GPIO_Port GPIOB
+#define MO_L_Pin GPIO_PIN_13
+#define MO_L_GPIO_Port GPIOB
+#define MO_L_EXTI_IRQn EXTI15_10_IRQn
 #define LED_LF_Pin GPIO_PIN_6
 #define LED_LF_GPIO_Port GPIOC
 #define LED_RF_Pin GPIO_PIN_7
@@ -110,9 +113,6 @@ void Error_Handler(void);
 #define LED2_GPIO_Port GPIOC
 #define STEPPER_CLOCK_R_Pin GPIO_PIN_8
 #define STEPPER_CLOCK_R_GPIO_Port GPIOA
-#define MO_L_Pin GPIO_PIN_13
-#define MO_L_GPIO_Port GPIOA
-#define MO_L_EXTI_IRQn EXTI15_10_IRQn
 #define LED4_Pin GPIO_PIN_10
 #define LED4_GPIO_Port GPIOC
 #define LED3_Pin GPIO_PIN_11
