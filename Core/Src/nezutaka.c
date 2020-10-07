@@ -179,7 +179,7 @@ void mode2(void) {
 }
 //1block run
 void mode3(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 3000, BLOCK_LENGTH * 0.5 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 800, 3000, BLOCK_LENGTH  };
 
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 		printf("1block run(180mm)\n");
@@ -187,7 +187,7 @@ void mode3(void) {
 	}
 	Delay_ms(500);
 	tone(tone_hiC, 10);
-	ajast();
+	//ajast();
 	straight(RUN_config);
 //	mortor_sleep();
 	tone(tone_hiC, 50);
@@ -207,13 +207,11 @@ void mode4(void) {
 	 chenge_head(turn_config.direction, turn_config.value, &head);
 	 tone(tone_hiC, 50);*/
 	SLALOMConfig slalom_config = { { TURN_R, 500, 500, 2000, 800, 90 }, 6, 6 };
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 2000, BLOCK_LENGTH };
+	RUNConfig turn_config = { TURN_R, 0, 0, 500, 800, 90 };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
 
-	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-	straight(RUN_config);
-	slalom(slalom_config);
+	turn(turn_config);
 
 //	RUN_config.initial_speed = (MotorHz_L + MotorHz_R) / 2;
 //	RUN_config.finish_speed = 0;
@@ -235,7 +233,7 @@ void mode5(void) {
 	 tone(tone_hiC, 50);*/
 	SLALOMConfig slalom90_config =
 			{ { TURN_R, 400, 400, 2000, 700, 90 }, 15, 15 };
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH/2 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH / 2 };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
 
@@ -247,15 +245,20 @@ void mode5(void) {
 }
 //SLALOM_R
 void mode6(void) {
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 300, 300, 2000, 800, 90 }, 15, 15 };
+	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 800, 90 },15, 15 };
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH/2 };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
-
+	for (uint16_t i = 0; i < 8; i++) {
+		RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+		straight(RUN_config);
+		slalom(slalom90_config);
+	}
 	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+	RUN_config.finish_speed = 0;
 	straight(RUN_config);
-	slalom(slalom90_config);
+
+
 	motor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };
@@ -337,12 +340,12 @@ void mode11(void) {
 	//sirituke();
 	straight(tyousei_config);
 	adachi(RUN_config, turn_config, slalom90_config, goalX, goalY);
-/*
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("goal\n");
-		osMutexRelease(UART_MutexHandle);
-	}
-*/
+	/*
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("goal\n");
+	 osMutexRelease(UART_MutexHandle);
+	 }
+	 */
 	Delay_ms(100);
 	make_smap(goalX, goalY, 0);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {

@@ -18,7 +18,7 @@ extern UART_HandleTypeDef huart1;
  * uart1から文字列ptrを1文字ずつlen回出力。タイムアウト1000秒
  */
 void __io_putchar(uint8_t ch) {
-	HAL_UART_Transmit_DMA(&huart1, &ch, 1);
+	HAL_UART_Transmit(&huart1, &ch, 1,1);
 }
 
 uint8_t ugets(UART_HandleTypeDef *uartHandle, uint8_t *data, uint8_t data_len) {
