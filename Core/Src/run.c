@@ -346,10 +346,10 @@ void slalom(SLALOMConfig config) {
 
 		deg_speed += plpl * 5.0;
 		if (config.config.direction == TURN_R) {
-			fspeedL = config.config.initial_speed
-					+ deg_speed * TREAD_WIDTH / 2.0;
+//			fspeedL = config.config.initial_speed
+//					+ deg_speed * TREAD_WIDTH / 2.0;
 			fspeedR = config.config.initial_speed
-					- deg_speed * TREAD_WIDTH / 2.0;
+					- deg_speed * TREAD_WIDTH;
 //				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //					printf("R=%ld,L=%ld\n",speedR,speedL);
 //					osMutexRelease(UART_MutexHandle);
@@ -359,8 +359,8 @@ void slalom(SLALOMConfig config) {
 					<= config.config.finish_speed|| fspeedR >= config.config.finish_speed
 					|| fspeedL >= config.config.max_speed || fspeedR < SPEED_MIN) {
 				deg_speed -= plpl * 5.0;
-				fspeedL = config.config.initial_speed
-						+ deg_speed * TREAD_WIDTH / 2.0;
+//				fspeedL = config.config.initial_speed
+//						+ deg_speed * TREAD_WIDTH / 2.0;
 				fspeedR = config.config.initial_speed
 						- deg_speed * TREAD_WIDTH / 2.0;
 //					if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -371,16 +371,16 @@ void slalom(SLALOMConfig config) {
 		} else {
 			fspeedL = config.config.initial_speed
 					- deg_speed * TREAD_WIDTH / 2.0;
-			fspeedR = config.config.initial_speed
-					+ deg_speed * TREAD_WIDTH / 2.0;
+//			fspeedR = config.config.initial_speed
+//					+ deg_speed * TREAD_WIDTH / 2.0;
 			if (fspeedR
 					<= config.config.finish_speed|| fspeedL >= config.config.finish_speed
 					|| fspeedR >= config.config.max_speed || fspeedL < SPEED_MIN) {
 				deg_speed -= plpl * 5.0;
 				fspeedL = config.config.initial_speed
 						- deg_speed * TREAD_WIDTH / 2.0;
-				fspeedR = config.config.initial_speed
-						+ deg_speed * TREAD_WIDTH / 2.0;
+//				fspeedR = config.config.initial_speed
+//						+ deg_speed * TREAD_WIDTH / 2.0;
 			}
 		}
 
