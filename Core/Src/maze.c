@@ -37,7 +37,7 @@ void print_map(void) {
 			}
 			printf("\n");
 		}
-
+		Delay_ms(5);
 		printf("\n");
 		printf("    ");
 		for (int i = 0; i < MAP_X_MAX; i++) {
@@ -72,6 +72,7 @@ void print_map(void) {
 			}
 			printf("\n");
 		}
+		Delay_ms(5);
 		osMutexRelease(UART_MutexHandle);
 	}
 }

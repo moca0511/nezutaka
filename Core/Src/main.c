@@ -900,7 +900,6 @@ void StartDefaultTask(void *argument)
   /* USER CODE END 5 */
 }
 
-
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None

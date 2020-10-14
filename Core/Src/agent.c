@@ -247,7 +247,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 //			RUN_config.value = BLOCK_LENGTH * 0.05;
 //			straight(RUN_config);
 		}
-		tone(tone_hiC, 50);
+//		tone(tone_hiC, 50);
 
 	}
 }
@@ -527,10 +527,10 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-//			if (rute[i - 1].direction == MOVE_FORWARD) {
-//				rute[i - 1].value -= BLOCK_LENGTH / 2;
-//
-//			}
+			if (rute[i - 1].direction == MOVE_FORWARD) {
+				rute[i - 1].value *= 1.1;
+
+			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_R, 90, &head_buf);
@@ -558,10 +558,10 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			//	printf("TURNL\n");
-//			if (rute[i - 1].direction == MOVE_FORWARD) {
-//				rute[i - 1].value -= BLOCK_LENGTH / 2;
-//
-//			}
+			if (rute[i - 1].direction == MOVE_FORWARD) {
+				rute[i - 1].value *= 1.1;
+
+			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_L, 90, &head_buf);
@@ -572,13 +572,15 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		}
 		i++;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("x=%d,y=%d,i=%d\n", x, y, i);
+			Delay_ms(5);
+			printf("x=%d y=%d i=%d\n", x, y, i);
 			osMutexRelease(UART_MutexHandle);
 		}
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
-			printf("%d:direction=%d,value=%ld\n", f, rute[f].direction,
+			Delay_ms(5);
+			printf("%d:direction=%d value=%ld\n", f, rute[f].direction,
 					rute[f].value);
 		}
 		osMutexRelease(UART_MutexHandle);

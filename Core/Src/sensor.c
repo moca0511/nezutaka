@@ -20,7 +20,7 @@ extern osThreadId_t Sensor_TaskHandle;
 extern osThreadId_t WALL_READ_TASKHandle;
 extern osThreadId_t SENSOR_PRINT_TAHandle;
 extern uint32_t wall_config[12];
-uint8_t wall_calibration_F = 0;
+uint8_t wall_calibration_F = 1;
 
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
@@ -30,6 +30,7 @@ extern void Sensor(void *argument) {
 	Delay_ms(10);
 	ADCSet ADC_config = { &hadc1, ADC_CHANNEL_RS };
 	PWMconfig pwm_config = { &htim3, PWM_CHANNEL_RS, 5000, 50, 84000000 };
+	int32_t data_buf = 0;
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
 		;
@@ -76,8 +77,10 @@ extern void Sensor(void *argument) {
 
 //Sensor RS read
 		ADC_config.channel = ADC_CHANNEL_RS;
-		sensorData.ADC_DATA_RS = ADConv(&ADC_config);
-
+		data_buf = ADConv(&ADC_config);
+		if (data_buf > 400) {
+			sensorData.ADC_DATA_RS = data_buf;
+		}
 //LED_RS off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -95,7 +98,10 @@ extern void Sensor(void *argument) {
 
 		//Sensor_RF read
 		ADC_config.channel = ADC_CHANNEL_RF;
-		sensorData.ADC_DATA_RF = ADConv(&ADC_config);
+		data_buf = ADConv(&ADC_config);
+		if (data_buf > 400) {
+			sensorData.ADC_DATA_RF = data_buf;
+		}
 
 		//LED_RF off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
@@ -113,7 +119,10 @@ extern void Sensor(void *argument) {
 
 		//sensor_LS read
 		ADC_config.channel = ADC_CHANNEL_LS;
-		sensorData.ADC_DATA_LS = ADConv(&ADC_config);
+		data_buf = ADConv(&ADC_config);
+		if (data_buf > 400) {
+			sensorData.ADC_DATA_LS = data_buf;
+		}
 
 		//LED_LS off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
@@ -131,7 +140,10 @@ extern void Sensor(void *argument) {
 
 		//Sensor_LF read
 		ADC_config.channel = ADC_CHANNEL_LF;
-		sensorData.ADC_DATA_LF = ADConv(&ADC_config);
+		data_buf = ADConv(&ADC_config);
+		if (data_buf > 400) {
+			sensorData.ADC_DATA_LF = data_buf;
+		}
 
 		//LED_LF off
 		HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
@@ -303,9 +315,10 @@ extern void SENSOR_PRINT(void *argument) {
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("%ld,%ld,%ld,%ld,%ld,%ld\n",sensorData.ADC_DATA_RS,
+			printf(",%ld,%ld,%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-					sensorData.ADC_DATA_LF, (int32_t)MotorSPEED_L, (int32_t)MotorSPEED_R);
+					sensorData.ADC_DATA_LF, (int32_t) MotorSPEED_L,
+					(int32_t) MotorSPEED_R);
 			osMutexRelease(UART_MutexHandle);
 		}
 		Delay_ms(100);
