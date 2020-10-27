@@ -12,12 +12,12 @@
 #define MAP_X_MAX 4
 #define MAP_Y_MAX 6
 #define MAP_SIZE	MAP_X_MAX*MAP_Y_MAX	//　マップマスの数
-#define goalX 2
-#define goalY 0
-#define startX 0
-#define startY 0
-#define goal (goalY * MAP_X_MAX + goalX) //ｓゴールの添え字
-#define start (startY * MAP_Y_MAX + startX)	//ｓスタートの添え字
+#define GOAL_X 3
+#define GOAL_Y 5
+#define START_X 0
+#define START_Y 0
+#define GOAL (GOAL_Y * MAP_X_MAX + GOAL_X) //ｓゴールの添え字
+#define START (START_Y * MAP_Y_MAX + START_X)	//ｓスタートの添え字
 
 typedef struct MAP {
 	uint8_t step;	//　ゴールまでの距離

@@ -23,6 +23,7 @@ extern uint32_t wall_config[12];
 extern osThreadId_t MOTOR_R_TaskHandle;
 extern osThreadId_t MOTOR_L_TaskHandle;
 extern uint8_t wall_calibration_F;
+extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
@@ -45,6 +46,7 @@ uint16_t straight(RUNConfig config) {
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
+
 //	float32_t MAX_Hz = SPEEDtoHz(config.max_speed), FINISH_Hz = SPEEDtoHz(
 //			config.finish_speed);
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -101,11 +103,11 @@ uint16_t straight(RUNConfig config) {
 						< (stopcount - (MotorStepCount_R + MotorStepCount_L) / 2)) {
 			fspeed = 150;
 		}
-		if (fspeed < SPEED_MIN
-				&& SPEEDtoHz(5)
-						> (stopcount - (MotorStepCount_R + MotorStepCount_L) / 2)) {
-			fspeed = SPEED_MIN;
-		}
+//		if (fspeed < SPEED_MIN
+//				&& SPEEDtoHz(5)
+//						> (stopcount - (MotorStepCount_R + MotorStepCount_L) / 2)) {
+//			fspeed = SPEED_MIN;
+//		}
 		fspeed_L = fspeed_R = fspeed;
 		//PID
 		if (wall_calibration_F == 1 && fspeed != 0) {
@@ -185,8 +187,14 @@ uint16_t straight(RUNConfig config) {
 		 stop = 1;
 		 }*/
 		if (wall_calibration_F == 1 && config.direction == MOVE_FORWARD
-				&& HztoSPEED(stopcount)
-						- ((MotorStepCount_R + MotorStepCount_L) / 2) < 100) {
+				&& HztoSPEED(
+						stopcount - ((MotorStepCount_R + MotorStepCount_L) / 2))
+						< 80) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//								printf("nokori=%ld\n", (int32_t)HztoSPEED(stopcount
+//										- ((MotorStepCount_R + MotorStepCount_L) / 2)));
+//								osMutexRelease(UART_MutexHandle);
+//							}
 			if (sensorData.ADC_DATA_LS < wall_config[LS_threshold]
 					&& stop_L == 0) {
 				//壁切れ補正
@@ -256,7 +264,7 @@ uint16_t straight(RUNConfig config) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("Sfin\n");
+//		printf("move=%d\n",move);
 //		osMutexRelease(UART_MutexHandle);
 //	}
 	return move;
@@ -360,6 +368,8 @@ void slalom(SLALOMConfig config) {
 	float32_t fspeedR = config.config.initial_speed, fspeedL =
 			config.config.initial_speed;
 	float32_t deg_speed = 0, deg = 0;
+	int32_t sensorRF_prev = sensorData.ADC_DATA_RF, sensorLF_prev =
+			sensorData.ADC_DATA_LF;
 //	int32_t tick_prev = osKernelGetTickCount(),tick = osKernelGetTickCount();
 //	float32_t MAX_Hz = config.config.max_speed, INITIAL_Hz =
 //			config.config.initial_speed, FINISH_Hz =
@@ -375,10 +385,69 @@ void slalom(SLALOMConfig config) {
 
 	mortor_direction(MR, MOVE_FORWARD);
 	mortor_direction(ML, MOVE_FORWARD);
+	osDelayUntil(osKernelGetTickCount() + 5);
 	while ((MotorStepCount_R + MotorStepCount_L) / 2
-			< SPEEDtoHz(config.before_ofset))
-		;
+			< SPEEDtoHz(config.after_ofset)) {
+		osThreadYield();
+		if (sensorData.ADC_DATA_LF >= 880 && sensorData.ADC_DATA_RF >= 880) {
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+						sensorData.ADC_DATA_LF);
+				osMutexRelease(UART_MutexHandle);
+			}
+			break;
+		}
+	}
+	if ((sensorData.ADC_DATA_LF < 880 && sensorData.ADC_DATA_RF < 880)
+			&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]*0.9
+					&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold]*0.9)) {
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+					sensorData.ADC_DATA_LF);
+			osMutexRelease(UART_MutexHandle);
+		}
+		while ((sensorData.ADC_DATA_LF < 880 && sensorData.ADC_DATA_RF < 880)) {
+			osThreadYield();
+		}
+	}
+	/*	if (sensorData.ADC_DATA_LF >= 880 && sensorData.ADC_DATA_RF >= 880) {
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+	 sensorData.ADC_DATA_LF);
+	 osMutexRelease(UART_MutexHandle);
+	 }
 
+	 } else {
+	 sensorRF_prev = sensorData.ADC_DATA_RF;
+	 sensorLF_prev = sensorData.ADC_DATA_LF;
+	 while ((MotorStepCount_R + MotorStepCount_L) / 2
+	 < SPEEDtoHz(config.before_ofset))
+	 ; {
+	 if ((sensorLF_prev >= 500 && sensorRF_prev >= 500)
+	 && (((int32_t) sensorData.ADC_DATA_LF - sensorLF_prev) > 200
+	 && ((int32_t) sensorData.ADC_DATA_RF - sensorRF_prev)
+	 > 200)) {
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("SSwall RF:%ld - %ld LF:%ld - %ld\n",
+	 sensorData.ADC_DATA_RF, sensorRF_prev,
+	 sensorData.ADC_DATA_LF, sensorLF_prev);
+	 osMutexRelease(UART_MutexHandle);
+	 }
+	 while ((sensorData.ADC_DATA_LF < 880
+	 || sensorData.ADC_DATA_RF < 880)) {
+	 osThreadYield();
+	 }
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+	 sensorData.ADC_DATA_LF);
+	 osMutexRelease(UART_MutexHandle);
+	 }
+	 break;
+
+	 }
+	 osThreadYield();
+	 }*/
+//}
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 	do {
@@ -479,9 +548,60 @@ void slalom(SLALOMConfig config) {
 
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
+	osDelayUntil(osKernelGetTickCount() + 5);
+	/*sensorRF_prev = sensorData.ADC_DATA_RF;
+	 sensorLF_prev = sensorData.ADC_DATA_LF;*/
 	while ((MotorStepCount_R + MotorStepCount_L) / 2
-			< SPEEDtoHz(config.after_ofset))
-		;
+			< SPEEDtoHz(config.after_ofset)) {
+		osThreadYield();
+		if (sensorData.ADC_DATA_LF >= 780 && sensorData.ADC_DATA_RF >= 780) {
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+						sensorData.ADC_DATA_LF);
+				osMutexRelease(UART_MutexHandle);
+			}
+			break;
+		}
+	}
+	if ((sensorData.ADC_DATA_LF < 780 && sensorData.ADC_DATA_RF < 780)
+			&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold]*0.9
+					&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold]*0.9)) {
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+					sensorData.ADC_DATA_LF);
+			osMutexRelease(UART_MutexHandle);
+		}
+		while ((sensorData.ADC_DATA_LF < 780 && sensorData.ADC_DATA_RF < 780)) {
+			osThreadYield();
+		}
+	}
+	/* {
+	 }
+	 if ((sensorLF_prev >= 500 && sensorRF_prev >= 500)
+	 && (((int32_t) sensorData.ADC_DATA_LF - sensorLF_prev) > 200
+	 && ((int32_t) sensorData.ADC_DATA_RF - sensorRF_prev)
+	 > 200)) {
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("SEwall RF:%ld - %ld LF:%ld - %ld\n",
+	 sensorData.ADC_DATA_RF, sensorRF_prev,
+	 sensorData.ADC_DATA_LF, sensorLF_prev);
+	 osMutexRelease(UART_MutexHandle);
+	 }
+	 while ((sensorData.ADC_DATA_LF < 780
+	 || sensorData.ADC_DATA_RF < 780)) {
+	 osThreadYield();
+	 }
+	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	 printf("Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
+	 sensorData.ADC_DATA_LF);
+	 osMutexRelease(UART_MutexHandle);
+	 }
+	 break;
+
+	 }
+	 osThreadYield();
+	 }*/
+//}
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
@@ -525,7 +645,7 @@ float32_t PID(float32_t speed, int32_t target, int32_t sensor,
 	*devaition_sum += deviation;
 	*deviation_prev = deviation - (*deviation_prev);
 
-	speed += (kp * deviation + kd * (*deviation_prev) + ki * (*devaition_sum));
+	speed += (KP * deviation + KD * (*deviation_prev) + KI * (*devaition_sum));
 	if (speed < SPEEDtoHz(SPEED_MIN)) {
 		speed = 0;
 	}

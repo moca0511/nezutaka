@@ -37,12 +37,12 @@ void print_map(void) {
 			}
 			printf("\n");
 		}
-		Delay_ms(5);
 		printf("\n");
 		printf("    ");
 		for (int i = 0; i < MAP_X_MAX; i++) {
 			printf("  %d%d", i / 10, i % 10);
 		}
+
 		printf("\n");
 		for (int i = 0; i <= MAP_X_MAX; i++) {
 			printf("----");
@@ -81,8 +81,8 @@ void smap_Init(void) {
 	/*
 	 マップ設定
 	 */
-	posX = startX;
-	posY = startY;
+	posX = START_X;
+	posY = START_Y;
 	head = 0;
 
 	for (int i = 0; i < MAP_Y_MAX; i++) {
@@ -102,10 +102,11 @@ void smap_Init(void) {
 		map[i][MAP_Y_MAX - 1].wall += 0x88;
 	}
 
-	map[startX][startY].wall |= 0x44;
-	map[startX][startY].wall |= 0x80;
-	map[startX + 1][startY].wall |= 0x11;
-	map[startX][startY + 1].wall |= 0x20;
+	map[START_X][START_Y].wall |= 0x44;
+	map[START_X][START_Y].wall |= 0x80;
+	map[START_X + 1][START_Y].wall |= 0x11;
+	map[START_X][START_Y + 1].wall |= 0x20;
+
 }
 
 void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
@@ -801,8 +802,8 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
  * 戻り値：無し
  */
 void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
-	*searchX = goalX;
-	*searchY = goalY;
+	*searchX = GOAL_X;
+	*searchY = GOAL_Y;
 	int16_t value = 0;
 	int16_t buf1[2][MAP_SIZE];
 	int16_t cnt1 = 0;

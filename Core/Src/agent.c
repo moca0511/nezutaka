@@ -48,12 +48,12 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 	}
 
 	tone(tone_hiC, 10);
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-
+//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+//	Delay_ms(500);
 	for (;;) {
 
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			motor_stop();
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
@@ -77,9 +77,9 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				sirituke();
 				ajast();
 			}
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			music();
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			music();
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("G\n");
 				osMutexRelease(UART_MutexHandle);
@@ -111,7 +111,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			motor_stop();
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			tone(tone_C, 1000);
 			Delay_ms(1000);
 			break;
@@ -127,7 +127,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		switch (temp_head) {
 		case 0:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("S\n");
+				printf("S\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
@@ -150,7 +150,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			break;
 		case 1:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("R\n");
+				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			if (move_f == -1) {
@@ -194,7 +194,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		case 2:
 			//	printf("U\n");
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("U\n");
+				printf("U\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
@@ -216,7 +216,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			break;
 		case 3:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("L\n");
+				printf("L\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			if (move_f == -1) {
@@ -263,14 +263,14 @@ void hidarite(void) {
 	Delay_ms(500);
 	//wall_calibration();
 	tone(tone_hiC, 10);
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(10);
 	for (;;) {
 
 		//print_map();
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 			motor_stop();
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
 			}
@@ -344,7 +344,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 						& 0xf0);
 		temp_head = 4;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//			printf("temp_wall=0x%2x\n", temp_wall);
+			printf("temp_wall=0x%2x\n", temp_wall);
 			osMutexRelease(UART_MutexHandle);
 		}
 		if ((temp_wall & 0x88) == 0x80) {
@@ -478,7 +478,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		}
 		if (temp_head == 4) {
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//				printf("errer\n");
+				printf("errer\n");
 				osMutexRelease(UART_MutexHandle);
 			}
 			//			mortor_sleep();
@@ -488,8 +488,8 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 //		Delay_ms(1000);
 //		break;
 			//ERR
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			return;
 		}
 
@@ -527,10 +527,10 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				printf("R\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			if (rute[i - 1].direction == MOVE_FORWARD) {
-				rute[i - 1].value *= 1.1;
-
-			}
+//			if (rute[i - 1].direction == MOVE_FORWARD) {
+//				rute[i - 1].value *= 1.1;
+//
+//			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_R, 90, &head_buf);
@@ -558,10 +558,10 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			//	printf("TURNL\n");
-			if (rute[i - 1].direction == MOVE_FORWARD) {
-				rute[i - 1].value *= 1.1;
-
-			}
+//			if (rute[i - 1].direction == MOVE_FORWARD) {
+//				rute[i - 1].value *= 1.1;
+//
+//			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_L, 90, &head_buf);
@@ -572,14 +572,12 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		}
 		i++;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			Delay_ms(5);
-			printf("x=%d y=%d i=%d\n", x, y, i);
+			printf("x=%d y=%d head=%d i=%d\n", x, y,head_buf, i);
 			osMutexRelease(UART_MutexHandle);
 		}
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
-			Delay_ms(5);
 			printf("%d:direction=%d value=%ld\n", f, rute[f].direction,
 					rute[f].value);
 		}
@@ -590,14 +588,13 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		osMutexRelease(UART_MutexHandle);
 	}
 
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(50);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+//	Delay_ms(50);
+
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("saitan to goal\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//		osMutexRelease(UART_MutexHandle);
+//	}
 
 	for (int f = 0; f < i; f++) {
 		switch (rute[f].direction) {
@@ -644,8 +641,8 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		sirituke();
 		ajast();
 	}
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+//	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	music();
 
 }
