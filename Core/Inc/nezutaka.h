@@ -12,7 +12,7 @@
 //　機体パラメータ
 #define TIRE_DIAMETER   52.0					//　タイヤの直径　52mm
 #define TIRE_CIRCUIT    (PI * TIRE_DIAMETER)	//　タイヤの円周 163.363mm
-#define TREAD_WIDTH     89.0					//　トレッド幅　87.0mm(再計測)
+#define TREAD_WIDTH     87.0					//　トレッド幅　87.0mm(再計測)
 #define TREAD_CIRCUIT   (TREAD_WIDTH * PI)		//360度旋回時にタイヤが動く距離　87*3.14mm 273.18mm
 #define	STEP_DEGREE  (1.8 / 2.0)				//　ステッピングモータ1-2相励ステップ角（度/step) 0.9°
 #define	STEP_LENGTH	(TIRE_CIRCUIT * STEP_DEGREE / 360.0)	//1ステップで進む距離　0.408mm
@@ -21,7 +21,7 @@
 //　定数定義
 //#define	PI            3.14159265358979		//円周率
 //　最大速度
-#define MAX_SPEED 1000
+#define MAX_SPEED 2000
 
 #define NEZUTAKA_LENGTH 135
 
@@ -44,13 +44,13 @@
 #define MODE_NAME2 "SENSOR CALIBRATION"
 #define MODE_NAME3 "1BLOCK RUN"
 #define MODE_NAME4 "TURN R 90°"
-#define MODE_NAME5 "TURN U"
-#define MODE_NAME6 "SLALOM R"
+#define MODE_NAME5 "SLALOM R 400"
+#define MODE_NAME6 "SLALOM R 300"
 #define MODE_NAME7 "MAP INIT"
 #define MODE_NAME8 "PRINT MAP"
 #define MODE_NAME9 "TANSAKU MAP"
 #define MODE_NAME10 "SAITAN MAP"
-#define MODE_NAME11 "ADACHI LO"
+#define MODE_NAME11 "ADACHI L:O"
 #define MODE_NAME12 "ADACHI HIGH"
 #define MODE_NAME13 "SAITAN LO"
 #define MODE_NAME14 "SAITAN MID"

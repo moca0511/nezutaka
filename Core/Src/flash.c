@@ -27,7 +27,7 @@ void writeFlash(uint32_t address, uint8_t *data, uint32_t size  )
 
     HAL_FLASH_Unlock();        // unlock flash
     printf("UNLOCK\n");
-    eraseFlash();            // erease sector110
+    eraseFlash();            // erease sector11
     printf("erase\n");
   for ( uint32_t add = address; add < (address + size); add++ ){
         printf("%d,%p=0x%2x→%p\n",HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, add, *data),data,*data,(uint32_t*)add); // write byte

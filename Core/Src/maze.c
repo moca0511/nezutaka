@@ -797,13 +797,11 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 
 /*
  * 説明：searchX,searchYのマスから1番近い未探索で最短経路の可能性のある場所を探索しsearchX,searchYに結果を入れる
- * 引数：*searchX 探索先のX座標を入れる変数のポインタ
- * 		*searchY 探索先のY座標を入れる変数のポインタ
+ * 引数：*searchX 初期値：探索開始X座標，終了時：探索先のX座標を入れる変数のポインタ
+ * 		*searchY 初期値：探索開始Y座標，終了時：探索先のY座標を入れる変数のポインタ
  * 戻り値：無し
  */
 void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
-	*searchX = GOAL_X;
-	*searchY = GOAL_Y;
 	int16_t value = 0;
 	int16_t buf1[2][MAP_SIZE];
 	int16_t cnt1 = 0;
@@ -948,7 +946,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			break;
 		}
 
-		/* ｓ設定する値を更新する。 */
+		/* 設定する値を更新する。 */
 		++value;
 	}
 

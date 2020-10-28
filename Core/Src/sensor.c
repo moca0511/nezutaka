@@ -20,7 +20,7 @@ extern osThreadId_t Sensor_TaskHandle;
 extern osThreadId_t WALL_READ_TASKHandle;
 extern osThreadId_t SENSOR_PRINT_TAHandle;
 extern uint32_t wall_config[12];
-uint8_t wall_calibration_F = 1;
+
 
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
@@ -176,7 +176,7 @@ void wall_calibration(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 100, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) / 2 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 100, 500, 90 };
-	wall_calibration_F = 0;
+
 	tone(tone_hiC, 10);
 	for (int i = 0; i < 12; i++) {
 		wall_config[i] = 0;
@@ -245,7 +245,7 @@ void wall_calibration(void) {
 	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
 	wall_config[RF_FREE] = read_wall(&sensorData.ADC_DATA_RF);
 	wall_config[LF_FREE] = read_wall(&sensorData.ADC_DATA_LF);
-	straight(RUN_config);
+	straight(RUN_config, 0, 0, 0);
 	turn(turn_config);
 	osDelay(100);
 	wall_config[LS_FREE] = read_wall(&sensorData.ADC_DATA_LS);
@@ -266,7 +266,6 @@ void wall_calibration(void) {
 	turn(turn_config);
 	sirituke();
 //	mortor_sleep();
-	wall_calibration_F = 1;
 
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int i = 0; i < 12; i++) {
