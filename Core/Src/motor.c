@@ -34,7 +34,7 @@ extern void MOTOR_R(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
-				0U) == TASK_STOP) {
+				2U) == TASK_STOP) {
 			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 			osWaitForever) != TASK_START)
 				;
@@ -85,7 +85,7 @@ extern void MOTOR_L(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
-				0U) == TASK_STOP) {
+				2U) == TASK_STOP) {
 			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 			osWaitForever) != TASK_START)
 				;

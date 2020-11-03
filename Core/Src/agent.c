@@ -52,7 +52,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 //	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 //	Delay_ms(500);
 	for (;;) {
-
+		osDelayUntil(osKernelGetTickCount() + 5);
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 //			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			motor_stop();
@@ -256,7 +256,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 //			RUN_config.value = BLOCK_LENGTH * 0.05;
 //			straight(RUN_config);
 		}
-//		tone(tone_hiC, 50);
+		tone(tone_hiC, 50);
 
 	}
 }

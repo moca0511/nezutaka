@@ -101,7 +101,9 @@ void nezutaka(void) {
 		default:
 			break;
 		}
+		tone(tone_C, 10);
 		Delay_ms(10);
+		tone(tone_G, 10);
 	}
 }
 
@@ -174,8 +176,12 @@ void mode2(void) {
 //		osMutexRelease(UART_MutexHandle);
 //	}
 
-	Delay_ms(500);
-	wall_calibration();
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(2000);
+	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	Delay_ms(1000);
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //1block run
 void mode3(void) {
@@ -329,12 +335,12 @@ void mode11(void) {
 			{ { TURN_R, 300, 300, 2000, 800, 90 }, 15, 15 }, slalom180_config =
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 30, 30 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
+	posX=START_X;
+	posY=START_Y;
+	head=0;
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(2000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	Delay_ms(1000);
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("adachi to goal\n");
 //		osMutexRelease(UART_MutexHandle);
@@ -426,12 +432,12 @@ void mode12(void) {
 			{ { TURN_R, 400, 400, 2000, 820, 90 }, 15, 15 }, slalom180_config =
 			{ { TURN_R, 400, 400, 2000, 600, 180 }, 15, 15 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, BLOCK_LENGTH };
+	posX=START_X;
+	posY=START_Y;
+	head=0;
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(2000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	Delay_ms(1000);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("adachi to goal\n");
 		osMutexRelease(UART_MutexHandle);
@@ -518,16 +524,16 @@ void mode13(void) {
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 15, 15 };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
+	posX=START_X;
+	posY=START_Y;
+	head=0;
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(2000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	Delay_ms(1000);
 	straight(tyousei_config, 1, 0, 0);
 	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
 			posY, head);
-
+/*
 	RUN_config.acceleration = RUN_config.max_speed = 800;
 	RUN_config.finish_speed = slalom90_config.config.initial_speed =
 			slalom90_config.config.finish_speed =
@@ -540,7 +546,7 @@ void mode13(void) {
 
 	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
 			GOAL_X,
-			GOAL_Y, head);
+			GOAL_Y, head);*/
 	//turn_u();
 //	saitan(RUN_config,START_X,START_Y,posX,posY,head);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
@@ -553,16 +559,16 @@ void mode14(void) {
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 15, 15 };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
+	posX=START_X;
+	posY=START_Y;
+	head=0;
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(2000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	Delay_ms(1000);
 	straight(tyousei_config, 1, 0, 0);
 	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
 			posY, head);
-
+/*
 	RUN_config.acceleration = RUN_config.max_speed = 800;
 	RUN_config.finish_speed = slalom90_config.config.initial_speed =
 			slalom90_config.config.finish_speed =
@@ -575,7 +581,7 @@ void mode14(void) {
 
 	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
 			GOAL_X,
-			GOAL_Y, head);
+			GOAL_Y, head);*/
 	//	turn_u();
 	//	saitan(RUN_config,START_X,START_Y,posX,posY,head);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
@@ -589,16 +595,17 @@ void mode15(void) {
 			{ { TURN_R, 300, 300, 2000, 700, 180 }, 15, 15 };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
+	posX=START_X;
+	posY=START_Y;
+	head=0;
+
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(2000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	Delay_ms(1000);
 	straight(tyousei_config, 1, 0, 0);
 	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
 			posY, head);
 
-	RUN_config.acceleration = RUN_config.max_speed = 800;
+/*	RUN_config.acceleration = RUN_config.max_speed = 800;
 	RUN_config.finish_speed = slalom90_config.config.initial_speed =
 			slalom90_config.config.finish_speed =
 					slalom180_config.config.initial_speed =
@@ -610,7 +617,7 @@ void mode15(void) {
 
 	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
 			GOAL_X,
-			GOAL_Y, head);
+			GOAL_Y, head);*/
 	//	turn_u();
 	//	saitan(RUN_config,START_X,START_Y,posX,posY,head);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);

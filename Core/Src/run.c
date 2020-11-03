@@ -72,7 +72,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
 				&& gensoku != -1)
 				|| (((MotorStepCount_R + MotorStepCount_L) / 2
-						>= (stopcount * 0.45)) && gensoku == -1)
+						>= (stopcount * 0.47)) && gensoku == -1)
 				|| (config.max_speed == config.initial_speed
 						&& config.finish_speed < config.initial_speed))
 				&& plpl >= 0) {
@@ -309,6 +309,9 @@ void slalom(SLALOMConfig config) {
 	float32_t fspeedR = config.config.initial_speed, fspeedL =
 			config.config.initial_speed;
 	float32_t deg_speed = 0, deg = 0;
+	uint16_t temp_posX = posX, temp_posY = posY;
+	int8_t temp_head = head;
+	uint8_t temp_wall = 0x00;
 
 //1回転方向設定
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
@@ -322,10 +325,13 @@ void slalom(SLALOMConfig config) {
 //	osDelayUntil(osKernelGetTickCount() + 5);
 
 //位置調整
+	temp_wall = (((map[temp_posX][temp_posY].wall & 0x0f)
+			| (map[temp_posX][temp_posY].wall << 4)) << temp_head);
 	while ((MotorStepCount_R + MotorStepCount_L) / 2
 			< SPEEDtoHz(config.after_ofset)) {
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if (sensorData.ADC_DATA_LF >= 850 && sensorData.ADC_DATA_RF >= 850) {
+		if (sensorData.ADC_DATA_LF >= 850 && sensorData.ADC_DATA_RF >= 850
+				&& ((temp_wall & 0x88) != 0x80)) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				printf("1Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
 						sensorData.ADC_DATA_LF);
@@ -335,8 +341,13 @@ void slalom(SLALOMConfig config) {
 		}
 	}
 	if ((sensorData.ADC_DATA_LF < 850 && sensorData.ADC_DATA_RF < 850)
-			&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.8
-					&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold] * 0.8)) {
+			&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.85
+					&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold] * 0.85)
+			&& ((temp_wall & 0x88) != 0x80)) {
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("2Swall in\n");
+			osMutexRelease(UART_MutexHandle);
+		}
 		while ((sensorData.ADC_DATA_LF < 850 && sensorData.ADC_DATA_RF < 850)) {
 			osDelayUntil(osKernelGetTickCount() + 5);
 		}
@@ -418,11 +429,16 @@ void slalom(SLALOMConfig config) {
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 //	osDelayUntil(osKernelGetTickCount() + 5);
+	chenge_head(config.config.direction, config.config.value, &temp_head);
+	temp_wall = (((map[temp_posX][temp_posY].wall & 0x0f)
+			| (map[temp_posX][temp_posY].wall << 4)) << temp_head);
 //位置調整
+	//位置調整
 	while ((MotorStepCount_R + MotorStepCount_L) / 2
 			< SPEEDtoHz(config.after_ofset)) {
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if (sensorData.ADC_DATA_LF >= 700 && sensorData.ADC_DATA_RF >= 700) {
+		if (sensorData.ADC_DATA_LF >= 700 && sensorData.ADC_DATA_RF >= 700
+				&& ((temp_wall & 0x88) != 0x80)) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				printf("1Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
 						sensorData.ADC_DATA_LF);
@@ -432,9 +448,14 @@ void slalom(SLALOMConfig config) {
 		}
 	}
 	if ((sensorData.ADC_DATA_LF < 700 && sensorData.ADC_DATA_RF < 700)
-			&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.8
-					&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold] * 0.8)) {
+			&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.85
+					&& sensorData.ADC_DATA_RF >= wall_config[RF_threshold] * 0.85)
+			&& ((temp_wall & 0x88) != 0x80)) {
 		while ((sensorData.ADC_DATA_LF < 700 && sensorData.ADC_DATA_RF < 700)) {
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("2Ewall in\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			osDelayUntil(osKernelGetTickCount() + 5);
 		}
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
