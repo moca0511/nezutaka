@@ -1,2 +1,0 @@
-interrupt.c:16:6:HAL_TIM_PeriodElapsedCallback	8	static
-interrupt.c:36:6:HAL_GPIO_EXTI_Callback	0	static

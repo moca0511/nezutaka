@@ -1,9 +1,0 @@
-run.c:220:6:turn	64	static
-run.c:526:11:PID	32	static
-run.c:35:10:straight	136	static
-run.c:502:6:sirituke	64	static
-run.c:512:6:ajast	64	static
-run.c:550:6:chenge_pos	0	static
-run.c:575:6:chenge_head	8	static
-run.c:304:6:slalom	120	static
-run.c:594:6:turn_u	48	static

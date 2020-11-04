@@ -1,7 +1,0 @@
-motor.c:25:13:MOTOR_R	32	static
-motor.c:75:13:MOTOR_L	32	static
-motor.c:118:13:MORTOR_SLEEP_CHECK	24	static
-motor.c:140:11:SPEEDtoHz	8	static
-motor.c:143:11:HztoSPEED	8	static
-motor.c:147:6:mortor_direction	8	static
-motor.c:157:6:motor_stop	16	static

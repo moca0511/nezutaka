@@ -1,3 +1,0 @@
-timer.c:16:5:PWM_Set	8	static
-timer.c:26:6:wait_us	8	static
-timer.c:32:6:Delay_ms	8	static

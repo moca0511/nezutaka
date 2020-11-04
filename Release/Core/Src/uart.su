@@ -1,3 +1,0 @@
-uart.c:20:6:__io_putchar	16	static
-uart.c:24:9:ugets	32	static
-uart.c:44:6:print_str	16	static
