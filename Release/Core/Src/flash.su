@@ -1,0 +1,3 @@
+flash.c:6:6:eraseFlash	32	static
+flash.c:25:6:writeFlash	40	static
+flash.c:49:6:loadFlash	16	static

@@ -1,0 +1,10 @@
+maze.c:21:6:print_map	40	static
+maze.c:79:6:smap_Init	12	static
+maze.c:110:6:make_smap	216	static
+maze.c:382:6:wall_set	16	static
+maze.c:489:6:wall_set_around	8	static
+maze.c:645:9:wall_check	24	static
+maze.c:715:9:step_check	8	static
+maze.c:800:6:check_searchBlock	240	static
+maze.c:1021:6:maze_save	0	static
+maze.c:1025:6:maze_load	0	static

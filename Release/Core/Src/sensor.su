@@ -1,0 +1,5 @@
+sensor.c:28:13:Sensor	56	static
+sensor.c:163:10:read_wall	16	static
+sensor.c:175:6:wall_calibration	104	static
+sensor.c:281:6:print_sensordata	8	static
+sensor.c:297:13:SENSOR_PRINT	24	static
