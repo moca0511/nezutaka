@@ -114,6 +114,13 @@ const osThreadAttr_t MORTOR_SLEEP_CH_attributes = {
   .priority = (osPriority_t) osPriorityNormal4,
   .stack_size = 256 * 4
 };
+/* Definitions for PID_Task */
+osThreadId_t PID_TaskHandle;
+const osThreadAttr_t PID_Task_attributes = {
+  .name = "PID_Task",
+  .priority = (osPriority_t) osPriorityNormal4,
+  .stack_size = 512 * 4
+};
 /* Definitions for UART_Mutex */
 osMutexId_t UART_MutexHandle;
 const osMutexAttr_t UART_Mutex_attributes = {
@@ -144,6 +151,11 @@ osSemaphoreId_t SchengeLSemHandle;
 const osSemaphoreAttr_t SchengeLSem_attributes = {
   .name = "SchengeLSem"
 };
+/* Definitions for pid_Sem */
+osSemaphoreId_t pid_SemHandle;
+const osSemaphoreAttr_t pid_Sem_attributes = {
+  .name = "pid_Sem"
+};
 /* USER CODE BEGIN PV */
 
 
@@ -168,6 +180,7 @@ void BUZZER(void *argument);
 void BatteryCheck(void *argument);
 void SENSOR_PRINT(void *argument);
 void MORTOR_SLEEP_CHECK(void *argument);
+void PID(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -246,6 +259,9 @@ int main(void)
   /* creation of SchengeLSem */
   SchengeLSemHandle = osSemaphoreNew(1, 1, &SchengeLSem_attributes);
 
+  /* creation of pid_Sem */
+  pid_SemHandle = osSemaphoreNew(1, 1, &pid_Sem_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -282,6 +298,9 @@ int main(void)
 
   /* creation of MORTOR_SLEEP_CH */
   MORTOR_SLEEP_CHHandle = osThreadNew(MORTOR_SLEEP_CHECK, NULL, &MORTOR_SLEEP_CH_attributes);
+
+  /* creation of PID_Task */
+  PID_TaskHandle = osThreadNew(PID, NULL, &PID_Task_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -899,6 +918,7 @@ void StartDefaultTask(void *argument)
 	}
   /* USER CODE END 5 */
 }
+
 
 /**
   * @brief  This function is executed in case of error occurrence.

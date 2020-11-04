@@ -131,7 +131,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 				/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 				posX = buf1[0][--cnt1];
 				posY = buf1[1][cnt1];
-				//printf("\n\n**buf1 pos:%d\n\n", pos);
 
 				/* ｓ隣接区画に値を設定する。 */
 				/* ｓ北。 */
@@ -141,7 +140,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX][buf2[1][cnt2] = posY + 1].step =
 								value;
 						cnt2++;
-						//printf("kita map[%d]=%d\n", pos + MAP_X_MAX, value);
 					}
 				}
 				/* ｓ東。 */
@@ -151,7 +149,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX + 1][buf2[1][cnt2] = posY].step =
 								value;
 						cnt2++;
-						//printf("higasi map[%d]=%d\n", pos + 1, value);
 					}
 				}
 				/* ｓ南。 */
@@ -161,7 +158,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX][buf2[1][cnt2] = posY - 1].step =
 								value;
 						cnt2++;
-						//printf("minami map[%d]=%d\n", pos - MAP_X_MAX, value);
 					}
 				}
 				/* ｓ西。 */
@@ -171,7 +167,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX - 1][buf2[1][cnt2] = posY].step =
 								value;
 						cnt2++;
-						//printf("nisi map[%d]=%d\n", pos - 1, value);
 					}
 				}
 
@@ -184,16 +179,11 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 
 			/* ｓ設定する値を更新する。 */
 			++value;
-			/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("osThreadYield()=%d\n", osThreadYield());
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 
 			do {
 				/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 				posX = buf2[0][--cnt2];
 				posY = buf2[1][cnt2];
-				//printf("\n\n**buf1 pos:%d\n\n", pos);
 
 				/* ｓ隣接区画に値を設定する。 */
 				/* ｓ北。 */
@@ -203,7 +193,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX][buf1[1][cnt1] = posY + 1].step =
 								value;
 						cnt1++;
-						//printf("kita map[%d]=%d\n", pos + MAP_X_MAX, value);
 					}
 				}
 				/* ｓ東。 */
@@ -213,7 +202,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX + 1][buf1[1][cnt1] = posY].step =
 								value;
 						cnt1++;
-						//printf("higasi map[%d]=%d\n", pos + 1, value);
 					}
 				}
 				/* ｓ南。 */
@@ -223,7 +211,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX][buf1[1][cnt1] = posY - 1].step =
 								value;
 						cnt1++;
-						//printf("minami map[%d]=%d\n", pos - MAP_X_MAX, value);
 					}
 				}
 				/* ｓ西。 */
@@ -233,7 +220,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX - 1][buf1[1][cnt1] = posY].step =
 								value;
 						cnt1++;
-						//printf("nisi map[%d]=%d\n", pos - 1, value);
 					}
 				}
 			} while (cnt2 != 0); /* ｓバッファが空になるまで繰り返す。 */
@@ -245,10 +231,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 
 			/* ｓ設定する値を更新する。 */
 			++value;
-			/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("osThreadYield()=%d\n", osThreadYield());
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 		}
 	} else {
 		while (1) {
@@ -256,7 +238,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 				/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 				posX = buf1[0][--cnt1];
 				posY = buf1[1][cnt1];
-				//printf("\n\n**buf1 pos:%d\n\n", pos);
 
 				/* ｓ隣接区画に値を設定する。 */
 				/* ｓ北。 */
@@ -266,7 +247,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX][buf2[1][cnt2] = posY + 1].step =
 								value;
 						cnt2++;
-						//printf("kita map[%d]=%d\n", pos + MAP_X_MAX, value);
 					}
 				}
 				/* ｓ東。 */
@@ -276,7 +256,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX + 1][buf2[1][cnt2] = posY].step =
 								value;
 						cnt2++;
-						//printf("higasi map[%d]=%d\n", pos + 1, value);
 					}
 				}
 				/* ｓ南。 */
@@ -286,7 +265,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX][buf2[1][cnt2] = posY - 1].step =
 								value;
 						cnt2++;
-						//printf("minami map[%d]=%d\n", pos - MAP_X_MAX, value);
 					}
 				}
 				/* ｓ西。 */
@@ -296,7 +274,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf2[0][cnt2] = posX - 1][buf2[1][cnt2] = posY].step =
 								value;
 						cnt2++;
-						//printf("nisi map[%d]=%d\n", pos - 1, value);
 					}
 				}
 
@@ -309,16 +286,11 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 
 			/* ｓ設定する値を更新する。 */
 			++value;
-			/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("osThreadYield()=%d\n", osThreadYield());
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 
 			do {
 				/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 				posX = buf2[0][--cnt2];
 				posY = buf2[1][cnt2];
-				//printf("\n\n**buf1 pos:%d\n\n", pos);
 
 				/* ｓ隣接区画に値を設定する。 */
 				/* ｓ北。 */
@@ -328,7 +300,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX][buf1[1][cnt1] = posY + 1].step =
 								value;
 						cnt1++;
-						//printf("kita map[%d]=%d\n", pos + MAP_X_MAX, value);
 					}
 				}
 				/* ｓ東。 */
@@ -338,7 +309,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX + 1][buf1[1][cnt1] = posY].step =
 								value;
 						cnt1++;
-						//printf("higasi map[%d]=%d\n", pos + 1, value);
 					}
 				}
 				/* ｓ南。 */
@@ -348,7 +318,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX][buf1[1][cnt1] = posY - 1].step =
 								value;
 						cnt1++;
-						//printf("minami map[%d]=%d\n", pos - MAP_X_MAX, value);
 					}
 				}
 				/* ｓ西。 */
@@ -358,7 +327,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 						map[buf1[0][cnt1] = posX - 1][buf1[1][cnt1] = posY].step =
 								value;
 						cnt1++;
-						//printf("nisi map[%d]=%d\n", pos - 1, value);
 					}
 				}
 			} while (cnt2 != 0); /* ｓバッファが空になるまで繰り返す。 */
@@ -370,10 +338,6 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 
 			/* 　あ設定する値を更新する。 */
 			++value;
-			/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			 printf("osThreadYield()=%d\n", osThreadYield());
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
 		}
 	}
 	//printf("make fin\n");
@@ -415,225 +379,51 @@ void wall_set(uint8_t mode) {
 		wall_info |= (((0xdd >> head) & 0x0f) << 4);
 	}
 
-	/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-	 printf("wall:0x%2x | info:0x%2x = %2x \n",
-	 map[posX][posY].wall, wall_info,
-	 map[posX][posY].wall | wall_info);
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
-
 	map[posX][posY].wall |= wall_info;
 
 	UILED_SET(map[posX][posY].wall & 0x0f);
-
-//	if ((map[posX][posY].wall & 0x88) == 0x88) {
-//		//	printf("N");
-//		if (posY < MAP_Y_MAX - 1) {
-//			if ((map[posX][posY + 1].wall & 0x20) == 0x00) {
-//				map[posX][posY + 1].wall += 0x22;
-//			}
-//		}
-//	} else {
-//		if (posY < MAP_Y_MAX - 1) {
-//			if ((map[posX][posY + 1].wall & 0x20) == 0x00) {
-//				map[posX][posY + 1].wall += 0x20;
-//			}
-//		}
-//	}
-//
-//	if ((map[posX][posY].wall & 0x44) == 0x44) {
-//		//	printf("S");
-//		if (posX + 1 < MAP_X_MAX) {
-//			if ((map[posX + 1][posY].wall & 0x10) == 0x00) {
-//				map[posX + 1][posY].wall += 0x11;
-//			}
-//		}
-//	} else {
-//		if (posX + 1 < MAP_X_MAX) {
-//			if ((map[posX + 1][posY].wall & 0x10) == 0x00) {
-//				map[posX + 1][posY].wall += 0x10;
-//			}
-//		}
-//	}
-//
-//	if ((map[posX][posY].wall & 0x22) == 0x22) {
-//		//	printf("N");
-//		if (posY > 0) {
-//			if ((map[posX][posY - 1].wall & 0x80) == 0x00) {
-//				map[posX][posY - 1].wall += 0x88;
-//			}
-//		}
-//	} else {
-//		if (posY > 0) {
-//			if ((map[posX][posY - 1].wall & 0x80) == 0x00) {
-//				map[posX][posY - 1].wall += 0x80;
-//			}
-//		}
-//	}
-//
-//	if ((map[posX][posY].wall & 0x11) == 0x11) {
-//		//	printf("S");
-//		if (posX > 0) {
-//			if ((map[posX - 1][posY].wall & 0x40) == 0x00) {
-//				map[posX - 1][posY].wall += 0x44;
-//			}
-//		}
-//	} else {
-//		if (posX > 0) {
-//			if ((map[posX - 1][posY].wall & 0x40) == 0x00) {
-//				map[posX - 1][posY].wall += 0x40;
-//			}
-//		}
-//	}
 }
+
 void wall_set_around(void) {
 
-	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-	 printf("check around\n");
-	 printf("x:%d,y:%d,wall=0x%2x\n", posX, posY,
-	 map[posX][posY].wall);
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
-
-	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-	 printf("map[posX][posY].wall & 0x88= %2x\n",
-	 (map[posX][posY].wall & 0x88));
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
 	if ((map[posX][posY].wall & 0x88) == 0x88) {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("O\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posY < MAP_Y_MAX - 1) {
 			map[posX][posY + 1].wall |= 0x22;
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("ue ON\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
 	} else {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("X\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posY < MAP_Y_MAX - 1) {
-
 			map[posX][posY + 1].wall |= 0x20;
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("ue NO\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
 	}
-	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-	 printf("map[posX][posY].wall & 0x44= %2x\n",
-	 (map[posX][posY].wall & 0x44));
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
+
 	if ((map[posX][posY].wall & 0x44) == 0x44) {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("O\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posX < MAP_X_MAX - 1) {
 			map[posX + 1][posY].wall |= 0x11;
-			/*			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("migi ON\n");
-			 osMutexRelease(UART_MutexHandle);
-
-			 }*/
 		}
 	} else {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("X\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posX < MAP_X_MAX - 1) {
-
 			map[posX + 1][posY].wall |= 0x10;
-
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("migi NO\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
 	}
-	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-	 printf("map[posX][posY].wall & 0x22= %2x\n",
-	 (map[posX][posY].wall & 0x22));
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
+
 	if ((map[posX][posY].wall & 0x22) == 0x22) {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("O\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posY > 0) {
-
 			map[posX][posY - 1].wall |= 0x88;
-
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("sita ON\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
 	} else {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("X\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posY > 0) {
-
 			map[posX][posY - 1].wall |= 0x80;
-
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("sita NO\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
 	}
-	/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-	 printf("map[posX][posY].wall & 0x11= %2x\n",
-	 (map[posX][posY].wall & 0x11));
-	 osMutexRelease(UART_MutexHandle);
-	 }*/
+
 	if ((map[posX][posY].wall & 0x11) == 0x11) {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("O\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posX > 0) {
-
 			map[posX - 1][posY].wall |= 0x44;
-
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("hidari ON\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
 	} else {
-		/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		 printf("X\n");
-		 osMutexRelease(UART_MutexHandle);
-		 }*/
 		if (posX > 0) {
-
 			map[posX - 1][posY].wall |= 0x40;
-
-			/*if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			 printf("hidari NO\n");
-			 osMutexRelease(UART_MutexHandle);
-			 }*/
-
 		}
-
 	}
 }
 
@@ -798,7 +588,6 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
  * 戻り値：無し
  */
 void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
-	int16_t value = 0;
 	int16_t buf1[2][MAP_SIZE];
 	int16_t cnt1 = 0;
 	int16_t buf2[2][MAP_SIZE];
@@ -807,7 +596,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 
 	make_smap(*searchX, *searchY, 0);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		printf("searchBlock\n", temp_posX, temp_posY);
+		printf("searchBlock\n");
 		osMutexRelease(UART_MutexHandle);
 	}
 	print_map();
@@ -823,7 +612,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			temp_posY = buf1[1][cnt1];
 
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("1X=%ld Y=%ld\n", temp_posX, temp_posY);
+				printf("1X=%d Y=%d\n", temp_posX, temp_posY);
 				osMutexRelease(UART_MutexHandle);
 			}
 			/* 最短の可能性があり未探索のマスを探索 */
@@ -919,7 +708,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			temp_posX = buf2[0][--cnt2];
 			temp_posY = buf2[1][cnt2];
 			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("2X=%ld Y=%ld\n", temp_posX, temp_posY);
+				printf("2X=%d Y=%d\n", temp_posX, temp_posY);
 				osMutexRelease(UART_MutexHandle);
 			}
 			/* 最短の可能性があり未探索のマスを探索 */
@@ -1019,7 +808,24 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 }
 
 void maze_save(void) {
-	writeFlash(MAZE_FLASH_START_ADD, (uint8_t*) map, sizeof(map));
+	MAP temp_map[MAP_X_MAX][MAP_Y_MAX];
+	uint8_t end=1;
+	while (end) {
+		end=0;
+		writeFlash(MAZE_FLASH_START_ADD, (uint8_t*) map, sizeof(map));
+		loadFlash(MAZE_FLASH_START_ADD, (uint8_t*) temp_map, sizeof(temp_map));
+		for (int i = 0; i < MAP_X_MAX; i++) {
+			for (int f = 0; f < MAP_Y_MAX; f++) {
+				if (map[i][f].wall != temp_map[i][f].wall || map[i][f].step != temp_map[i][f].step) {
+					end=1;
+					break;
+				}
+			}
+			if(end){
+				break;
+			}
+		}
+	}
 }
 
 void maze_load(void) {

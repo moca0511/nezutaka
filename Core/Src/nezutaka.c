@@ -23,7 +23,7 @@ extern uint32_t MotorSPEED_L;
 extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
 extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 1200, 1200, 2600, 2600, 450, 450, 450, 450, 650,
+uint32_t wall_config[12] = { 1500, 1500, 2600, 2600, 450, 450, 450, 450, 650,
 		650, 600, 600 };
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern int16_t posX, posY;	//　現在の位置
@@ -226,59 +226,12 @@ void mode4(void) {
 }
 //turn 180° and sirituke
 void mode5(void) {
-	/*	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-	 printf("turn 180° and sirituke\n");
-	 osMutexRelease(UART_MutexHandle);
-	 }
 
-	 Delay_ms(500);
-	 tone(tone_hiC, 10);
-	 turn_u();
-	 //	mortor_sleep();
-	 tone(tone_hiC, 50);*/
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 400, 400, 2000, 700, 90 }, 15, 15 };
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1000, BLOCK_LENGTH / 2 };
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(1000);
-
-	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-	straight(RUN_config, 1, 0, 0);
-	slalom(slalom90_config);
-	motor_stop();
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+	maze_save();
 }
 //SLALOM_R
 void mode6(void) {
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 300, 300, 2000, 800, 90 }, 15, 15 };
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH / 2 };
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(1000);
-	for (uint16_t i = 0; i < 8; i++) {
-		RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-		straight(RUN_config, 1, 0, 0);
-		slalom(slalom90_config);
-	}
-	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-	RUN_config.finish_speed = 0;
-	straight(RUN_config, 1, 0, 0);
-
-	motor_stop();
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 1000, 4000, BLOCK_LENGTH };
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-//	Delay_ms(2000);
-//	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-//	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-//	ajast();
-//	saitan(RUN_config, GOAL_X, GOAL_Y, posX, posY, head);
-//	Delay_ms(100);
-//	RUN_config.acceleration = RUN_config.max_speed = 800;
-//	saitan(RUN_config, START_X, START_Y, GOAL_X, GOAL_Y, head);
-	//	turn_u();
-	//	saitan(RUN_config,START_X,START_Y,posX,posY,head);
-	return;
+	maze_load();
 }
 
 void mode7(void) {

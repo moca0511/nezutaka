@@ -49,12 +49,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 	}
 
 	tone(tone_hiC, 10);
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-//	Delay_ms(500);
+
 	for (;;) {
 		osDelayUntil(osKernelGetTickCount() + 5);
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
-//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			motor_stop();
 			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
 				Delay_ms(50);
@@ -77,9 +75,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				sirituke();
 				ajast();
 			}
-//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//			music();
+
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("G\n");
 				osMutexRelease(UART_MutexHandle);
@@ -147,15 +143,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				wall_set(0x01);
 				wall_set_around();
 			} else if ((move_f *= -1) == 1) {    //区切り
-				chenge_pos(1,&posX,&posY,head);
+				chenge_pos(1, &posX, &posY, head);
 				wall_set(0x03);
 				wall_set_around();
 			}
-//			tone(tone_C, 50);
-//			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R)/2;
-//			RUN_config.value = BLOCK_LENGTH * 0.2;
-//			straight(RUN_config);
-//			wall_set(0x01);
 
 			break;
 		case 1:
@@ -164,10 +155,6 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			if (move_f == -1) {
-//				RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-//				RUN_config.finish_speed = 0;
-//				RUN_config.value = BLOCK_LENGTH * 0.5;
-//				straight(RUN_config, 1, 1, 1);
 				turn_config.direction = TURN_R;
 				turn_config.finish_speed = turn_config.initial_speed = 0;
 				turn(turn_config);
@@ -189,23 +176,11 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 						slalom90_config.config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_L;
-				chenge_pos(1,&posX,&posY,head);
+				chenge_pos(1, &posX, &posY, head);
 				wall_set(0x03);
 				wall_set_around();
 				move_f = 1;
 			}
-
-//			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R)/2;
-//			RUN_config.finish_speed = 0;
-//			RUN_config.value = BLOCK_LENGTH * 0.5;
-//			straight(RUN_config);
-//			move_f = -1;
-//			turn_config.direction = TURN_R;
-//			turn(turn_config);
-
-//			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R)/2;
-//			RUN_config.value = BLOCK_LENGTH * 0.05;
-//			straight(RUN_config);
 
 			break;
 		case 2:
@@ -263,7 +238,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 						slalom90_config.config.value, &head);
 				RUN_config.finish_speed = speed_buf;
 				U_config.direction = TURN_R;
-				chenge_pos(1,&posX,&posY,head);
+				chenge_pos(1, &posX, &posY, head);
 				wall_set(0x03);
 				wall_set_around();
 				move_f = 1;
@@ -573,7 +548,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			chenge_head(TURN_R, 180, &head_buf);
 			i++;
 			rute[i].direction = 0;
-			rute[i].value = BLOCK_LENGTH/2;
+			rute[i].value = BLOCK_LENGTH / 2;
 
 			break;
 		case 3:
@@ -599,6 +574,13 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			printf("x=%d y=%d head=%d i=%d\n", x, y, head_buf, i);
 			osMutexRelease(UART_MutexHandle);
 		}
+	}
+	if(rute[i-1].direction==0){
+		rute[i-1].value+=BLOCK_LENGTH/2;
+	}else{
+		rute[i].direction = 0;
+		rute[i].value+=BLOCK_LENGTH/2;
+		i++;
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
@@ -627,8 +609,13 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
 			RUN_config.value = rute[f].value;
 			straight(RUN_config, 1, 1, 1);
-			RUN_config.value+=90;
-			chenge_pos(RUN_config.value/BLOCK_LENGTH + (RUN_config.value-(RUN_config.value / BLOCK_LENGTH)*BLOCK_LENGTH > 0 ? 1:0),&posX,&posY,head);
+			RUN_config.value += 90;
+			chenge_pos(
+					RUN_config.value / BLOCK_LENGTH
+							+ (RUN_config.value
+									- (RUN_config.value / BLOCK_LENGTH)
+											* BLOCK_LENGTH > 0 ? 1 : 0), &posX,
+					&posY, head);
 			break;
 		case 1:
 			//printf("TURN R\n");
@@ -652,7 +639,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				slalom(slalom90_config);
 			}
 			chenge_head(TURN_R, 90, &head);
-			chenge_pos(1,&posX,&posY,head);
+			chenge_pos(1, &posX, &posY, head);
 			break;
 		case 2:
 			//	printf("U\n");
@@ -681,7 +668,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				slalom(slalom90_config);
 			}
 			chenge_head(TURN_L, 90, &head);
-			chenge_pos(1,&posX,&posY,head);
+			chenge_pos(1, &posX, &posY, head);
 			break;
 		}
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
@@ -689,10 +676,6 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			osMutexRelease(UART_MutexHandle);
 		}
 	}
-	RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-	RUN_config.finish_speed = 0;
-	RUN_config.value = BLOCK_LENGTH / 2;
-	straight(RUN_config, 1, 1, 1);
 	turn_u();
 	posX = gx;
 	posY = gy;

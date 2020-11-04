@@ -9,9 +9,13 @@
 #include "buzzer.h"
 #include "nezutaka.h"
 
+extern osThreadId_t PID_TaskHandle;
 extern osMutexId_t UART_MutexHandle;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
+extern uint32_t temp_MotorSPEED_R;
+extern uint32_t temp_MotorSPEED_L;
+extern osSemaphoreId_t pid_SemHandle;
 
 uint32_t MotorSPEED_R = 0;
 uint32_t MotorSPEED_L = 0;
@@ -157,12 +161,14 @@ void mortor_direction(uint8_t motor, uint8_t direction) {
 void motor_stop(void) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
+	osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
 //	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("stop\n");
 //		osMutexRelease(UART_MutexHandle);
 //	}
-	MotorSPEED_R = 0;
-	MotorSPEED_L = 0;
+	temp_MotorSPEED_R = 0;
+	temp_MotorSPEED_L = 0;
+	osSemaphoreRelease(pid_SemHandle);
 	osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 	osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
