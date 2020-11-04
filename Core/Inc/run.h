@@ -39,7 +39,7 @@ typedef struct {
 #define SPEED_MIN (1680000/(65536+1))/STEP_LENGTH+1
 
 #define KP 0.1
-#define KI 0.0005
+#define KI 0.001
 #define KD 0.08
 
 uint16_t straight(RUNConfig config,uint8_t pid_F,uint8_t wall_break_F,uint8_t front_Adjustment_F);
@@ -49,7 +49,7 @@ void sirituke(void);
 float32_t PID(float32_t speed, int32_t target, int32_t sensor,
         int32_t *deviation_prev,int32_t *devaition_sum);
 void chenge_head(uint16_t direction,uint32_t value,int8_t* head_buf);
-void chenge_pos(int16_t block);
+void chenge_pos(int16_t block,int16_t* temp_posX,int16_t* temp_posY,int8_t temp_head);
 void turn_u(void);
 void ajast(void);
 #endif /* INC_RUN_H_ */

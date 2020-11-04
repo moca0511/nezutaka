@@ -30,7 +30,7 @@ void print_map(void) {
 			printf("----");
 		}
 		printf("\n");
-		for (int i = MAP_Y_MAX-1; i >= 0; i--) {
+		for (int i = MAP_Y_MAX - 1; i >= 0; i--) {
 			printf("%3d|", i);
 			for (int f = 0; f < MAP_X_MAX; f++) {
 				printf("%4x", map[f][i].wall);
@@ -48,7 +48,7 @@ void print_map(void) {
 			printf("----");
 		}
 		printf("\n");
-		for (int i = MAP_Y_MAX-1; i >= 0; i--) {
+		for (int i = MAP_Y_MAX - 1; i >= 0; i--) {
 			printf("%3d|", i);
 			for (int f = 0; f < MAP_X_MAX; f++) {
 				if (i == posY && f == posX) {
@@ -72,7 +72,6 @@ void print_map(void) {
 			}
 			printf("\n");
 		}
-		Delay_ms(5);
 		osMutexRelease(UART_MutexHandle);
 	}
 }
@@ -91,7 +90,6 @@ void smap_Init(void) {
 			map[f][i].wall = 0x00;
 		}
 	}
-
 
 	for (int i = 0; i < MAP_Y_MAX; i++) {
 		map[0][i].wall += 0x11;
@@ -707,7 +705,6 @@ uint8_t wall_check(uint8_t direction) {
 	return (map[posX][posY].wall & and) % 0x10;
 }
 
-
 /*
  * 説明：現在位置と隣接マスの歩数の差を返す
  * 引数：posX 現在位置のX座標
@@ -794,7 +791,6 @@ int16_t step_check(uint16_t posX, uint16_t posY, uint8_t direction) {
 	return step;
 }
 
-
 /*
  * 説明：searchX,searchYのマスから1番近い未探索で最短経路の可能性のある場所を探索しsearchX,searchYに結果を入れる
  * 引数：*searchX 初期値：探索開始X座標，終了時：探索先のX座標を入れる変数のポインタ
@@ -807,156 +803,226 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 	int16_t cnt1 = 0;
 	int16_t buf2[2][MAP_SIZE];
 	int16_t cnt2 = 0;
-	int16_t posX, posY;
+	int16_t temp_posX, temp_posY;
 
+	make_smap(*searchX, *searchY, 0);
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+		printf("searchBlock\n", temp_posX, temp_posY);
+		osMutexRelease(UART_MutexHandle);
+	}
+	print_map();
 	/* ｓ目標区画に値を設定する。 */
-	map[buf1[0][cnt1] = *searchX][buf1[1][cnt1] = *searchY].step = value++;
+	buf1[0][cnt1] = START_X;
+	buf1[1][cnt1] = START_Y;
 	cnt1++;
 
 	while (1) {
 		do {
 			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
-			posX = buf1[0][--cnt1];
-			posY = buf1[1][cnt1];
+			temp_posX = buf1[0][--cnt1];
+			temp_posY = buf1[1][cnt1];
+
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("1X=%ld Y=%ld\n", temp_posX, temp_posY);
+				osMutexRelease(UART_MutexHandle);
+			}
 			/* 最短の可能性があり未探索のマスを探索 */
 			/* ｓ北。 */
-			if (posY + 1 < MAP_SIZE) {
-				if (map[posX][posY + 1].step == map[posX][posY].step+1) {
-					if ((map[posX][posY + 1].wall & 0xf0) == 0xf0) {
-						buf2[0][cnt2] = posX;
-						buf2[1][cnt2++] = posY + 1;
+			if (temp_posY + 1 < MAP_Y_MAX) {
+				if (map[temp_posX][temp_posY + 1].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x88) != 0x88) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("N\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX][temp_posY + 1].wall & 0xf0) == 0xf0) {
+						buf2[0][cnt2] = temp_posX;
+						buf2[1][cnt2++] = temp_posY + 1;
 					} else {
-						*searchX = posX;
-						*searchY = posY + 1;
+						*searchX = temp_posX;
+						*searchY = temp_posY + 1;
 						return;
 					}
 				}
 			}
 			/* ｓ東。 */
-			if (posX != MAP_X_MAX - 1) {
-				if (map[posX + 1][posY].step == map[posX][posY].step+1) {
-					if ((map[posX + 1][posY].wall & 0xf0) == 0xf0) {
-						buf2[0][cnt2] = posX + 1;
-						buf2[1][cnt2++] = posY;
+			if (temp_posX != MAP_X_MAX - 1) {
+				if (map[temp_posX + 1][temp_posY].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x44) != 0x44) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("E\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX + 1][temp_posY].wall & 0xf0) == 0xf0) {
+						buf2[0][cnt2] = temp_posX + 1;
+						buf2[1][cnt2++] = temp_posY;
 					} else {
-						*searchX = posX + 1;
-						*searchY = posY;
+						*searchX = temp_posX + 1;
+						*searchY = temp_posY;
 						return;
 					}
 				}
 			}
 			/* ｓ南。 */
-			if (posY != 0) {
-				if (map[posX][posY - 1].step == map[posX][posY].step+1) {
-					if ((map[posX][posY].wall & 0xf0) == 0xf0) {
-						buf2[0][cnt2] = posX;
-						buf2[1][cnt2++] = posY - 1;
+			if (temp_posY != 0) {
+				if (map[temp_posX][temp_posY - 1].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x22) != 0x22) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("S\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX][temp_posY].wall & 0xf0) == 0xf0) {
+						buf2[0][cnt2] = temp_posX;
+						buf2[1][cnt2++] = temp_posY - 1;
 					} else {
-						*searchX = posX;
-						*searchY = posY-1;
+						*searchX = temp_posX;
+						*searchY = temp_posY - 1;
 						return;
 					}
 				}
 			}
 			/* ｓ西。 */
-			if (posX != 0) {
-				if (map[posX - 1][posY].step == map[posX][posY].step+1) {
-					if ((map[posX - 1][posY].wall & 0xf0) == 0xf0) {
-						buf2[0][cnt2] = posX - 1;
-						buf2[1][cnt2++] = posY;
+			if (temp_posX != 0) {
+				if (map[temp_posX - 1][temp_posY].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x11) != 0x11) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("W\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX - 1][temp_posY].wall & 0xf0) == 0xf0) {
+						buf2[0][cnt2] = temp_posX - 1;
+						buf2[1][cnt2++] = temp_posY;
 					} else {
-						*searchX = posX - 1;
-						*searchY = posY;
+						*searchX = temp_posX - 1;
+						*searchY = temp_posY;
 						return;
 					}
 				}
 			}
 
 		} while (cnt1 != 0); /* ｓバッファが空になるまで繰り返す。 */
-
+		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			printf("cnt2=%d\n", cnt2);
+			osMutexRelease(UART_MutexHandle);
+		}
 		/* ｓもう一方のバッファが空なら終了する。 */
 		if (cnt2 == 0) {
 			break;
 		}
 
-		/* ｓ設定する値を更新する。 */
-		++value;
-
 		do {
 			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
-			posX = buf2[0][--cnt2];
-			posY = buf2[1][cnt2];
+			temp_posX = buf2[0][--cnt2];
+			temp_posY = buf2[1][cnt2];
+			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+				printf("2X=%ld Y=%ld\n", temp_posX, temp_posY);
+				osMutexRelease(UART_MutexHandle);
+			}
 			/* 最短の可能性があり未探索のマスを探索 */
 			/* ｓ北。 */
-			if (posY + 1 < MAP_SIZE) {
-				if (map[posX][posY + 1].step == map[posX][posY].step+1) {
-					if ((map[posX][posY + 1].wall & 0xf0) == 0xf0) {
-						buf1[0][cnt1] = posX;
-						buf1[1][cnt1++] = posY + 1;
+			if (temp_posY + 1 < MAP_Y_MAX) {
+				if (map[temp_posX][temp_posY + 1].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x88) != 0x88) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("N\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX][temp_posY + 1].wall & 0xf0) == 0xf0) {
+						buf1[0][cnt1] = temp_posX;
+						buf1[1][cnt1++] = temp_posY + 1;
 					} else {
-						*searchX = posX;
-						*searchY = posY + 1;
+						*searchX = temp_posX;
+						*searchY = temp_posY + 1;
 						return;
 					}
 				}
 			}
 			/* ｓ東。 */
-			if (posX != MAP_X_MAX - 1) {
-				if (map[posX + 1][posY].step == map[posX][posY].step+1) {
-					if ((map[posX + 1][posY].wall & 0xf0) == 0xf0) {
-						buf1[0][cnt1] = posX + 1;
-						buf1[1][cnt1++] = posY;
+			if (temp_posX != MAP_X_MAX - 1) {
+				if (map[temp_posX + 1][temp_posY].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x44) != 0x44) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("E\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX + 1][temp_posY].wall & 0xf0) == 0xf0) {
+						buf1[0][cnt1] = temp_posX + 1;
+						buf1[1][cnt1++] = temp_posY;
 					} else {
-						*searchX = posX + 1;
-						*searchY = posY;
+						*searchX = temp_posX + 1;
+						*searchY = temp_posY;
 						return;
 					}
 				}
 			}
 			/* ｓ南。 */
-			if (posY != 0) {
-				if (map[posX][posY - 1].step == map[posX][posY].step+1) {
-					if ((map[posX][posY].wall & 0xf0) == 0xf0) {
-						buf1[0][cnt1] = posX;
-						buf1[1][cnt1++] = posY - 1;
+			if (temp_posY != 0) {
+				if (map[temp_posX][temp_posY - 1].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x22) != 0x22) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("S\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX][temp_posY].wall & 0xf0) == 0xf0) {
+						buf1[0][cnt1] = temp_posX;
+						buf1[1][cnt1++] = temp_posY - 1;
 					} else {
-						*searchX = posX;
-						*searchY = posY-1;
+						*searchX = temp_posX;
+						*searchY = temp_posY - 1;
 						return;
 					}
 				}
 			}
 			/* ｓ西。 */
-			if (posX != 0) {
-				if (map[posX - 1][posY].step == map[posX][posY].step+1) {
-					if ((map[posX - 1][posY].wall & 0xf0) == 0xf0) {
-						buf1[0][cnt1] = posX - 1;
-						buf1[1][cnt1++] = posY;
+			if (temp_posX != 0) {
+				if (map[temp_posX - 1][temp_posY].step
+						== map[temp_posX][temp_posY].step - 1
+						&& (map[temp_posX][temp_posY].wall & 0x11) != 0x11) {
+					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+						printf("W\n");
+						osMutexRelease(UART_MutexHandle);
+					}
+					if ((map[temp_posX - 1][temp_posY].wall & 0xf0) == 0xf0) {
+						buf1[0][cnt1] = temp_posX - 1;
+						buf1[1][cnt1++] = temp_posY;
 					} else {
-						*searchX = posX - 1;
-						*searchY = posY;
+						if (osMutexWait(UART_MutexHandle, osWaitForever)
+								== osOK) {
+							printf("return\n");
+							osMutexRelease(UART_MutexHandle);
+						}
+						*searchX = temp_posX - 1;
+						*searchY = temp_posY;
 						return;
 					}
 				}
 			}
 		} while (cnt2 != 0); /* ｓバッファが空になるまで繰り返す。 */
+		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			printf("cnt1=%d\n", cnt1);
+			osMutexRelease(UART_MutexHandle);
+		}
 
 		/* ｓもう一方のバッファが空なら終了する。 */
 		if (cnt1 == 0) {
 			break;
 		}
-
-		/* 設定する値を更新する。 */
-		++value;
 	}
 
 }
 
-void maze_save(void){
-	writeFlash(MAZE_FLASH_START_ADD,(uint8_t*)map,sizeof(map));
+void maze_save(void) {
+	writeFlash(MAZE_FLASH_START_ADD, (uint8_t*) map, sizeof(map));
 }
 
-void maze_load(void){
-	loadFlash(MAZE_FLASH_START_ADD,(uint8_t*)map,sizeof(map));
+void maze_load(void) {
+	loadFlash(MAZE_FLASH_START_ADD, (uint8_t*) map, sizeof(map));
 }
 
