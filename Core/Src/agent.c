@@ -332,7 +332,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	}
 
 	make_smap(gx, gy, 1);
-//	print_map();
+	print_map();
 //進行方向決定
 
 	while (x != gx || y != gy) {
@@ -343,7 +343,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 								<< head_buf) & 0xf0);
 		temp_head = 4;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("temp_wall=0x%2x\n", temp_wall);
+			printf("temp_wall=0x%2x,head_buf=%d\n", temp_wall,head_buf);
 			osMutexRelease(UART_MutexHandle);
 		}
 		if ((temp_wall & 0x88) == 0x80) {
@@ -460,16 +460,16 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				}
 				break;
 			case 2:
-				if (map[x][y].step > map[x + 1][y].step
-						&& (map[x + 1][y].wall & 0xf0) == 0xf0) {
-					x++;
+				if (map[x][y].step > map[x ][y+1].step
+						&& (map[x ][y+1].wall & 0xf0) == 0xf0) {
+					y++;
 					temp_head = 2;
 				}
 				break;
 			case 3:
-				if (map[x][y].step > map[x][y + 1].step
-						&& (map[x][y + 1].wall & 0xf0) == 0xf0) {
-					y++;
+				if (map[x][y].step > map[x +1][y].step
+						&& (map[x+1][y].wall & 0xf0) == 0xf0) {
+					x++;
 					temp_head = 2;
 				}
 				break;

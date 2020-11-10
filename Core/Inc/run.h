@@ -39,8 +39,8 @@ typedef struct {
 #define SPEED_MIN (1680000/(65536+1))/STEP_LENGTH+1
 
 #define KP 0.08
-#define KI 0.0005
-#define KD 0.07
+#define KI 0.0001
+#define KD 0.1
 
 uint16_t straight(RUNConfig config,uint8_t pid_F,uint8_t wall_break_F,uint8_t front_Adjustment_F);
 void turn(RUNConfig config);

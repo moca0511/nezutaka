@@ -46,9 +46,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	int32_t stopcount = config.value / STEP_LENGTH
 			- (MotorStepCount_R + MotorStepCount_L) / 2;
 	int32_t gensoku = -1;
-	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
-	int32_t deviation_sumR = 0, deviation_sumL = 0;
 
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
@@ -78,7 +76,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
 				&& gensoku != -1)
 				|| (((MotorStepCount_R + MotorStepCount_L) / 2
-						>= (stopcount * 0.47)) && gensoku == -1)
+						>= (stopcount * 0.5)) && gensoku == -1)
 				|| (config.max_speed == config.initial_speed
 						&& config.finish_speed < config.initial_speed))
 				&& plpl >= 0) {
@@ -91,7 +89,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			fspeed = config.max_speed;
 			if (gensoku == -1 && config.initial_speed == config.finish_speed) {
 				gensoku = stopcount
-						- (((MotorStepCount_R + MotorStepCount_L) / 2) * 1.2);
+						- (((MotorStepCount_R + MotorStepCount_L) / 2) * 1);
 			}
 		}
 		//speedが終了速度より下がらないように
@@ -149,7 +147,6 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 
 		temp_MotorSPEED_R = (float32_t) fspeed_R;
 		temp_MotorSPEED_L = (float32_t) fspeed_L;
-		osSemaphoreRelease(pid_SemHandle);
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 
@@ -249,7 +246,6 @@ void turn(RUNConfig config) {
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
 	temp_MotorSPEED_R = temp_MotorSPEED_L = config.initial_speed;
-	osSemaphoreRelease(pid_SemHandle);
 	osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 	osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 
@@ -278,7 +274,6 @@ void turn(RUNConfig config) {
 //1各モータスピードに代入
 		temp_MotorSPEED_L = speed;
 		temp_MotorSPEED_R = speed;
-		osSemaphoreRelease(pid_SemHandle);
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 
@@ -294,7 +289,6 @@ void turn(RUNConfig config) {
 		motor_stop();
 	} else {
 		temp_MotorSPEED_R = temp_MotorSPEED_L = config.finish_speed;
-		osSemaphoreRelease(pid_SemHandle);
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 	}
@@ -339,11 +333,10 @@ void slalom(SLALOMConfig config) {
 	if ((temp_wall & 0x88) == 0x88) {
 		do {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osSemaphoreRelease(pid_SemHandle);
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-		} while ((sensorData.ADC_DATA_LF < 870 && sensorData.ADC_DATA_RF < 870));
+		} while ((sensorData.ADC_DATA_LF < 900 && sensorData.ADC_DATA_RF < 900));
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("3Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
 					sensorData.ADC_DATA_LF);
@@ -353,11 +346,10 @@ void slalom(SLALOMConfig config) {
 		while ((MotorStepCount_R + MotorStepCount_L) / 2
 				< SPEEDtoHz(config.after_ofset)) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osSemaphoreRelease(pid_SemHandle);
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-			if (sensorData.ADC_DATA_LF >= 870 && sensorData.ADC_DATA_RF >= 870
+			if (sensorData.ADC_DATA_LF >= 900 && sensorData.ADC_DATA_RF >= 900
 					&& ((temp_wall & 0x88) != 0x80)) {
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("1Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
@@ -368,19 +360,18 @@ void slalom(SLALOMConfig config) {
 			}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if ((sensorData.ADC_DATA_LF < 870 && sensorData.ADC_DATA_RF < 870)
+		if ((sensorData.ADC_DATA_LF < 900 && sensorData.ADC_DATA_RF < 900)
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.85
 						&& sensorData.ADC_DATA_RF
 								>= wall_config[RF_threshold] * 0.85)
 				&& ((temp_wall & 0x88) != 0x80)) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("2Swall in\n");
+//				printf("2Swall in\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			while ((sensorData.ADC_DATA_LF < 870 && sensorData.ADC_DATA_RF < 870)) {
+			while ((sensorData.ADC_DATA_LF < 900 && sensorData.ADC_DATA_RF < 900)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
 						config.config.finish_speed;
-				osSemaphoreRelease(pid_SemHandle);
 				osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 				osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 
@@ -397,6 +388,7 @@ void slalom(SLALOMConfig config) {
 	osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
 	MotorStepCount_R = 0;
 	MotorStepCount_L = 0;
+
 	do {
 
 		if (deg_speed > 0) {
@@ -444,7 +436,6 @@ void slalom(SLALOMConfig config) {
 //1各モータスピードに代入
 		temp_MotorSPEED_L = fspeedL;
 		temp_MotorSPEED_R = fspeedR;
-		osSemaphoreRelease(pid_SemHandle);
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 //角度変更処理
@@ -460,7 +451,6 @@ void slalom(SLALOMConfig config) {
 		motor_stop();
 	} else {
 		temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-		osSemaphoreRelease(pid_SemHandle);
 		osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 	}
@@ -478,10 +468,9 @@ void slalom(SLALOMConfig config) {
 		do {
 			osDelayUntil(osKernelGetTickCount() + 5);
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osSemaphoreRelease(pid_SemHandle);
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
-		} while ((sensorData.ADC_DATA_LF < 750 && sensorData.ADC_DATA_RF < 750));
+		} while ((sensorData.ADC_DATA_LF < 800 && sensorData.ADC_DATA_RF < 800));
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("3Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
 					sensorData.ADC_DATA_LF);
@@ -491,11 +480,10 @@ void slalom(SLALOMConfig config) {
 		while ((MotorStepCount_R + MotorStepCount_L) / 2
 				< SPEEDtoHz(config.after_ofset)) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osSemaphoreRelease(pid_SemHandle);
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-			if (sensorData.ADC_DATA_LF >= 750 && sensorData.ADC_DATA_RF >= 750
+			if (sensorData.ADC_DATA_LF >= 800 && sensorData.ADC_DATA_RF >= 800
 					&& ((temp_wall & 0x88) != 0x80)) {
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("1Ewall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
@@ -506,19 +494,18 @@ void slalom(SLALOMConfig config) {
 			}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if ((sensorData.ADC_DATA_LF < 750 && sensorData.ADC_DATA_RF < 750)
+		if ((sensorData.ADC_DATA_LF < 800 && sensorData.ADC_DATA_RF < 800)
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.85
 						&& sensorData.ADC_DATA_RF
 								>= wall_config[RF_threshold] * 0.85)
 				&& ((temp_wall & 0x88) != 0x80)) {
-			while ((sensorData.ADC_DATA_LF < 750 && sensorData.ADC_DATA_RF < 750)) {
+			while ((sensorData.ADC_DATA_LF < 800 && sensorData.ADC_DATA_RF < 800)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
 						config.config.finish_speed;
-				osSemaphoreRelease(pid_SemHandle);
 				osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 				osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-					printf("2Ewall in\n");
+//					printf("2Ewall in\n");
 					osMutexRelease(UART_MutexHandle);
 				}
 				osDelayUntil(osKernelGetTickCount() + 5);
@@ -660,17 +647,17 @@ extern void PID(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
-				0U) == TASK_STOP) {
-			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny, 0U)
+				5U) == TASK_STOP) {
+			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny, 5U)
 					!= TASK_START) {
-				osSemaphoreAcquire(pid_SemHandle, osWaitForever);
+//				osSemaphoreAcquire(pid_SemHandle, osWaitForever);
 				MotorSPEED_L = temp_MotorSPEED_L;
 				MotorSPEED_R = temp_MotorSPEED_R;
 			}
 			deviation_prevR = deviation_prevL = 0;
 			deviation_sumR = deviation_sumL = 0;
 		}
-		osSemaphoreAcquire(pid_SemHandle, osWaitForever);
+//		osSemaphoreAcquire(pid_SemHandle, osWaitForever);
 		if (sensorData.ADC_DATA_LS > wall_config[LS_threshold]
 				&& sensorData.ADC_DATA_LS > sensorData.ADC_DATA_RS) { //　壁がある時だけPID操作
 			if (sensorData.ADC_DATA_LS <= wall_config[LS_WALL] * 0.95

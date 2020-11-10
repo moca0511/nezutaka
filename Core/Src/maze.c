@@ -663,7 +663,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 						printf("S\n");
 						osMutexRelease(UART_MutexHandle);
 					}
-					if ((map[temp_posX][temp_posY].wall & 0xf0) == 0xf0) {
+					if ((map[temp_posX][temp_posY-1].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = temp_posX;
 						buf2[1][cnt2++] = temp_posY - 1;
 					} else {
@@ -759,7 +759,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 						printf("S\n");
 						osMutexRelease(UART_MutexHandle);
 					}
-					if ((map[temp_posX][temp_posY].wall & 0xf0) == 0xf0) {
+					if ((map[temp_posX][temp_posY-1].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = temp_posX;
 						buf1[1][cnt1++] = temp_posY - 1;
 					} else {
