@@ -388,7 +388,7 @@ void mode12(void) {
 			- NEZUTAKA_LENGTH) * 0.5 };
 
 	SLALOMConfig slalom90_config =
-			{ { TURN_R, 400, 400, 2000, 2000, 90 }, 15, 15 }, slalom180_config =
+			{ { TURN_R, 400, 400, 2000, 1200, 90 }, 10,10 }, slalom180_config =
 			{ { TURN_R, 400, 400, 2000, 600, 180 }, 15, 15 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, BLOCK_LENGTH };
 	posX = START_X;
