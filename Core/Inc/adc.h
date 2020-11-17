@@ -16,7 +16,7 @@ typedef struct {
 } ADCSet;
 uint32_t ADConv(ADCSet *config);
 
-#define ADC_MAX 4095
+#define ADC_MAX (4095)
 
 
 #endif /* INC_ADC_H_ */

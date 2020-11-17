@@ -9,7 +9,6 @@
 
 extern TIM_HandleTypeDef htim2;
 extern int32_t us;
-extern osSemaphoreId_t wait_usSemHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
 

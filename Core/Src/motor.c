@@ -9,22 +9,17 @@
 #include "buzzer.h"
 #include "nezutaka.h"
 
-extern osThreadId_t PID_TaskHandle;
-extern osMutexId_t UART_MutexHandle;
+
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
 extern uint32_t temp_MotorSPEED_R;
 extern uint32_t temp_MotorSPEED_L;
-extern osSemaphoreId_t pid_SemHandle;
 
 uint32_t MotorSPEED_R = 0;
 uint32_t MotorSPEED_L = 0;
 uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
-extern osThreadId_t MOTOR_R_TaskHandle;
-extern osThreadId_t MOTOR_L_TaskHandle;
-extern osSemaphoreId_t SchengeRSemHandle;
-extern osSemaphoreId_t SchengeLSemHandle;
+
 
 extern void MOTOR_R(void *argument) {
 	/* USER CODE BEGIN MOTOR_R */

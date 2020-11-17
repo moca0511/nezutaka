@@ -8,7 +8,7 @@
 #include "main.h"
 #include "uart.h"
 #include "cmsis_os.h"
-extern osMutexId_t UART_MutexHandle;
+
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */

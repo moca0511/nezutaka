@@ -9,8 +9,6 @@
 #include "cmsis_os.h"
 
 BuzzerConfig buzzer_config = { tone_C, 1 };
-extern osMutexId_t UART_MutexHandle;
-extern osThreadId_t BUZZER_TaskHandle;
 extern TIM_HandleTypeDef htim4;
 
 extern void BUZZER(void *argument)

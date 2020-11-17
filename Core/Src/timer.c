@@ -11,7 +11,6 @@
 
 extern TIM_HandleTypeDef htim2;
 int32_t us = 20;
-extern osSemaphoreId_t wait_usSemHandle;
 
 int PWM_Set(PWMconfig *config) {
 	config->htim->Init.Prescaler = config->timeclock / 100 / (config->hz) - 1;

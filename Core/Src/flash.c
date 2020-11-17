@@ -1,7 +1,7 @@
 #include "flash.h"
 #include"main.h"
 #include "cmsis_os.h"
-extern osMutexId_t UART_MutexHandle;
+
 /*
  *@brief erase sector1
  */

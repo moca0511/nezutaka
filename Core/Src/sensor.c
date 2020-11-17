@@ -12,16 +12,11 @@
 #include "run.h"
 #include "buzzer.h"
 #include "UI.h"
-extern osMutexId_t UART_MutexHandle;
+
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim3;
 SensorData sensorData = { 0, 0, 0, 0 };
-extern osThreadId_t Sensor_TaskHandle;
-extern osThreadId_t WALL_READ_TASKHandle;
-extern osThreadId_t SENSOR_PRINT_TAHandle;
 extern uint32_t wall_config[12];
-
-
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
 

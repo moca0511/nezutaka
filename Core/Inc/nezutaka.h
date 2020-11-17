@@ -10,34 +10,37 @@
 #include"main.h"
 
 //　機体パラメータ
-#define TIRE_DIAMETER   52.0					//　タイヤの直径　52mm
+#define TIRE_DIAMETER   (52.0)					//　タイヤの直径　52mm
 #define TIRE_CIRCUIT    (PI * TIRE_DIAMETER)	//　タイヤの円周 163.363mm
-#define TREAD_WIDTH     87.0					//　トレッド幅　87.0mm(再計測)
+#define TREAD_WIDTH     (87.0)					//　トレッド幅　87.0mm(再計測)
 #define TREAD_CIRCUIT   (TREAD_WIDTH * PI)		//360度旋回時にタイヤが動く距離　87*3.14mm 273.18mm
 #define	STEP_DEGREE  (1.8 / 2.0)				//　ステッピングモータ1-2相励ステップ角（度/step) 0.9°
 #define	STEP_LENGTH	(TIRE_CIRCUIT * STEP_DEGREE / 360.0)	//1ステップで進む距離　0.408mm
 //　迷路のパラメータ
-#define	BLOCK_LENGTH  180.0					//1区画 180mm
+#define	BLOCK_LENGTH  (180.0)					//1区画 180mm
 //　定数定義
 //#define	PI            3.14159265358979		//円周率
 //　最大速度
-#define MAX_SPEED 2000
+#define MAX_SPEED (2000)
 
-#define NEZUTAKA_LENGTH 135
+#define NEZUTAKA_LENGTH (135)
 
+typedef enum {
+	RS_WALL,
+	LS_WALL,
+	RF_WALL,
+	LF_WALL,
+	RS_FREE,
+	LS_FREE,
+	RF_FREE,
+	LF_FREE,
+	RS_threshold,
+	LS_threshold,
+	RF_threshold,
+	LF_threshold,
+	WALL_DATA_MAX
+} WALL_DATA;
 
-#define RS_WALL 0
-#define LS_WALL 1
-#define RF_WALL 2
-#define LF_WALL 3
-#define RS_FREE 4
-#define LS_FREE 5
-#define RF_FREE 6
-#define LF_FREE 7
-#define RS_threshold 8
-#define LS_threshold 9
-#define RF_threshold 10
-#define LF_threshold 11
 
 #define MODE_NAME0 "MUSIC"
 #define MODE_NAME1 "SENSOR DEBUG"

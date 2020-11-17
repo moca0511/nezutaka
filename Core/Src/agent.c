@@ -16,12 +16,10 @@
 #include "maze.h"
 #include"agent.h"
 
-extern osMutexId_t UART_MutexHandle;
 
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
 extern SensorData sensorData;
-extern osThreadId_t Sensor_TaskHandle;
 extern uint32_t wall_config[12];
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern int16_t posX, posY;	//　現在の位置

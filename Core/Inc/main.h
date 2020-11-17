@@ -37,6 +37,7 @@ extern "C" {
 #include"timer.h"
 #include "arm_math.h"
 #include "arm_const_structs.h"
+#include "cmsis_os.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -60,6 +61,19 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+extern osMutexId_t UART_MutexHandle;
+extern osThreadId_t Sensor_TaskHandle;
+extern osSemaphoreId_t pid_SemHandle;
+extern osSemaphoreId_t SchengeRSemHandle;
+extern osSemaphoreId_t SchengeLSemHandle;
+extern osThreadId_t PID_TaskHandle;
+extern osThreadId_t MOTOR_R_TaskHandle;
+extern osThreadId_t MOTOR_L_TaskHandle;
+extern osThreadId_t Sensor_TaskHandle;
+extern osThreadId_t WALL_READ_TASKHandle;
+extern osThreadId_t SENSOR_PRINT_TAHandle;
+extern osSemaphoreId_t wait_usSemHandle;
+extern osThreadId_t BUZZER_TaskHandle;
 
 /* USER CODE END EFP */
 

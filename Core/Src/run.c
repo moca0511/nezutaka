@@ -9,24 +9,15 @@
 #include "sensor.h"
 #include "maze.h"
 
-extern osMutexId_t UART_MutexHandle;
 extern uint32_t MotorStepCount_R;
 extern uint32_t MotorStepCount_L;
-extern osSemaphoreId_t pid_SemHandle;
-extern osSemaphoreId_t SchengeRSemHandle;
-extern osSemaphoreId_t SchengeLSemHandle;
-
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
 uint32_t temp_MotorSPEED_R;
 uint32_t temp_MotorSPEED_L;
 extern SensorData sensorData;
 extern uint32_t wall_config[12];
-extern osThreadId_t PID_TaskHandle;
-extern osThreadId_t MOTOR_R_TaskHandle;
-extern osThreadId_t MOTOR_L_TaskHandle;
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
-
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
@@ -70,13 +61,14 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	//on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SLEEP_L_GPIO_Port, SLEEP_L_Pin, GPIO_PIN_RESET);
+	MotorStepCount_R = MotorStepCount_L =0;
 	//1ループ１
 	do {
 		//1スピード変更処理
 		if (((((MotorStepCount_R + MotorStepCount_L) / 2 >= gensoku)
 				&& gensoku != -1)
 				|| (((MotorStepCount_R + MotorStepCount_L) / 2
-						>= (stopcount * 0.5)) && gensoku == -1)
+						>= (stopcount * 0.45)) && gensoku == -1)
 				|| (config.max_speed == config.initial_speed
 						&& config.finish_speed < config.initial_speed))
 				&& plpl >= 0) {
@@ -89,7 +81,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			fspeed = config.max_speed;
 			if (gensoku == -1 && config.initial_speed == config.finish_speed) {
 				gensoku = stopcount
-						- (((MotorStepCount_R + MotorStepCount_L) / 2) * 1);
+						- (((MotorStepCount_R + MotorStepCount_L) / 2) );
 			}
 		}
 		//speedが終了速度より下がらないように
@@ -154,11 +146,11 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (wall_break_F == 1 && config.direction == MOVE_FORWARD
 				&& HztoSPEED(
 						stopcount - ((MotorStepCount_R + MotorStepCount_L) / 2))
-						< 50) {
+						< 80) {
 			if (sensorData.ADC_DATA_LS < wall_config[LS_threshold]
 					&& stop_L == 0) {
 				stopcount = ((MotorStepCount_R + MotorStepCount_L) / 2)
-						+ SPEEDtoHz(60);
+						+ SPEEDtoHz(70);
 				stop_R = stop_L = stop_f = 1;
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("LS=%ld\n", sensorData.ADC_DATA_LS);
@@ -167,7 +159,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			} else if (sensorData.ADC_DATA_RS < wall_config[RS_threshold]
 					&& stop_R == 0) {
 				stopcount = ((MotorStepCount_R + MotorStepCount_L) / 2)
-						+ SPEEDtoHz(60);
+						+ SPEEDtoHz(70);
 				stop_R = stop_L = stop_f = 1;
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("RS=%ld\n", sensorData.ADC_DATA_RS);
@@ -336,7 +328,7 @@ void slalom(SLALOMConfig config) {
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-		} while ((sensorData.ADC_DATA_LF < 900 && sensorData.ADC_DATA_RF < 900));
+		} while ((sensorData.ADC_DATA_LF < 1000 && sensorData.ADC_DATA_RF < 1000));
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("3Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
 					sensorData.ADC_DATA_LF);
@@ -349,7 +341,7 @@ void slalom(SLALOMConfig config) {
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-			if (sensorData.ADC_DATA_LF >= 900 && sensorData.ADC_DATA_RF >= 900
+			if (sensorData.ADC_DATA_LF >= 1000 && sensorData.ADC_DATA_RF >= 1000
 					&& ((temp_wall & 0x88) != 0x80)) {
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("1Swall RF:%ld LF:%ld\n", sensorData.ADC_DATA_RF,
@@ -360,7 +352,7 @@ void slalom(SLALOMConfig config) {
 			}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if ((sensorData.ADC_DATA_LF < 900 && sensorData.ADC_DATA_RF < 900)
+		if ((sensorData.ADC_DATA_LF < 1000 && sensorData.ADC_DATA_RF < 1000)
 				&& (sensorData.ADC_DATA_LF >= wall_config[LF_threshold] * 0.85
 						&& sensorData.ADC_DATA_RF
 								>= wall_config[RF_threshold] * 0.85)
@@ -369,7 +361,7 @@ void slalom(SLALOMConfig config) {
 //				printf("2Swall in\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			while ((sensorData.ADC_DATA_LF < 900 && sensorData.ADC_DATA_RF < 900)) {
+			while ((sensorData.ADC_DATA_LF < 1000 && sensorData.ADC_DATA_RF < 1000)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
 						config.config.finish_speed;
 				osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);

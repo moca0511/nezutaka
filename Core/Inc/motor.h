@@ -15,8 +15,8 @@
 
 
 //motor
-#define MR 0
-#define ML 1
+#define MR (0)
+#define ML (1)
 //タイマチャンネル
 #define STEPPER_CLOCK_R_CHANNEL TIM_CHANNEL_1
 #define STEPPER_CLOCK_L_CHANNEL TIM_CHANNEL_1

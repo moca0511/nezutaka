@@ -20,11 +20,9 @@
 
 extern uint32_t MotorSPEED_R;
 extern uint32_t MotorSPEED_L;
-extern osMutexId_t UART_MutexHandle;
 extern SensorData sensorData;
-extern osThreadId_t Sensor_TaskHandle;
-uint32_t wall_config[12] = { 1500, 1500, 2600, 2600, 450, 450, 450, 450, 600,
-		600, 600, 600 };
+uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2600, 2600, 450, 450, 450,
+		450, 600, 600, 600, 600 };
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
@@ -201,7 +199,7 @@ void mode3(void) {
 void mode4(void) {
 //		RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 90 };
 
-	 /*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+	/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 	 printf("turn 90°\n");
 	 osMutexRelease(UART_MutexHandle);
 	 }
@@ -211,8 +209,8 @@ void mode4(void) {
 	 //	mortor_sleep();
 	 chenge_head(turn_config.direction, turn_config.value, &head);
 	 tone(tone_hiC, 50);*/
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 1000,(BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 + BLOCK_LENGTH/2 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 1000, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 + BLOCK_LENGTH / 2 };
 	SLALOMConfig slalom_config = { { TURN_R, 500, 500, 2000, 1500, 90 }, 5, 10 };
 //	RUNConfig turn_config = { TURN_R, 0, 0, 500, 800, 90 };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
@@ -220,7 +218,7 @@ void mode4(void) {
 //
 //	turn(turn_config);
 
-	straight(RUN_config,1,1,1);
+	straight(RUN_config, 1, 1, 1);
 	slalom(slalom_config);
 	motor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
@@ -284,9 +282,9 @@ void mode11(void) {
 	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 300, 300, 2000, 1000, 90 }, 20, 20 }, slalom180_config =
-			{ { TURN_R, 300, 300, 2000, 700, 180 }, 30, 30 };
+	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 1000, 90 }, 20,
+			20 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 30,
+			30 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 	posX = START_X;
 	posY = START_Y;
@@ -303,10 +301,10 @@ void mode11(void) {
 	adachi(RUN_config, turn_config, slalom90_config, GOAL_X, GOAL_Y);
 	music();
 
-	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-	 printf("goal\n");
-	 osMutexRelease(UART_MutexHandle);
-	 }
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 
 //	Delay_ms(100);
 	make_smap(GOAL_X, GOAL_Y, 0);
@@ -387,10 +385,10 @@ void mode12(void) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 400, 400, 2000, 1200, 90 }, 10,10 }, slalom180_config =
-			{ { TURN_R, 400, 400, 2000, 600, 180 }, 15, 15 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 20,
+			20 }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,
+			15 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 	posX = START_X;
 	posY = START_Y;
 	head = 0;
@@ -406,10 +404,10 @@ void mode12(void) {
 	adachi(RUN_config, turn_config, slalom90_config, GOAL_X, GOAL_Y);
 	music();
 
-	 if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-	 printf("goal\n");
-	 osMutexRelease(UART_MutexHandle);
-	 }
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("goal\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 
 //	Delay_ms(100);
 	make_smap(GOAL_X, GOAL_Y, 0);
@@ -464,11 +462,11 @@ void mode12(void) {
 		printf("saitan to start\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	RUN_config.finish_speed = 300;
+	RUN_config.finish_speed = 400;
 	RUN_config.initial_speed = 0;
 	RUN_config.acceleration = RUN_config.max_speed = 1000;
-	slalom90_config.after_ofset = slalom90_config.before_ofset =
-			slalom180_config.after_ofset = slalom180_config.before_ofset = 15;
+//	slalom90_config.after_ofset = slalom90_config.before_ofset =
+//			slalom180_config.after_ofset = slalom180_config.before_ofset = 15;
 	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
 			posX, posY, head);
 	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -484,10 +482,10 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 3500, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 500, 500, 2000, 1700, 90 }, 10, 10 }, slalom180_config =
-			{ { TURN_R, 300, 300, 2000, 700, 180 }, 15, 15 };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 4000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,
+			10 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,
+			15 };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
@@ -519,11 +517,11 @@ void mode13(void) {
 	return;
 }
 void mode14(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 1300, 3500, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config =
-				{ { TURN_R, 400, 400, 2000, 1200, 90 }, 10,10 }, slalom180_config =
-				{ { TURN_R, 400, 400, 2000, 600, 180 }, 15, 15 };
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 400, 500, (BLOCK_LENGTH
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 2000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,
+			10 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,
+			15 };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
 	posY = START_Y;
@@ -555,11 +553,11 @@ void mode14(void) {
 }
 
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 1300, 3500, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config =
-			{ { TURN_R, 300, 300, 2000, 1000, 90 }, 13, 15 }, slalom180_config =
-			{ { TURN_R, 300, 300, 2000, 700, 180 }, 15, 15 };
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 1000, 2000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
+			10 }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,
+			15 };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 400, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
 	posY = START_Y;
