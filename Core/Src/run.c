@@ -271,7 +271,7 @@ void slalom(SLALOMConfig config) {
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-		} while ((get_sensordata(LF) < 1000 && get_sensordata(RF) < 1000));
+		} while ((get_sensordata(LF) < config.before_ofset_AD && get_sensordata(RF) < config.before_ofset_AD));
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("3Swall RF:%ld LF:%ld\n", get_sensordata(RF),
 					get_sensordata(LF));
@@ -283,7 +283,7 @@ void slalom(SLALOMConfig config) {
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-			if (get_sensordata(LF) >= 1000 && get_sensordata(RF) >= 1000
+			if (get_sensordata(LF) >= config.before_ofset_AD && get_sensordata(RF) >= config.before_ofset_AD
 					&& ((temp_wall & 0x88) != 0x80)) {
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("1Swall RF:%ld LF:%ld\n", get_sensordata(RF),
@@ -294,7 +294,7 @@ void slalom(SLALOMConfig config) {
 			}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if ((get_sensordata(LF) < 1000 && get_sensordata(RF) < 1000)
+		if ((get_sensordata(LF) < config.before_ofset_AD && get_sensordata(RF) < config.before_ofset_AD)
 				&& (get_sensordata(LF) >= wall_config[LF_threshold] * 0.85
 						&& get_sensordata(RF)
 								>= wall_config[RF_threshold] * 0.85)
@@ -303,8 +303,8 @@ void slalom(SLALOMConfig config) {
 //				printf("2Swall in\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			while ((get_sensordata(LF) < 1000
-					&& get_sensordata(RF) < 1000)) {
+			while ((get_sensordata(LF) < config.before_ofset_AD
+					&& get_sensordata(RF) < config.before_ofset_AD)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
 						config.config.finish_speed;
 				osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
@@ -403,7 +403,7 @@ void slalom(SLALOMConfig config) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
-		} while ((get_sensordata(LF) < 800 && get_sensordata(RF) < 800));
+		} while ((get_sensordata(LF) < config.after_ofset_AD && get_sensordata(RF) < config.after_ofset_AD));
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf("3Ewall RF:%ld LF:%ld\n", get_sensordata(RF),
 					get_sensordata(LF));
@@ -415,7 +415,7 @@ void slalom(SLALOMConfig config) {
 			osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
 			osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 			osDelayUntil(osKernelGetTickCount() + 5);
-			if (get_sensordata(LF) >= 800 && get_sensordata(RF) >= 800
+			if (get_sensordata(LF) >= config.after_ofset_AD && get_sensordata(RF) >= config.after_ofset_AD
 					&& ((temp_wall & 0x88) != 0x80)) {
 				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 					printf("1Ewall RF:%ld LF:%ld\n", get_sensordata(RF),
@@ -426,12 +426,12 @@ void slalom(SLALOMConfig config) {
 			}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
-		if ((get_sensordata(LF) < 800 && get_sensordata(RF) < 800)
+		if ((get_sensordata(LF) < config.after_ofset_AD && get_sensordata(RF) < config.after_ofset_AD)
 				&& (get_sensordata(LF) >= wall_config[LF_threshold] * 0.85
 						&& get_sensordata(RF)
 								>= wall_config[RF_threshold] * 0.85)
 				&& ((temp_wall & 0x88) != 0x80)) {
-			while ((get_sensordata(LF) < 800 && get_sensordata(RF) < 800)) {
+			while ((get_sensordata(LF) < config.after_ofset_AD && get_sensordata(RF) < config.after_ofset_AD)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
 						config.config.finish_speed;
 				osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);

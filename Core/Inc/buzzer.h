@@ -31,8 +31,8 @@ typedef enum {
 	tone_hiC = 2093
 } BUZZER_TONE;
 
-void tone(uint32_t tone,uint32_t ms);
-void music(void);
+void tone(uint32_t tone,uint32_t ms);//指定周波数の音を指定秒数流す
+void music(void);//ピロピロ
 
 
 #endif /* INC_BUZZER_H_ */

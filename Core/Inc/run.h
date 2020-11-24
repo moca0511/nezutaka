@@ -24,8 +24,13 @@ typedef struct {
 typedef struct {
 	RUNConfig config;
 	uint32_t before_ofset;
+	uint32_t before_ofset_AD;
 	uint32_t after_ofset;
+	uint32_t after_ofset_AD;
 } SLALOMConfig;
+
+//スラローム終了位置(ADC)
+#define AFTER_OFSET_AD_VALUE 800
 
 //進行方向
 #define MOVE_FORWARD GPIO_PIN_RESET	//前進

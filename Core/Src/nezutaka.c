@@ -290,10 +290,10 @@ void mode11(void) {
 	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1000, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
-	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 1000, 90 }, 20,
-			20 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 30,
-			30 };
-	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
+	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 1000, 90 }, 20,1000
+			,20,AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 30,1000,
+			30,AFTER_OFSET_AD_VALUE };
+	RUNConfig turn_config = { TURN_R, 0, 0, 2000, AFTER_OFSET_AD_VALUE, 90 };
 	posX = START_X;
 	posY = START_Y;
 	head = 0;
@@ -393,9 +393,9 @@ void mode12(void) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
-			10 }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,
-			15 };
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,1000,
+			10,AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,1000
+			,15,AFTER_OFSET_AD_VALUE };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 	posX = START_X;
 	posY = START_Y;
@@ -491,9 +491,9 @@ void mode12(void) {
 }
 void mode13(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1500, 3500, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,
-			10 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,
-			15 };
+	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,1000,
+			10,AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,1000,
+			15,AFTER_OFSET_AD_VALUE };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
@@ -526,9 +526,9 @@ void mode13(void) {
 }
 void mode14(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 2000, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,
-			10 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,
-			15 };
+	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,1000,
+			10,AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,1000,
+			15,AFTER_OFSET_AD_VALUE };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
@@ -562,9 +562,9 @@ void mode14(void) {
 
 void mode15(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 1000, 2000, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
-			10 }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,
-			15 };
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,1000,
+			10,AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,1000,
+			15,AFTER_OFSET_AD_VALUE };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 400, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;

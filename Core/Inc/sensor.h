@@ -37,9 +37,9 @@ typedef enum {
 #define PWM_CHANNEL_LS TIM_CHANNEL_3
 #define PWM_CHANNEL_LF TIM_CHANNEL_1
 
-uint32_t read_wall(uint8_t select);
-void print_sensordata(void);
-void wall_calibration(void);
-uint32_t get_sensordata(uint8_t select);
+uint32_t read_wall(uint8_t select);//指定のセンサのADC値を複数回取得し平均値を返す
+void print_sensordata(void);//debug情報表示タスク開始・終了
+void wall_calibration(void);//センサリファレンス値取得
+uint32_t get_sensordata(uint8_t select);//指定センサの値を取得
 
 #endif /* INC_SENSOR_H_ */

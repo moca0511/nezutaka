@@ -25,9 +25,10 @@
 
 
 
-float32_t SPEEDtoHz(float32_t speed);
-float32_t HztoSPEED(float32_t Hz);
-void mortor_direction(uint8_t motor,uint8_t direction);
+float32_t SPEEDtoHz(float32_t speed);//mm/s→hz変換
+float32_t HztoSPEED(float32_t Hz);//hz→mm/s変換
+void mortor_direction(uint8_t motor,uint8_t direction);//指定モータの前転後転を指定
+//各種getter,setter
 uint32_t get_MotorSpeed_L(void);
 uint32_t get_MotorSpeed_R(void);
 uint32_t get_MotorSpeed(void);
