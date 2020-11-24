@@ -17,8 +17,7 @@
 #include"agent.h"
 
 
-extern uint32_t MotorSPEED_R;
-extern uint32_t MotorSPEED_L;
+
 extern SensorData sensorData;
 extern uint32_t wall_config[12];
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
@@ -60,7 +59,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		}
 
 		if (posX == gx && posY == gy) {
-			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+			RUN_config.initial_speed = get_MotorSpeed();
 			RUN_config.finish_speed = 0;
 			RUN_config.value = BLOCK_LENGTH * 0.5;
 			straight(RUN_config, 1, 0, 1);
@@ -124,7 +123,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				printf("S\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+			RUN_config.initial_speed = get_MotorSpeed();
 			RUN_config.value = BLOCK_LENGTH * 0.5;
 			//printf("straight\n");
 
@@ -188,10 +187,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			if (move_f == 1) {
-				RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+				RUN_config.initial_speed = get_MotorSpeed();
 				RUN_config.finish_speed = 0;
 				RUN_config.value = BLOCK_LENGTH * 0.5;
-				straight(RUN_config, 1, 0, 0);
+				straight(RUN_config, 1, 0, 1);
 			}
 			move_f = -1;
 			motor_stop();
@@ -604,7 +603,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		switch (rute[f].direction) {
 		case 0:
 			//printf("straight\n");
-			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+			RUN_config.initial_speed = get_MotorSpeed();
 			RUN_config.value = rute[f].value;
 			straight(RUN_config, 1, 1, 1);
 			RUN_config.value += 90;
@@ -628,7 +627,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 					sirituke();
 					ajast();
 				}
-				RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+				RUN_config.initial_speed = get_MotorSpeed();
 				RUN_config.value = BLOCK_LENGTH * 0.5;
 				straight(RUN_config, 1, 0, 0);
 			} else {
@@ -657,7 +656,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 					sirituke();
 					ajast();
 				}
-				RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
+				RUN_config.initial_speed = get_MotorSpeed();
 				RUN_config.value = BLOCK_LENGTH * 0.5;
 				straight(RUN_config, 1, 0, 0);
 			} else {

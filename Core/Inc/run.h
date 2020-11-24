@@ -38,9 +38,9 @@ typedef struct {
 #define SPEED_MAX 65536/STEP_LENGTH-1
 #define SPEED_MIN (1680000/(65536+1))/STEP_LENGTH+1
 
-#define KP 0.05
+#define KP 0.1
 #define KI 0.0015
-#define KD 0.08
+#define KD 0.1
 
 uint16_t straight(RUNConfig config,uint8_t pid_F,uint8_t wall_break_F,uint8_t front_Adjustment_F);
 void turn(RUNConfig config);
@@ -52,4 +52,5 @@ void chenge_head(uint16_t direction,uint32_t value,int8_t* head_buf);
 void chenge_pos(int16_t block,int16_t* temp_posX,int16_t* temp_posY,int8_t temp_head);
 void turn_u(void);
 void ajast(void);
+void motor_stop(void);
 #endif /* INC_RUN_H_ */

@@ -18,8 +18,7 @@
 #include "arm_math.h"
 #include "arm_const_structs.h"
 
-extern uint32_t MotorSPEED_R;
-extern uint32_t MotorSPEED_L;
+
 extern SensorData sensorData;
 uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2600, 2600, 450, 450, 450,
 		450, 600, 600, 600, 600 };
@@ -191,7 +190,17 @@ void mode3(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
 	//ajast();
-	straight(RUN_config, 1, 0, 0);
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	while (1) {
+		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+			while (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
+				Delay_ms(50);
+			}
+			tone(tone_hiC, 50);
+			break;
+		}
+	}
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 //	mortor_sleep();
 	tone(tone_hiC, 50);
 }
@@ -380,13 +389,13 @@ void mode11(void) {
 }
 
 void mode12(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 1500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 500, BLOCK_LENGTH };
 	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 20,
-			20 }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
+			10 }, slalom180_config = { { TURN_R, 400, 400, 2000, 600, 180 }, 15,
 			15 };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 	posX = START_X;
@@ -410,18 +419,18 @@ void mode12(void) {
 	}
 
 //	Delay_ms(100);
-	make_smap(GOAL_X, GOAL_Y, 0);
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("tansaku map\n");
-		osMutexRelease(UART_MutexHandle);
-	}
-	print_map();
-	make_smap(GOAL_X, GOAL_Y, 1);
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("saitan map\n");
-		osMutexRelease(UART_MutexHandle);
-	}
-	print_map();
+//	make_smap(GOAL_X, GOAL_Y, 0);
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//		printf("tansaku map\n");
+//		osMutexRelease(UART_MutexHandle);
+//	}
+//	print_map();
+//	make_smap(GOAL_X, GOAL_Y, 1);
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//		printf("saitan map\n");
+//		osMutexRelease(UART_MutexHandle);
+//	}
+//	print_map();
 	searchX = GOAL_X;
 	searchY = GOAL_Y;
 	check_searchBlock(&searchX, &searchY);
@@ -435,18 +444,18 @@ void mode12(void) {
 			osMutexRelease(UART_MutexHandle);
 		}
 		adachi(RUN_config, turn_config, slalom90_config, searchX, searchY);
-		make_smap(GOAL_X, GOAL_Y, 0);
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("tansaku map\n");
-			osMutexRelease(UART_MutexHandle);
-		}
-		print_map();
-		make_smap(GOAL_X, GOAL_Y, 1);
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("saitan map\n");
-			osMutexRelease(UART_MutexHandle);
-		}
-		print_map();
+//		make_smap(GOAL_X, GOAL_Y, 0);
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf("tansaku map\n");
+//			osMutexRelease(UART_MutexHandle);
+//		}
+//		print_map();
+//		make_smap(GOAL_X, GOAL_Y, 1);
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf("saitan map\n");
+//			osMutexRelease(UART_MutexHandle);
+//		}
+//		print_map();
 		searchX = GOAL_X;
 		searchY = GOAL_Y;
 		check_searchBlock(&searchX, &searchY);
@@ -482,7 +491,7 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 4000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1500, 3500, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1700, 90 }, 10,
 			10 }, slalom180_config = { { TURN_R, 300, 300, 2000, 700, 180 }, 15,
 			15 };

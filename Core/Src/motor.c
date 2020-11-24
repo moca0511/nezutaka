@@ -9,17 +9,12 @@
 #include "buzzer.h"
 #include "nezutaka.h"
 
-
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
-extern uint32_t temp_MotorSPEED_R;
-extern uint32_t temp_MotorSPEED_L;
-
 uint32_t MotorSPEED_R = 0;
 uint32_t MotorSPEED_L = 0;
 uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
-
 
 extern void MOTOR_R(void *argument) {
 	/* USER CODE BEGIN MOTOR_R */
@@ -153,19 +148,46 @@ void mortor_direction(uint8_t motor, uint8_t direction) {
 	return;
 }
 
-void motor_stop(void) {
-	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
-	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);
-	osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
-//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("stop\n");
-//		osMutexRelease(UART_MutexHandle);
-//	}
-	temp_MotorSPEED_R = 0;
-	temp_MotorSPEED_L = 0;
-	osSemaphoreRelease(pid_SemHandle);
-	osSemaphoreAcquire(SchengeRSemHandle, osWaitForever);
-	osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
-	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_STOP);
-	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_STOP);
+uint32_t get_MotorSpeed_L(void) {
+	return MotorSPEED_L;
 }
+uint32_t get_MotorSpeed_R(void) {
+	return MotorSPEED_R;
+}
+uint32_t get_MotorSpeed(void) {
+	return (MotorSPEED_R + MotorSPEED_R) / 2;
+}
+void set_MotorSpeed_L(uint32_t speed) {
+	MotorSPEED_L = speed;
+	return;
+}
+void set_MotorSpeed_R(uint32_t speed) {
+	MotorSPEED_R = speed;
+	return;
+}
+void set_MotorSpeed(uint32_t speed) {
+	MotorSPEED_L = MotorSPEED_R = speed;
+	return;
+}
+uint32_t get_MotorStepCount_L(void) {
+	return MotorStepCount_L;
+}
+uint32_t get_MotorStepCount_R(void) {
+	return MotorStepCount_R;
+}
+uint32_t get_MotorStepCount(void) {
+	return (MotorStepCount_R + MotorStepCount_L) / 2;
+}
+void reset_MotorStepCount_L(void) {
+	MotorStepCount_L = 0;
+	return;
+}
+void reset_MotorStepCount_R(void) {
+	MotorStepCount_R = 0;
+	return;
+}
+void reset_MotorStepCount(void) {
+	MotorStepCount_L = MotorStepCount_R = 0;
+	return;
+}
+

@@ -599,7 +599,7 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 		printf("searchBlock\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-	print_map();
+//	print_map();
 	/* ｓ目標区画に値を設定する。 */
 	buf1[0][cnt1] = START_X;
 	buf1[1][cnt1] = START_Y;
