@@ -13,9 +13,8 @@
 #include"flash.h"
 
 MAP map[MAP_X_MAX][MAP_Y_MAX]; //ｓマップ情報
-int16_t posX = 0, posY = 0;	//　現在の位置
-int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
-extern SensorData sensorData;
+extern int16_t posX, posY;	//　現在の位置
+extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 extern uint32_t wall_config[12];
 
 void print_map(void) {
@@ -350,16 +349,16 @@ void wall_set(uint8_t mode) {
 	SensorData sensor_buf;
 
 	if ((mode & 0x01) == 0x01) {
-		sensor_buf.ADC_DATA_LF = read_wall(&sensorData.ADC_DATA_LF);
-		sensor_buf.ADC_DATA_RF = read_wall(&sensorData.ADC_DATA_RF);
+		sensor_buf.ADC_DATA_LF = read_wall(LF);
+		sensor_buf.ADC_DATA_RF = read_wall(RF);
 		if (sensor_buf.ADC_DATA_LF >= wall_config[LF_threshold]
 				&& sensor_buf.ADC_DATA_RF >= wall_config[RF_threshold]) {
 			wall_info += 0x88;
 		}
 	}
 	if ((mode & 0x02) == 0x02) {
-		sensor_buf.ADC_DATA_LS = read_wall(&sensorData.ADC_DATA_LS);
-		sensor_buf.ADC_DATA_RS = read_wall(&sensorData.ADC_DATA_RS);
+		sensor_buf.ADC_DATA_LS = read_wall(LS);
+		sensor_buf.ADC_DATA_RS = read_wall(RS);
 		if (sensor_buf.ADC_DATA_LS >= wall_config[LS_threshold]) {
 			wall_info += 0x11;
 		}

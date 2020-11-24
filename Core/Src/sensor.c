@@ -17,8 +17,6 @@ extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim3;
 SensorData sensorData = { 0, 0, 0, 0 };
 extern uint32_t wall_config[12];
-extern uint32_t MotorSPEED_R;
-extern uint32_t MotorSPEED_L;
 
 extern void Sensor(void *argument) {
 	/* USER CODE BEGIN Sensor */
@@ -155,8 +153,21 @@ extern void Sensor(void *argument) {
 	/* USER CODE END Sensor */
 }
 
-uint32_t read_wall(uint32_t *pADCdata) {
+uint32_t read_wall(uint8_t select) {
 	uint32_t value = 0;
+	uint32_t* pADCdata;
+	switch (select) {
+		case RS:
+			pADCdata=&sensorData.ADC_DATA_RS;
+		case RF:
+			pADCdata=&sensorData.ADC_DATA_RF;
+		case LS:
+			pADCdata=&sensorData.ADC_DATA_LS;
+		case LF:
+			pADCdata=&sensorData.ADC_DATA_LF;
+		default:
+			return 0;
+		}
 	value = *pADCdata;
 	for (int i = 0; i < 5; i++) {
 		value += *pADCdata;
@@ -191,7 +202,7 @@ void wall_calibration(void) {
 		Delay_ms(50);
 	}
 	tone(tone_hiC, 50);
-	wall_config[RS_threshold] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[RS_threshold] = read_wall(RS);
 	tone(tone_C, 50);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("LS_threshould\n");
@@ -206,7 +217,7 @@ void wall_calibration(void) {
 	}
 	tone(tone_hiC, 50);
 
-	wall_config[LS_threshold] = read_wall(&sensorData.ADC_DATA_LS);
+	wall_config[LS_threshold] = read_wall(LS);
 	tone(tone_C, 50);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("F_threshould\n");
@@ -220,8 +231,8 @@ void wall_calibration(void) {
 		Delay_ms(50);
 	}
 	tone(tone_hiC, 50);
-	wall_config[RF_threshold] = read_wall(&sensorData.ADC_DATA_RF);
-	wall_config[LF_threshold] = read_wall(&sensorData.ADC_DATA_LF);
+	wall_config[RF_threshold] = read_wall(RF);
+	wall_config[LF_threshold] = read_wall(LF);
 	tone(tone_C, 50);
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("ALL_WALL&FREE\n");
@@ -236,25 +247,25 @@ void wall_calibration(void) {
 	}
 	tone(tone_hiC, 50);
 	osDelay(100);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
-	wall_config[RF_FREE] = read_wall(&sensorData.ADC_DATA_RF);
-	wall_config[LF_FREE] = read_wall(&sensorData.ADC_DATA_LF);
+	wall_config[RS_WALL] = read_wall(RS);
+	wall_config[LS_WALL] = read_wall(LS);
+	wall_config[RF_FREE] = read_wall(RF);
+	wall_config[LF_FREE] = read_wall(LF);
 	straight(RUN_config, 0, 0, 0);
 	turn(turn_config);
 	osDelay(100);
-	wall_config[LS_FREE] = read_wall(&sensorData.ADC_DATA_LS);
-	wall_config[RF_WALL] = read_wall(&sensorData.ADC_DATA_RF);
-	wall_config[LF_WALL] = read_wall(&sensorData.ADC_DATA_LF);
+	wall_config[LS_FREE] = read_wall(LS);
+	wall_config[RF_WALL] = read_wall(RF);
+	wall_config[LF_WALL] = read_wall(LF);
 	turn_config.value = 180;
 	turn_config.direction = TURN_L;
 	turn(turn_config);
 	osDelay(100);
-	wall_config[RS_FREE] = read_wall(&sensorData.ADC_DATA_RS);
+	wall_config[RS_FREE] = read_wall(RS);
 	wall_config[RF_WALL] = (wall_config[RF_WALL]
-			+ read_wall(&sensorData.ADC_DATA_RF)) / 2;
+			+ read_wall(RF)) / 2;
 	wall_config[LF_WALL] = (wall_config[LF_WALL]
-			+ read_wall(&sensorData.ADC_DATA_LF)) / 2;
+			+ read_wall(LF)) / 2;
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	turn_config.value = 90;
 	turn_config.direction = TURN_R;
@@ -311,8 +322,8 @@ extern void SENSOR_PRINT(void *argument) {
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf(",%ld,%ld,%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-					sensorData.ADC_DATA_LF, (int32_t) MotorSPEED_L,
-					(int32_t) MotorSPEED_R);
+					sensorData.ADC_DATA_LF, get_MotorSpeed_L(),
+					get_MotorSpeed_R());
 			osMutexRelease(UART_MutexHandle);
 		}
 		Delay_ms(100);
@@ -320,5 +331,20 @@ extern void SENSOR_PRINT(void *argument) {
 
 	}
 	/* USER CODE END WALL_READ */
+}
+
+uint32_t get_sensordata(uint8_t select) {
+	switch (select) {
+	case RS:
+		return sensorData.ADC_DATA_RS;
+	case RF:
+		return sensorData.ADC_DATA_RF;
+	case LS:
+		return sensorData.ADC_DATA_LS;
+	case LF:
+		return sensorData.ADC_DATA_LF;
+	default:
+		return 0;
+	}
 }
 

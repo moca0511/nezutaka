@@ -18,7 +18,6 @@
 
 
 
-extern SensorData sensorData;
 extern uint32_t wall_config[12];
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern int16_t posX, posY;	//　現在の位置

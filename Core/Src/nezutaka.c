@@ -19,12 +19,11 @@
 #include "arm_const_structs.h"
 
 
-extern SensorData sensorData;
 uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2600, 2600, 450, 450, 450,
 		450, 600, 600, 600, 600 };
+int16_t posX = 0, posY = 0;	//　現在の位置
+int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
-extern int16_t posX, posY;	//　現在の位置
-extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 
 void nezutaka(void) {
 
@@ -175,8 +174,8 @@ void mode2(void) {
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
-	wall_config[RS_WALL] = read_wall(&sensorData.ADC_DATA_RS);
-	wall_config[LS_WALL] = read_wall(&sensorData.ADC_DATA_LS);
+	wall_config[RS_WALL] = read_wall(RS);
+	wall_config[LS_WALL] = read_wall(LS);
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //1block run
