@@ -37,7 +37,7 @@ typedef struct {
 #define MOVE_BACK GPIO_PIN_SET			//後退
 
 #define TURN_R 0
-#define TURN_L 1
+#define TURN_L 1c
 #define TURN_U 2
 
 #define SPEED_MAX 65536/STEP_LENGTH-1
