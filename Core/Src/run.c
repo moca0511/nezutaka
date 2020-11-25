@@ -60,7 +60,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	do {
 		//1スピード変更処理
 		if ((((get_MotorStepCount() >= gensoku) && gensoku != -1)
-				|| ((get_MotorStepCount() >= (stopcount * 0.47))
+				|| ((get_MotorStepCount() >= (stopcount * 0.4))
 						&& gensoku == -1)
 				|| (config.max_speed == config.initial_speed
 						&& config.finish_speed < config.initial_speed))
@@ -74,7 +74,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			fspeed = config.max_speed;
 			if (gensoku
 					== -1/* && config.initial_speed == config.finish_speed*/) {
-				gensoku = stopcount - (get_MotorStepCount() * 1.1);
+				gensoku = stopcount - (get_MotorStepCount() * 1.2);
 			}
 		}
 		//speedが終了速度より下がらないように
@@ -332,7 +332,7 @@ void slalom(SLALOMConfig config) {
 		}
 
 //1スピード変更処理
-		if ((int32_t) (deg * 0.0125 * 180 / PI) >= config.config.value * 0.5
+		if ((int32_t) (deg * 0.0123 * 180 / PI) >= config.config.value * 0.5
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
@@ -374,12 +374,12 @@ void slalom(SLALOMConfig config) {
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 //角度変更処理
 
-		if ((int32_t) (deg * 0.0125 * 180 / PI) >= config.config.value) {
+		if ((int32_t) (deg * 0.0123 * 180 / PI) >= config.config.value) {
 			break;
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
 
-	} while ((int32_t) (deg * 0.0125 * 180 / PI) < config.config.value);
+	} while ((int32_t) (deg * 0.0123 * 180 / PI) < config.config.value);
 
 	if (config.config.finish_speed == 0) {
 		motor_stop();
