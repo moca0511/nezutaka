@@ -19,7 +19,7 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 /*
  * 説明：configのパラメータ通りに台形加速しながら直進
  * 引数：config 走行パラメータ
- * 戻り値:config.value＊ｘ進んだ　のx
+ * 戻り値:進んだ距離/config.value
  */
 uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		uint8_t front_Adjustment_F) {
@@ -74,7 +74,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			fspeed = config.max_speed;
 			if (gensoku
 					== -1/* && config.initial_speed == config.finish_speed*/) {
-				gensoku = stopcount - (((+get_MotorStepCount_L()) / 2) * 1.1);
+				gensoku = stopcount - (get_MotorStepCount() * 1.1);
 			}
 		}
 		//speedが終了速度より下がらないように
@@ -332,7 +332,7 @@ void slalom(SLALOMConfig config) {
 		}
 
 //1スピード変更処理
-		if ((int32_t) (deg * 0.0123 * 180 / PI) >= config.config.value * 0.5
+		if ((int32_t) (deg * 0.0125 * 180 / PI) >= config.config.value * 0.5
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
@@ -374,12 +374,12 @@ void slalom(SLALOMConfig config) {
 		osSemaphoreAcquire(SchengeLSemHandle, osWaitForever);
 //角度変更処理
 
-		if ((int32_t) (deg * 0.0123 * 180 / PI) >= config.config.value) {
+		if ((int32_t) (deg * 0.0125 * 180 / PI) >= config.config.value) {
 			break;
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
 
-	} while ((int32_t) (deg * 0.0123 * 180 / PI) < config.config.value);
+	} while ((int32_t) (deg * 0.0125 * 180 / PI) < config.config.value);
 
 	if (config.config.finish_speed == 0) {
 		motor_stop();
@@ -565,6 +565,11 @@ void turn_u(void) {
  * @retval None
  */
 /* USER CODE END Header_PID */
+/*
+ * 説明：壁制御タスク
+ * 引数：無し
+ * 戻り値:なし
+ */
 extern void PID(void *argument) {
 	/* USER CODE BEGIN PID */
 	/* USER CODE BEGIN MOTOR_R */
@@ -625,7 +630,11 @@ extern void PID(void *argument) {
 	/* USER CODE END MOTOR_R */
 	/* USER CODE END PID */
 }
-
+/*
+ * 説明：モータ停止
+ * 引数：無し
+ * 戻り値:無し
+ */
 void motor_stop(void) {
 	osThreadFlagsSet(MOTOR_R_TaskHandle, TASK_START);
 	osThreadFlagsSet(MOTOR_L_TaskHandle, TASK_START);

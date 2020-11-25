@@ -3,7 +3,9 @@
 #include "cmsis_os.h"
 
 /*
- *@brief erase sector1
+ * 説明：flush sector1の内容を消去
+ * 引数：無し
+ * 戻り値：無し
  */
 void eraseFlash(void) {
 	FLASH_EraseInitTypeDef erase;
@@ -18,17 +20,18 @@ void eraseFlash(void) {
 }
 
 /*
- * @brief write flash(sector11)
- * @param uint32_t address sector11 start address
- * @param uint8_t * data write data
- * @param uint32_t size write data size
+ * 説明：flush sector1に書き込み
+ * 引数：address 書き込み先先頭アドレス
+ * 　　　data 書き込みデータ
+ * 　　　size 書き込むデータのサイズ(byte)
+ * 戻り値：無し
  */
 void writeFlash(uint32_t address, uint8_t *data, uint32_t size) {
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 
 		HAL_FLASH_Unlock();        // unlock flash
 		printf("UNLOCK\n");
-		eraseFlash();            // erease sector11
+		eraseFlash();            // erease sector1
 		printf("erase\n");
 		for (uint32_t add = address; add < (address + size); add++) {
 			printf("%d,%p=0x%2x→%p\n",
@@ -46,10 +49,11 @@ void writeFlash(uint32_t address, uint8_t *data, uint32_t size) {
 }
 
 /*
- * @brief write flash(sector11)
- * @param uint32_t address sector11 start address
- * @param uint8_t * data read data
- * @param uint32_t size read data size
+ * 説明：flush sector1から読み出し
+ * 引数：address 読み出すデータの先頭アドレス
+ * 　　　data データ格納先のアドレス
+ * 　　　size データ格納先のサイズ(byte)
+ * 戻り値：無し
  */
 void loadFlash(uint32_t address, uint8_t *data, uint32_t size) {
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {

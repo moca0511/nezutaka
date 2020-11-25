@@ -16,8 +16,6 @@
 #include "maze.h"
 #include"agent.h"
 
-
-
 extern uint32_t wall_config[12];
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 extern int16_t posX, posY;	//　現在の位置
@@ -30,6 +28,15 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 //4.ゴールなら終了
 //5.1に戻る
 
+/*
+ * 説明：足立法探索
+ * 引数：RUN_config 直進パラメータ
+ * 　　　turn_config 超新地旋回パラメータ
+ * 　　　slalom90_config 90°スラロームパラメータ
+ * 　　　gx 目標X座標
+ * 　　　gy 目標Y座標
+ * 戻り値：無し
+ */
 void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		SLALOMConfig slalom90_config, uint16_t gx, uint16_t gy) {
 //	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 800, 90 };
@@ -312,7 +319,19 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
  tone(tone_hiC, 100);
  }
  }*/
-
+/*
+ * 説明：足立法探索
+ * 引数：RUN_config 直進パラメータ
+ * 　　　turn_config 超新地旋回パラメータ
+ * 　　　slalom90_config 90°スラロームパラメータ
+ * 　　　slalom180_config 180°スラロームパラメータ
+ * 　　　gx 目標X座標
+ * 　　　gy 目標Y座標
+ * 　　　sx スタートX座標
+ * 　　　sy スタートY座標
+ * 　　　shead スタート時の機体の向き
+ * 戻り値：無し
+ */
 void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		SLALOMConfig slalom180_config, uint16_t gx, uint16_t gy, uint16_t sx,
 		uint16_t sy, int8_t shead) {
@@ -339,7 +358,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 								<< head_buf) & 0xf0);
 		temp_head = 4;
 		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("temp_wall=0x%2x,head_buf=%d\n", temp_wall,head_buf);
+			printf("temp_wall=0x%2x,head_buf=%d\n", temp_wall, head_buf);
 			osMutexRelease(UART_MutexHandle);
 		}
 		if ((temp_wall & 0x88) == 0x80) {
@@ -456,15 +475,15 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				}
 				break;
 			case 2:
-				if (map[x][y].step > map[x ][y+1].step
-						&& (map[x ][y+1].wall & 0xf0) == 0xf0) {
+				if (map[x][y].step > map[x][y + 1].step
+						&& (map[x][y + 1].wall & 0xf0) == 0xf0) {
 					y++;
 					temp_head = 2;
 				}
 				break;
 			case 3:
-				if (map[x][y].step > map[x +1][y].step
-						&& (map[x+1][y].wall & 0xf0) == 0xf0) {
+				if (map[x][y].step > map[x + 1][y].step
+						&& (map[x + 1][y].wall & 0xf0) == 0xf0) {
 					x++;
 					temp_head = 2;
 				}
@@ -571,11 +590,11 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			osMutexRelease(UART_MutexHandle);
 		}
 	}
-	if(rute[i-1].direction==0){
-		rute[i-1].value+=BLOCK_LENGTH/2;
-	}else{
+	if (rute[i - 1].direction == 0) {
+		rute[i - 1].value += BLOCK_LENGTH / 2;
+	} else {
 		rute[i].direction = 0;
-		rute[i].value+=BLOCK_LENGTH/2;
+		rute[i].value += BLOCK_LENGTH / 2;
 		i++;
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {

@@ -12,7 +12,11 @@
 #include "UI.h"
 
 extern ADC_HandleTypeDef hadc2;
-
+/*
+ * 説明：バッテリ電圧監視タスク
+ * 引数：無し
+ * 戻り値：無し
+ */
 extern void BatteryCheck(void *argument) {
 	/* USER CODE BEGIN BatteryCheck */
 	/* Infinite loop */

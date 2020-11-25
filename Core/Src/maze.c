@@ -17,6 +17,11 @@ extern int16_t posX, posY;	//　現在の位置
 extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
 extern uint32_t wall_config[12];
 
+/*
+ * 説明：MAP情報出力
+ * 引数：無し
+ * 戻り値：無し
+ */
 void print_map(void) {
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		printf("\n");
@@ -74,7 +79,11 @@ void print_map(void) {
 		osMutexRelease(UART_MutexHandle);
 	}
 }
-
+/*
+ * 説明：MAP情報初期化
+ * 引数：無し
+ * 戻り値：無し
+ */
 void smap_Init(void) {
 	/*
 	 マップ設定
@@ -105,7 +114,13 @@ void smap_Init(void) {
 	map[START_X][START_Y + 1].wall |= 0x20;
 
 }
-
+/*
+ * 説明：歩数マップ作成
+ * 引数：gx 目標X座標
+ * 　　　gy 目標Y座標
+ * 　　　mode 0:探索モード(未探索込みで作成)　1:最短モード(探索済みのみで作成)
+ * 戻り値：無し
+ */
 void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 	int16_t value = 0;
 	int16_t buf1[2][MAP_SIZE];
@@ -342,6 +357,11 @@ void make_smap(uint16_t gx, uint16_t gy, uint8_t mode) {
 	//printf("make fin\n");
 }
 
+/*
+ * 説明：指定方向の壁の有無確認・壁情報更新
+ * 引数：mode 0x01:前　0x02:左右　0x03:前左右
+ * 戻り値：無し
+ */
 void wall_set(uint8_t mode) {
 
 	//printf("wallset Y=%d,X=%d\n", posY, posX);
@@ -383,6 +403,11 @@ void wall_set(uint8_t mode) {
 	UILED_SET(map[posX][posY].wall & 0x0f);
 }
 
+/*
+ * 説明：現在いるマスの壁情報を周囲のマスに反映
+ * 引数：無し
+ * 戻り値：無し
+ */
 void wall_set_around(void) {
 
 	if ((map[posX][posY].wall & 0x88) == 0x88) {
@@ -806,6 +831,11 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 
 }
 
+/*
+ * 説明：マップ保存
+ * 引数：無し
+ * 戻り値：無し
+ */
 void maze_save(void) {
 	MAP temp_map[MAP_X_MAX][MAP_Y_MAX];
 	uint8_t end=1;
@@ -826,7 +856,11 @@ void maze_save(void) {
 		}
 	}
 }
-
+/*
+ * 説明：マップ読み出し
+ * 引数：無し
+ * 戻り値：無し
+ */
 void maze_load(void) {
 	loadFlash(MAZE_FLASH_START_ADD, (uint8_t*) map, sizeof(map));
 }

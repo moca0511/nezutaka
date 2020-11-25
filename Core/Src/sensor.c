@@ -18,6 +18,11 @@ extern TIM_HandleTypeDef htim3;
 SensorData sensorData = { 0, 0, 0, 0 };
 extern uint32_t wall_config[12];
 
+/*
+ * 説明：壁センサ読み取りタスク
+ * 引数：無し
+ * 戻り値：無し
+ */
 extern void Sensor(void *argument) {
 	/* USER CODE BEGIN Sensor */
 	Delay_ms(10);
@@ -152,19 +157,27 @@ extern void Sensor(void *argument) {
 	}
 	/* USER CODE END Sensor */
 }
-
+/*
+ * 説明：指定壁センサの値を複数回読み平均をとる
+ * 引数：select 壁センサ指定
+ * 戻り値：無し
+ */
 uint32_t read_wall(uint8_t select) {
 	uint32_t value = 0;
 	uint32_t* pADCdata;
 	switch (select) {
 		case RS:
 			pADCdata=&sensorData.ADC_DATA_RS;
+			break;
 		case RF:
 			pADCdata=&sensorData.ADC_DATA_RF;
+			break;
 		case LS:
 			pADCdata=&sensorData.ADC_DATA_LS;
+			break;
 		case LF:
 			pADCdata=&sensorData.ADC_DATA_LF;
+			break;
 		default:
 			return 0;
 		}
@@ -177,7 +190,11 @@ uint32_t read_wall(uint8_t select) {
 	return value;
 }
 
-//init wall value
+/*
+ * 説明：壁センサの各リファレンス値取得
+ * 引数：無し
+ * 戻り値：無し
+ */
 void wall_calibration(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 0, 100, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) / 2 };
@@ -283,7 +300,11 @@ void wall_calibration(void) {
 	tone(tone_hiC, 50);
 }
 
-//sensordebug
+/*
+ * 説明：debug情報出力開始・停止
+ * 引数：無し
+ * 戻り値：無し
+ */
 void print_sensordata(void) {
 	static uint8_t flag = 0;
 	tone(tone_C, 50);
@@ -299,7 +320,11 @@ void print_sensordata(void) {
 
 	tone(tone_C, 50);
 }
-
+/*
+ * 説明：debug情報出力
+ * 引数：無し
+ * 戻り値：無し
+ */
 extern void SENSOR_PRINT(void *argument) {
 	/* USER CODE BEGIN WALL_READ */
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
@@ -332,7 +357,11 @@ extern void SENSOR_PRINT(void *argument) {
 	}
 	/* USER CODE END WALL_READ */
 }
-
+/*
+ * 説明：指定壁センサ値取得
+ * 引数：select 壁センサ選択
+ * 戻り値：センサ値
+ */
 uint32_t get_sensordata(uint8_t select) {
 	switch (select) {
 	case RS:
