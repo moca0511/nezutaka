@@ -176,6 +176,10 @@ void mode2(void) {
 	Delay_ms(1000);
 	wall_config[RS_WALL] = read_wall(RS);
 	wall_config[LS_WALL] = read_wall(LS);
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("RS_WALL=%ld LS_WALL=%ld\n",wall_config[RS_WALL],wall_config[LS_WALL]);
+		osMutexRelease(UART_MutexHandle);
+	}
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }
 //1block run

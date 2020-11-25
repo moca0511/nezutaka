@@ -571,6 +571,7 @@ extern void PID(void *argument) {
 	Delay_ms(10);
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
+	uint32_t adc_LS,adc_RS;
 
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
@@ -589,30 +590,32 @@ extern void PID(void *argument) {
 			deviation_sumR = deviation_sumL = 0;
 		}
 //		osSemaphoreAcquire(pid_SemHandle, osWaitForever);
-		if (get_sensordata(LS) > wall_config[LS_threshold]
-				&& get_sensordata(LS) > get_sensordata(RS)) { //　壁がある時だけPID操作
-			if (get_sensordata(LS) <= wall_config[LS_WALL] * 0.95
-					&& get_sensordata(LS) >= wall_config[LS_WALL] * 1.05) { //ほぼ壁なら偏差計リセット
+		adc_LS=get_sensordata(LS);
+		adc_RS=get_sensordata(RS);
+		if (adc_LS > wall_config[LS_threshold]
+				&& adc_LS > adc_RS) { //　壁がある時だけPID操作
+			if (adc_LS <= wall_config[LS_WALL] * 0.95
+					&& adc_LS >= wall_config[LS_WALL] * 1.05) { //ほぼ壁なら偏差計リセット
 				deviation_sumL = 0;
 			}
 			temp_MotorSPEED_R = pid_calc(temp_MotorSPEED_R,
 					wall_config[LS_WALL] - wall_config[LS_WALL] % 10,
-					get_sensordata(LS) - get_sensordata(LS) % 10,
+					adc_LS - adc_LS % 10,
 					&deviation_prevL, &deviation_sumL);
 		} else {
 			deviation_prevL = 0;
 			deviation_sumL = 0;
 
 		}
-		if (get_sensordata(RS) > wall_config[RS_threshold]
-				&& get_sensordata(LS) < get_sensordata(RS)) { // *　壁がある時だけPID操作
-			if (get_sensordata(RS) <= wall_config[RS_WALL] * 0.95
-					&& get_sensordata(RS) >= wall_config[RS_WALL] * 1.05) {
+		if (adc_RS > wall_config[RS_threshold]
+				&& adc_LS < adc_RS) { // *　壁がある時だけPID操作
+			if (adc_RS <= wall_config[RS_WALL] * 0.95
+					&& adc_RS >= wall_config[RS_WALL] * 1.05) {
 				deviation_sumR = 0;
 			}
 			temp_MotorSPEED_L = pid_calc(temp_MotorSPEED_L,
 					wall_config[RS_WALL] - wall_config[RS_WALL] % 10,
-					get_sensordata(RS) - get_sensordata(RS) % 10,
+					adc_RS - adc_RS % 10,
 					&deviation_prevR, &deviation_sumR);
 		} else {
 			deviation_prevR = 0;

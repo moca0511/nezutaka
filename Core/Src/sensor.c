@@ -174,6 +174,10 @@ uint32_t read_wall(uint8_t select) {
 		value /= 2;
 		Delay_ms(1);
 	}
+	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+			printf("value=%ld\n",value);
+			osMutexRelease(UART_MutexHandle);
+		}
 	return value;
 }
 
@@ -320,9 +324,9 @@ extern void SENSOR_PRINT(void *argument) {
 //			osMutexRelease(UART_MutexHandle);
 //		}
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf(",%ld,%ld,%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
-					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-					sensorData.ADC_DATA_LF, get_MotorSpeed_L(),
+			printf(",%ld,%ld,%ld,%ld,%ld,%ld\n", get_sensordata(RS),
+					get_sensordata(LS), get_sensordata(RF),
+					get_sensordata(LF), get_MotorSpeed_L(),
 					get_MotorSpeed_R());
 			osMutexRelease(UART_MutexHandle);
 		}
