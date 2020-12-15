@@ -36,26 +36,25 @@ extern void Sensor(void *argument) {
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 				2U) == TASK_STOP) {
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("SSTOP\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RS);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_RF);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LS);
 			HAL_TIM_PWM_Stop_IT(&htim3, PWM_CHANNEL_LF);
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("Sn\n\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 			osWaitForever) != TASK_START)
 				;
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("Sstart\n");
-				osMutexRelease(UART_MutexHandle);
-
-			}
+//				osMutexRelease(UART_MutexHandle);
+//			}
 
 		}
 		/*} else {
@@ -338,12 +337,6 @@ extern void SENSOR_PRINT(void *argument) {
 			osWaitForever) != TASK_START)
 				;
 		}
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
-//					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-//					sensorData.ADC_DATA_LF);
-//			osMutexRelease(UART_MutexHandle);
-//		}
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf(",%ld,%ld,%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,

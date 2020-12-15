@@ -37,15 +37,15 @@ typedef struct {
 #define MOVE_BACK GPIO_PIN_SET			//後退
 
 #define TURN_R 0
-#define TURN_L 1c
+#define TURN_L 1
 #define TURN_U 2
 
 #define SPEED_MAX 65536/STEP_LENGTH-1
 #define SPEED_MIN (1680000/(65536+1))/STEP_LENGTH+1
 
-#define KP 0.08
-#define KI 0.001
-#define KD 0.05
+#define KP 0.07
+#define KI 0.0005
+#define KD 0.06
 
 uint16_t straight(RUNConfig config,uint8_t pid_F,uint8_t wall_break_F,uint8_t front_Adjustment_F);
 void turn(RUNConfig config);

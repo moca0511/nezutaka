@@ -619,10 +619,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 	int16_t temp_posX, temp_posY;
 
 	make_smap(*searchX, *searchY, 0);
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		printf("searchBlock\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//		printf("searchBlock\n");
+//		osMutexRelease(UART_MutexHandle);
+//	}
 //	print_map();
 	/* ｓ目標区画に値を設定する。 */
 	buf1[0][cnt1] = START_X;
@@ -635,20 +635,20 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			temp_posX = buf1[0][--cnt1];
 			temp_posY = buf1[1][cnt1];
 
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("1X=%d Y=%d\n", temp_posX, temp_posY);
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//				printf("1X=%d Y=%d\n", temp_posX, temp_posY);
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			/* 最短の可能性があり未探索のマスを探索 */
 			/* ｓ北。 */
 			if (temp_posY + 1 < MAP_Y_MAX) {
 				if (map[temp_posX][temp_posY + 1].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x88) != 0x88) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("N\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("N\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX][temp_posY + 1].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = temp_posX;
 						buf2[1][cnt2++] = temp_posY + 1;
@@ -664,10 +664,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				if (map[temp_posX + 1][temp_posY].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x44) != 0x44) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("E\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("E\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX + 1][temp_posY].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = temp_posX + 1;
 						buf2[1][cnt2++] = temp_posY;
@@ -683,10 +683,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				if (map[temp_posX][temp_posY - 1].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x22) != 0x22) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("S\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("S\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX][temp_posY-1].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = temp_posX;
 						buf2[1][cnt2++] = temp_posY - 1;
@@ -702,10 +702,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				if (map[temp_posX - 1][temp_posY].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x11) != 0x11) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("W\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("W\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX - 1][temp_posY].wall & 0xf0) == 0xf0) {
 						buf2[0][cnt2] = temp_posX - 1;
 						buf2[1][cnt2++] = temp_posY;
@@ -718,10 +718,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			}
 
 		} while (cnt1 != 0); /* ｓバッファが空になるまで繰り返す。 */
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("cnt2=%d\n", cnt2);
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//			printf("cnt2=%d\n", cnt2);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 		/* ｓもう一方のバッファが空なら終了する。 */
 		if (cnt2 == 0) {
 			break;
@@ -731,20 +731,20 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 			/* ｓバッファから値設定済み区画の座標を1つ取り出す。 */
 			temp_posX = buf2[0][--cnt2];
 			temp_posY = buf2[1][cnt2];
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("2X=%d Y=%d\n", temp_posX, temp_posY);
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//				printf("2X=%d Y=%d\n", temp_posX, temp_posY);
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			/* 最短の可能性があり未探索のマスを探索 */
 			/* ｓ北。 */
 			if (temp_posY + 1 < MAP_Y_MAX) {
 				if (map[temp_posX][temp_posY + 1].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x88) != 0x88) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("N\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("N\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX][temp_posY + 1].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = temp_posX;
 						buf1[1][cnt1++] = temp_posY + 1;
@@ -760,10 +760,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				if (map[temp_posX + 1][temp_posY].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x44) != 0x44) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("E\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("E\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX + 1][temp_posY].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = temp_posX + 1;
 						buf1[1][cnt1++] = temp_posY;
@@ -779,10 +779,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				if (map[temp_posX][temp_posY - 1].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x22) != 0x22) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("S\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("S\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX][temp_posY-1].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = temp_posX;
 						buf1[1][cnt1++] = temp_posY - 1;
@@ -798,19 +798,19 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				if (map[temp_posX - 1][temp_posY].step
 						== map[temp_posX][temp_posY].step - 1
 						&& (map[temp_posX][temp_posY].wall & 0x11) != 0x11) {
-					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-						printf("W\n");
-						osMutexRelease(UART_MutexHandle);
-					}
+//					if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//						printf("W\n");
+//						osMutexRelease(UART_MutexHandle);
+//					}
 					if ((map[temp_posX - 1][temp_posY].wall & 0xf0) == 0xf0) {
 						buf1[0][cnt1] = temp_posX - 1;
 						buf1[1][cnt1++] = temp_posY;
 					} else {
-						if (osMutexWait(UART_MutexHandle, osWaitForever)
-								== osOK) {
-							printf("return\n");
-							osMutexRelease(UART_MutexHandle);
-						}
+//						if (osMutexWait(UART_MutexHandle, osWaitForever)
+//								== osOK) {
+//							printf("return\n");
+//							osMutexRelease(UART_MutexHandle);
+//						}
 						*searchX = temp_posX - 1;
 						*searchY = temp_posY;
 						return;
@@ -818,10 +818,10 @@ void check_searchBlock(uint16_t *searchX, uint16_t *searchY) {
 				}
 			}
 		} while (cnt2 != 0); /* ｓバッファが空になるまで繰り返す。 */
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("cnt1=%d\n", cnt1);
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//			printf("cnt1=%d\n", cnt1);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 
 		/* ｓもう一方のバッファが空なら終了する。 */
 		if (cnt1 == 0) {

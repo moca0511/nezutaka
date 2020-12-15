@@ -39,17 +39,16 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
  */
 void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		SLALOMConfig slalom90_config, uint16_t gx, uint16_t gy) {
-//	RUNConfig turn_config = { TURN_R, 300, 300, 2000, 800, 90 };
 	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
 	int32_t speed_buf = RUN_config.finish_speed;
 	int8_t move_f = -1;
 	int8_t move = 0;
 
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //		printf("adachi\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//		osMutexRelease(UART_MutexHandle);
+//	}
 
 	tone(tone_hiC, 10);
 
@@ -64,25 +63,36 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			break;
 		}
 
+		if (map[gx][gy].wall == 0xff) {
+			motor_stop();
+			if (move_f == 1) {    //中央に移動
+				RUN_config.initial_speed = get_MotorSpeed();
+				RUN_config.value = BLOCK_LENGTH * 0.5;
+				RUN_config.finish_speed = 0;
+				straight(RUN_config, 1, 0, 0);
+			}
+
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("can't to goal\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
+			break;
+		}
+
 		if (posX == gx && posY == gy) {
-			RUN_config.initial_speed = get_MotorSpeed();
-			RUN_config.finish_speed = 0;
-			RUN_config.value = BLOCK_LENGTH * 0.5;
-			straight(RUN_config, 1, 0, 1);
-
-//			motor_stop();
-			if (((((map[posX][posY].wall & 0x0f) | (map[posX][posY].wall << 4))
-					<< head) & 0x80) == 0x80) {
-				turn_u();
-				motor_stop();
-				sirituke();
-				ajast();
+			if (move_f == 1) {    //中央に移動
+				RUN_config.initial_speed = get_MotorSpeed();
+				RUN_config.value = BLOCK_LENGTH * 0.5;
+				RUN_config.finish_speed = 0;
+				straight(RUN_config, 1, 0, 0);
 			}
 
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("G\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+			motor_stop();
+
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("G\n");
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			break;
 		}
 
@@ -101,14 +111,11 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				&& map[posX][posY].step > map[posX][posY - 1].step) {
 			temp_head = 2;
 		} else {
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("err\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			motor_stop();
-//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-			tone(tone_C, 1000);
-			Delay_ms(1000);
 			break;
 		}
 
@@ -118,30 +125,29 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			temp_head -= 4;
 		}
 //		print_map();
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("x:%d y:%d\n", posX, posY);
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf("x:%d y:%d\n", posX, posY);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 
 		switch (temp_head) {
 		case 0:
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("S\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("S\n");
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			RUN_config.initial_speed = get_MotorSpeed();
 			RUN_config.value = BLOCK_LENGTH * 0.5;
-			//printf("straight\n");
 
 			if (move_f == -1) {    //中央から区切りへ
 				move = straight(RUN_config, 1, 1, 1);
 			} else {    //区切りから中央へ
 				move = straight(RUN_config, 1, 0, 1);
 			}
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("move_F:%d move:%d\n", move_f, move);
-				osMutexRelease(UART_MutexHandle);
-			}
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("move_F:%d move:%d\n", move_f, move);
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			if (move == 0) {    //ERRなら前方確認
 				wall_set(0x01);
 				wall_set_around();
@@ -153,10 +159,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 
 			break;
 		case 1:
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("R\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("R\n");
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			if (move_f == -1) {
 				turn_config.direction = TURN_R;
 				turn_config.finish_speed = turn_config.initial_speed = 0;
@@ -187,11 +193,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 
 			break;
 		case 2:
-			//	printf("U\n");
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("U\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("U\n");
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			if (move_f == 1) {
 				RUN_config.initial_speed = get_MotorSpeed();
 				RUN_config.finish_speed = 0;
@@ -211,15 +216,11 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			RUN_config.finish_speed = speed_buf;
 			break;
 		case 3:
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("L\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+			/*if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			 printf("L\n");
+			 osMutexRelease(UART_MutexHandle);
+			 }*/
 			if (move_f == -1) {
-//				RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R) / 2;
-//				RUN_config.finish_speed = 0;
-//				RUN_config.value = BLOCK_LENGTH * 0.5;
-//				straight(RUN_config, 1, 1, 1);
 				turn_config.direction = TURN_L;
 				turn_config.finish_speed = turn_config.initial_speed = 0;
 				turn(turn_config);
@@ -246,12 +247,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				wall_set_around();
 				move_f = 1;
 			}
-//			RUN_config.initial_speed = (MotorSPEED_L + MotorSPEED_R)/2;
-//			RUN_config.value = BLOCK_LENGTH * 0.05;
-//			straight(RUN_config);
 		}
-		tone(tone_hiC, 50);
-
 	}
 }
 
@@ -320,9 +316,8 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
  }
  }*/
 /*
- * 説明：足立法探索
+ * 説明：最短走行
  * 引数：RUN_config 直進パラメータ
- * 　　　turn_config 超新地旋回パラメータ
  * 　　　slalom90_config 90°スラロームパラメータ
  * 　　　slalom180_config 180°スラロームパラメータ
  * 　　　gx 目標X座標
@@ -341,14 +336,14 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	int8_t temp_head = 0, head_buf = shead;
 	uint8_t temp_wall;
 	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 //		printf("saitan\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//		osMutexRelease(UART_MutexHandle);
+//	}
 
 	make_smap(gx, gy, 1);
 	print_map();
-//進行方向決定
+
 
 	while (x != gx || y != gy) {
 		temp_wall =
@@ -357,10 +352,10 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 						+ ((((map[x][y].wall & 0xf0) + (map[x][y].wall >> 4))
 								<< head_buf) & 0xf0);
 		temp_head = 4;
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("temp_wall=0x%2x,head_buf=%d\n", temp_wall, head_buf);
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//			printf("temp_wall=0x%2x,head_buf=%d\n", temp_wall, head_buf);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 		if ((temp_wall & 0x88) == 0x80) {
 			switch (head_buf) {
 			case 0:
@@ -495,31 +490,16 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				printf("errer\n");
 				osMutexRelease(UART_MutexHandle);
 			}
-			//			mortor_sleep();
 			motor_stop();
-//		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//		tone(tone_C, 1000);
-//		Delay_ms(1000);
-//		break;
-			//ERR
-//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//			osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 			return;
 		}
 
-//		temp_head += 4;         //マイナス数防止
-//		temp_head -= head_buf;    //headの考慮
-//		if (temp_head >= 4) {    //桁上がりの考慮
-//			temp_head -= 4;
-//		}
-
 		switch (temp_head) {
 		case 0:
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("S\n");
-				osMutexRelease(UART_MutexHandle);
-			}
-			//printf("straight\n");
+//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//				printf("S\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			if (i > 0 && rute[i - 1].direction == MOVE_FORWARD) {
 				rute[i - 1].value += BLOCK_LENGTH;
 				i--;
@@ -536,28 +516,19 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 
 			break;
 		case 1:
-			//printf("TURN R\n");
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("R\n");
-				osMutexRelease(UART_MutexHandle);
-			}
-//			if (rute[i - 1].direction == MOVE_FORWARD) {
-//				rute[i - 1].value *= 1.1;
-//
+//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//				printf("R\n");
+//				osMutexRelease(UART_MutexHandle);
 //			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_R, 90, &head_buf);
-//			i++;
-//			rute[i].direction = 0;
-//			rute[i].value = BLOCK_LENGTH;
 			break;
 		case 2:
-			//	printf("U\n");
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("U\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//				printf("U\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			rute[i].direction = temp_head;
 			rute[i].value = 180;
 			chenge_head(TURN_R, 180, &head_buf);
@@ -567,28 +538,20 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 
 			break;
 		case 3:
-			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-				printf("L\n");
-				osMutexRelease(UART_MutexHandle);
-			}
-			//	printf("TURNL\n");
-//			if (rute[i - 1].direction == MOVE_FORWARD) {
-//				rute[i - 1].value *= 1.1;
-//
+//			if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//				printf("L\n");
+//				osMutexRelease(UART_MutexHandle);
 //			}
 			rute[i].direction = temp_head;
 			rute[i].value = 90;
 			chenge_head(TURN_L, 90, &head_buf);
-//			i++;
-//			rute[i].direction = 0;
-//			rute[i].value = BLOCK_LENGTH;
 			break;
 		}
 		i++;
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("x=%d y=%d head=%d i=%d\n", x, y, head_buf, i);
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
+//			printf("x=%d y=%d head=%d i=%d\n", x, y, head_buf, i);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 	}
 	if (rute[i - 1].direction == 0) {
 		rute[i - 1].value += BLOCK_LENGTH / 2;
@@ -597,6 +560,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		rute[i].value += BLOCK_LENGTH / 2;
 		i++;
 	}
+
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
 			printf("%d:direction=%d value=%ld\n", f, rute[f].direction,
@@ -605,23 +569,18 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		osMutexRelease(UART_MutexHandle);
 	}
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-//		printf("end\n");
+		printf("end\n");
 		osMutexRelease(UART_MutexHandle);
 	}
-
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-//	Delay_ms(50);
-
-//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("saitan to goal\n");
-//		osMutexRelease(UART_MutexHandle);
-//	}
 
 	for (int f = 0; f < i; f++) {
 		switch (rute[f].direction) {
 		case 0:
-			//printf("straight\n");
 			RUN_config.initial_speed = get_MotorSpeed();
+			if(f==i-1 && rute[f].value<=180){
+				RUN_config.max_speed=RUN_config.initial_speed=400;
+				RUN_config.acceleration=6000;
+			}
 			RUN_config.value = rute[f].value;
 			straight(RUN_config, 1, 1, 1);
 			RUN_config.value += 90;
@@ -633,8 +592,6 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 					&posY, head);
 			break;
 		case 1:
-			//printf("TURN R\n");
-			//motor_stop();
 			if (f == 0) {
 				turn_config.direction = TURN_R;
 				turn_config.finish_speed = turn_config.initial_speed = 0;
@@ -657,13 +614,9 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			chenge_pos(1, &posX, &posY, head);
 			break;
 		case 2:
-			//	printf("U\n");
-			//motor_stop();
 			turn_u();
 			break;
 		case 3:
-			//	printf("TURNL\n");
-			//motor_stop();
 			if (f == 0) {
 				turn_config.direction = TURN_L;
 				turn_config.finish_speed = turn_config.initial_speed = 0;
@@ -686,10 +639,6 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			chenge_pos(1, &posX, &posY, head);
 			break;
 		}
-		if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-			printf("x=%d y=%d head=%d i=%d\n", posX, posY, head, f);
-			osMutexRelease(UART_MutexHandle);
-		}
 	}
 	turn_u();
 	posX = gx;
@@ -700,8 +649,5 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		sirituke();
 		ajast();
 	}
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	music();
-
 }
