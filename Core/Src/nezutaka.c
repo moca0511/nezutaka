@@ -27,6 +27,9 @@ extern MAP map[MAP_X_MAX][MAP_Y_MAX];
 void nezutaka(void) {
 
 	int16_t mode = 0;
+
+	init_Motor();
+
 	tone(tone_C, 10);
 	Delay_ms(10);
 	tone(tone_G, 10);

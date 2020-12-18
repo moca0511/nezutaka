@@ -24,7 +24,7 @@
 
 
 
-
+void init_Motor(void);
 float32_t SPEEDtoHz(float32_t speed);//mm/s→hz変換
 float32_t HztoSPEED(float32_t Hz);//hz→mm/s変換
 void mortor_direction(uint8_t motor,uint8_t direction);//指定モータの前転後転を指定

@@ -72,20 +72,6 @@ const osThreadAttr_t Sensor_Task_attributes = {
   .priority = (osPriority_t) osPriorityNormal4,
   .stack_size = 512 * 4
 };
-/* Definitions for MOTOR_R_Task */
-osThreadId_t MOTOR_R_TaskHandle;
-const osThreadAttr_t MOTOR_R_Task_attributes = {
-  .name = "MOTOR_R_Task",
-  .priority = (osPriority_t) osPriorityNormal4,
-  .stack_size = 512 * 4
-};
-/* Definitions for MOTOR_L_Task */
-osThreadId_t MOTOR_L_TaskHandle;
-const osThreadAttr_t MOTOR_L_Task_attributes = {
-  .name = "MOTOR_L_Task",
-  .priority = (osPriority_t) osPriorityNormal4,
-  .stack_size = 512 * 4
-};
 /* Definitions for BUZZER_Task */
 osThreadId_t BUZZER_TaskHandle;
 const osThreadAttr_t BUZZER_Task_attributes = {
@@ -174,8 +160,6 @@ static void MX_TIM2_Init(void);
 static void MX_ADC2_Init(void);
 void StartDefaultTask(void *argument);
 void Sensor(void *argument);
-void MOTOR_R(void *argument);
-void MOTOR_L(void *argument);
 void BUZZER(void *argument);
 void BatteryCheck(void *argument);
 void SENSOR_PRINT(void *argument);
@@ -280,12 +264,6 @@ int main(void)
 
   /* creation of Sensor_Task */
   Sensor_TaskHandle = osThreadNew(Sensor, NULL, &Sensor_Task_attributes);
-
-  /* creation of MOTOR_R_Task */
-  MOTOR_R_TaskHandle = osThreadNew(MOTOR_R, NULL, &MOTOR_R_Task_attributes);
-
-  /* creation of MOTOR_L_Task */
-  MOTOR_L_TaskHandle = osThreadNew(MOTOR_L, NULL, &MOTOR_L_Task_attributes);
 
   /* creation of BUZZER_Task */
   BUZZER_TaskHandle = osThreadNew(BUZZER, NULL, &BUZZER_Task_attributes);

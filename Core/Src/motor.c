@@ -17,12 +17,13 @@ uint32_t MotorStepCount_R = 0;
 uint32_t MotorStepCount_L = 0;
 
 /*
+
  * 説明：右モータ制御タスク
  * 引数：無し
  * 戻り値:無し
- */
+
 extern void MOTOR_R(void *argument) {
-	/* USER CODE BEGIN MOTOR_R */
+	 USER CODE BEGIN MOTOR_R
 	Delay_ms(10);
 	uint32_t hz = 0;
 	uint32_t speed_prev = 0;
@@ -30,7 +31,7 @@ extern void MOTOR_R(void *argument) {
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
 		;
-	/* Infinite loop */
+	 Infinite loop
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 				2U) == TASK_STOP) {
@@ -61,23 +62,23 @@ extern void MOTOR_R(void *argument) {
 		osThreadYield();
 	}
 
-	/* USER CODE END MOTOR_R */
+	 USER CODE END MOTOR_R
 }
 
-/* USER CODE BEGIN Header_MOTOR_L */
-/**
+ USER CODE BEGIN Header_MOTOR_L
+*
  * @brief Function implementing the MOTOR_L_Task thread.
  * @param argument: Not used
  * @retval None
- */
-/* USER CODE END Header_MOTOR_L */
-/*
+
+ USER CODE END Header_MOTOR_L
+
  * 説明：左モータ制御タスク
  * 引数：無し
  * 戻り値:無し
- */
+
 extern void MOTOR_L(void *argument) {
-	/* USER CODE BEGIN MOTOR_L */
+	 USER CODE BEGIN MOTOR_L
 
 	Delay_ms(10);
 	uint32_t hz = 0;
@@ -86,7 +87,7 @@ extern void MOTOR_L(void *argument) {
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
 		;
-	/* Infinite loop */
+	 Infinite loop
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 				2U) == TASK_STOP) {
@@ -116,8 +117,9 @@ extern void MOTOR_L(void *argument) {
 		osSemaphoreRelease(SchengeLSemHandle);
 		osThreadYield();
 	}
-	/* USER CODE END MOTER_SLEEP_CHECK */
+	 USER CODE END MOTER_SLEEP_CHECK
 }
+*/
 
 /*
  * 説明：モータスリープ制御タスク
@@ -142,9 +144,18 @@ extern void MORTOR_SLEEP_CHECK(void *argument) {
 			sleepcount = 5;
 		}
 		Delay_ms(100);
-		//		osThreadYield();
 	}
 }
+
+void init_Motor(void) {
+	__HAL_TIM_SET_COMPARE(&htim8, STEPPER_CLOCK_L_CHANNEL, 50);
+	__HAL_TIM_SET_COMPARE(&htim1, STEPPER_CLOCK_R_CHANNEL, 50);
+	MotorSPEED_R = MotorSPEED_L = 0;
+	MotorStepCount_R = MotorStepCount_L = 0;
+	set_MotorSpeed(0);
+	return;
+}
+
 /*
  * 説明：mm/s→Hz変換
  * 引数：無し
@@ -207,8 +218,24 @@ uint32_t get_MotorSpeed(void) {
  * 戻り値：無し
  */
 void set_MotorSpeed_L(uint32_t speed) {
-	MotorSPEED_L = speed;
-	return;
+	uint32_t hz = 0;
+
+		if (speed != MotorSPEED_R) {
+			MotorSPEED_R = speed;
+			hz = SPEEDtoHz(speed);
+			if (hz == 0) {
+				HAL_TIMEx_PWMN_Stop_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
+			} else {
+				htim8.Init.Prescaler = 1680000 / hz - 1;
+				htim8.Init.Period = 100;
+				if (HAL_TIM_PWM_Init(&htim8) != HAL_OK) {
+					Error_Handler();
+				}
+				HAL_TIMEx_PWMN_Start_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
+			}
+		}
+	//	osSemaphoreRelease(SchengeRSemHandle);
+		return;
 }
 /*
  * 説明：右モータ速度設定
@@ -216,8 +243,24 @@ void set_MotorSpeed_L(uint32_t speed) {
  * 戻り値：無し
  */
 void set_MotorSpeed_R(uint32_t speed) {
-	MotorSPEED_R = speed;
-	return;
+	uint32_t hz = 0;
+
+		if (speed != MotorSPEED_L) {
+			MotorSPEED_L = speed;
+			hz = SPEEDtoHz(speed);
+			if (hz == 0) {
+				HAL_TIM_PWM_Stop_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
+			} else {
+				htim1.Init.Prescaler = 1680000 / hz - 1;
+				htim1.Init.Period = 100;
+				if (HAL_TIM_PWM_Init(&htim1) != HAL_OK) {
+					Error_Handler();
+				}
+				HAL_TIM_PWM_Start_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);
+			}
+		}
+	//	osSemaphoreRelease(SchengeRSemHandle);
+		return;
 }
 /*
  * 説明：両モータ速度設定
@@ -225,7 +268,8 @@ void set_MotorSpeed_R(uint32_t speed) {
  * 戻り値：無し
  */
 void set_MotorSpeed(uint32_t speed) {
-	MotorSPEED_L = MotorSPEED_R = speed;
+	set_MotorSpeed_R(speed);
+	set_MotorSpeed_L(speed);
 	return;
 }
 /*
