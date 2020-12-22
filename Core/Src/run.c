@@ -72,7 +72,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			plpl *= -1;
 		}
 
-		fspeed += plpl * 3;
+		fspeed += plpl * 5;
 
 		if (fspeed >= config.max_speed) {
 			fspeed = config.max_speed;
@@ -121,13 +121,12 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (front_Adjustment_F == 1
 				&& (get_sensordata(LF) >= wall_config[LF_WALL]
 						|| get_sensordata(RF) >= wall_config[RF_WALL])
-				&& stop_f == 0) {
-
+				/*&& stop_f == 0*/) {
 			config.finish_speed = 0;
 			break;
 		}
 
-		osDelayUntil(osKernelGetTickCount() + 3);
+		osDelayUntil(osKernelGetTickCount() + 5);
 	} while (stopcount > get_MotorStepCount());
 	if (pid_F) {
 		osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
@@ -184,7 +183,7 @@ void turn(RUNConfig config) {
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
-		speed += plpl * 3;
+		speed += plpl * 5;
 		if (speed >= SPEED_MAX) {
 			speed = SPEED_MAX;
 			if (gensoku == -1) {
@@ -206,7 +205,7 @@ void turn(RUNConfig config) {
 			osThreadYield();
 			break;
 		}
-		osDelayUntil(osKernelGetTickCount() + 3);
+		osDelayUntil(osKernelGetTickCount() + 5);
 
 	} while (stopcount > get_MotorStepCount());
 
@@ -251,7 +250,7 @@ void slalom(SLALOMConfig config) {
 	if ((temp_wall & 0x88) == 0x88) {
 		do {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osDelayUntil(osKernelGetTickCount() + 3);
+			osDelayUntil(osKernelGetTickCount() + 5);
 		} while ((get_sensordata(LF) < config.before_ofset_AD
 				&& get_sensordata(RF) < config.before_ofset_AD));
 //		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -262,7 +261,7 @@ void slalom(SLALOMConfig config) {
 	} else {
 		while (get_MotorStepCount() < stopcount) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osDelayUntil(osKernelGetTickCount() + 3);
+			osDelayUntil(osKernelGetTickCount() + 5);
 			if (get_sensordata(LF) >= config.before_ofset_AD
 					&& get_sensordata(RF) >= config.before_ofset_AD
 					&& ((temp_wall & 0x88) != 0x80)) {
@@ -274,7 +273,7 @@ void slalom(SLALOMConfig config) {
 				break;
 			}
 		}
-		osDelayUntil(osKernelGetTickCount() + 3);
+		osDelayUntil(osKernelGetTickCount() + 5);
 		if ((get_sensordata(LF) < config.before_ofset_AD
 				&& get_sensordata(RF) < config.before_ofset_AD)
 				&& (get_sensordata(LF) >= wall_config[LF_threshold] * 0.85
@@ -290,7 +289,7 @@ void slalom(SLALOMConfig config) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
 						config.config.finish_speed;
 
-				osDelayUntil(osKernelGetTickCount() + 3);
+				osDelayUntil(osKernelGetTickCount() + 5);
 			}
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("2Swall RF:%ld LF:%ld\n", get_sensordata(RF),
@@ -317,7 +316,7 @@ void slalom(SLALOMConfig config) {
 			plpl *= -1;
 		}
 
-		deg_speed += plpl * 3.0;
+		deg_speed += plpl * 5.0;
 		if (config.config.direction == TURN_R) {
 			fspeedL = config.config.initial_speed
 					+ deg_speed * TREAD_WIDTH / 2.0;
@@ -326,7 +325,7 @@ void slalom(SLALOMConfig config) {
 			if (fspeedL
 					<= config.config.finish_speed|| fspeedR >= config.config.finish_speed
 					|| fspeedL >= config.config.max_speed || fspeedR < SPEED_MIN) {
-				deg_speed -= plpl * 3.0;
+				deg_speed -= plpl * 5.0;
 				fspeedL = config.config.initial_speed
 						+ deg_speed * TREAD_WIDTH / 2.0;
 				fspeedR = config.config.initial_speed
@@ -339,7 +338,7 @@ void slalom(SLALOMConfig config) {
 			if (fspeedR
 					<= config.config.finish_speed|| fspeedL >= config.config.finish_speed
 					|| fspeedR >= config.config.max_speed || fspeedL < SPEED_MIN) {
-				deg_speed -= plpl * 3.0;
+				deg_speed -= plpl * 5.0;
 				fspeedL = config.config.initial_speed
 						- deg_speed * TREAD_WIDTH / 2;
 				fspeedR = config.config.initial_speed
@@ -352,12 +351,12 @@ void slalom(SLALOMConfig config) {
 		temp_MotorSPEED_R = fspeedR;
 //角度変更処理
 
-		if ((int32_t) (deg * 0.007 * 180 / PI) >= config.config.value) {
+		if ((int32_t) (deg * 0.012 * 180 / PI) >= config.config.value) {
 			break;
 		}
-		osDelayUntil(osKernelGetTickCount() + 3);
+		osDelayUntil(osKernelGetTickCount() + 5);
 
-	} while ((int32_t) (deg * 0.007 * 180 / PI) < config.config.value);
+	} while ((int32_t) (deg * 0.012 * 180 / PI) < config.config.value);
 
 	if (config.config.finish_speed == 0) {
 		motor_stop();
@@ -375,7 +374,7 @@ void slalom(SLALOMConfig config) {
 	//位置調整
 	if ((temp_wall & 0x88) == 0x88) {
 		do {
-			osDelayUntil(osKernelGetTickCount() + 3);
+			osDelayUntil(osKernelGetTickCount() + 5);
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
 		} while ((get_sensordata(LF) < config.after_ofset_AD
 				&& get_sensordata(RF) < config.after_ofset_AD));
@@ -387,7 +386,7 @@ void slalom(SLALOMConfig config) {
 	} else {
 		while (get_MotorStepCount() < SPEEDtoHz(config.after_ofset)) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
-			osDelayUntil(osKernelGetTickCount() + 3);
+			osDelayUntil(osKernelGetTickCount() + 5);
 			if (get_sensordata(LF) >= config.after_ofset_AD
 					&& get_sensordata(RF) >= config.after_ofset_AD
 					&& ((temp_wall & 0x88) != 0x80)) {
@@ -399,7 +398,7 @@ void slalom(SLALOMConfig config) {
 				break;
 			}
 		}
-		osDelayUntil(osKernelGetTickCount() + 3);
+		osDelayUntil(osKernelGetTickCount() + 5);
 		if ((get_sensordata(LF) < config.after_ofset_AD
 				&& get_sensordata(RF) < config.after_ofset_AD)
 				&& (get_sensordata(LF) >= wall_config[LF_threshold] * 0.85
@@ -414,7 +413,7 @@ void slalom(SLALOMConfig config) {
 ////					printf("2Ewall in\n");
 //					osMutexRelease(UART_MutexHandle);
 //				}
-				osDelayUntil(osKernelGetTickCount() + 3);
+				osDelayUntil(osKernelGetTickCount() + 5);
 			}
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("2Ewall RF:%ld LF:%ld\n", get_sensordata(RF),
@@ -547,6 +546,7 @@ extern void PID(void *argument) {
 	Delay_ms(10);
 	int32_t deviation_prevR = 0, deviation_prevL = 0;
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
+	int32_t sensorR, sensorL;
 
 	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
 	osWaitForever) != TASK_START)
@@ -554,8 +554,8 @@ extern void PID(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
-				2U) == TASK_STOP) {
-			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny, 2U)
+				5U) == TASK_STOP) {
+			while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny, 5U)
 					!= TASK_START) {
 				set_MotorSpeed_L(temp_MotorSPEED_L);
 				set_MotorSpeed_R(temp_MotorSPEED_R);
@@ -563,36 +563,36 @@ extern void PID(void *argument) {
 			deviation_prevR = deviation_prevL = 0;
 			deviation_sumR = deviation_sumL = 0;
 		}
+
 //		osSemaphoreAcquire(pid_SemHandle, osWaitForever);
-		if (get_sensordata(LS) > wall_config[LS_threshold]
-				&& get_sensordata(LS) > get_sensordata(RS)) { //　壁がある時だけPID操作
-			if (get_sensordata(LS) <= wall_config[LS_WALL] * 0.95
-					&& get_sensordata(LS) >= wall_config[LS_WALL] * 1.05) { //ほぼ壁なら偏差計リセット
+		sensorR = get_sensordata(RS);
+		sensorL = get_sensordata(LS);
+		if (sensorL > wall_config[LS_threshold]) { //　壁がある時だけPID操作
+			if (sensorL <= wall_config[LS_WALL] * 0.95
+					&& sensorL >= wall_config[LS_WALL] * 1.05) { //ほぼ壁なら偏差計リセット
 				deviation_sumL = 0;
 			}
 			temp_MotorSPEED_R = pid_calc(temp_MotorSPEED_R,
-					wall_config[LS_WALL] - wall_config[LS_WALL] % 10,
-					get_sensordata(LS) - get_sensordata(LS) % 10,
-					&deviation_prevL, &deviation_sumL);
+					wall_config[LS_WALL], sensorL, &deviation_prevL,
+					&deviation_sumL);
 		} else {
 			deviation_prevL = 0;
 			deviation_sumL = 0;
 
 		}
-		if (get_sensordata(RS) > wall_config[RS_threshold]
-				&& get_sensordata(LS) < get_sensordata(RS)) { // *　壁がある時だけPID操作
-			if (get_sensordata(RS) <= wall_config[RS_WALL] * 0.95
-					&& get_sensordata(RS) >= wall_config[RS_WALL] * 1.05) {
+		if (sensorR > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
+			if (sensorR <= wall_config[RS_WALL] * 0.95
+					&& sensorR >= wall_config[RS_WALL] * 1.05) {
 				deviation_sumR = 0;
 			}
 			temp_MotorSPEED_L = pid_calc(temp_MotorSPEED_L,
-					wall_config[RS_WALL] - wall_config[RS_WALL] % 10,
-					get_sensordata(RS) - get_sensordata(RS) % 10,
-					&deviation_prevR, &deviation_sumR);
+					wall_config[RS_WALL], sensorR, &deviation_prevR,
+					&deviation_sumR);
 		} else {
 			deviation_prevR = 0;
 			deviation_sumR = 0;
 		}
+
 		set_MotorSpeed_L(temp_MotorSPEED_L);
 		set_MotorSpeed_R(temp_MotorSPEED_R);
 		osThreadYield();
@@ -614,5 +614,7 @@ void motor_stop(void) {
 //	}
 	temp_MotorSPEED_R = 0;
 	temp_MotorSPEED_L = 0;
+	set_MotorSpeed_L(temp_MotorSPEED_L);
+	set_MotorSpeed_R(temp_MotorSPEED_R);
 }
 

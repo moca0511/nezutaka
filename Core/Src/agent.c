@@ -573,6 +573,8 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 		osMutexRelease(UART_MutexHandle);
 	}
 
+	osDelay(100);
+
 	for (int f = 0; f < i; f++) {
 		switch (rute[f].direction) {
 		case 0:

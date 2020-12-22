@@ -18,8 +18,8 @@
 #include "arm_math.h"
 #include "arm_const_structs.h"
 
-uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2400, 2400, 450, 450, 450,
-		450, 800, 800, 700, 700 };
+uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 1500, 1500, 450, 450, 450,
+		450, 700, 700, 700, 700 };
 int16_t posX = 0, posY = 0;	//　現在の位置
 int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
@@ -154,13 +154,13 @@ void mode0(void) {
 	RUNConfig RUN_config_def =
 			{ MOVE_FORWARD, 0, 400, 1000, 2000, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config_def = { { TURN_R, 400, 400, 2000, 1200, 90 },
-			20, 900, 20, AFTER_OFSET_AD_VALUE }, slalom180_config_def = { {
+			20, 1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config_def = { {
 			TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
 			AFTER_OFSET_AD_VALUE };
 
-	mode2();
-	mode7();
-	mode12();
+	mode2();//sensor calibration
+	mode7();//maze init
+	mode12();//serch maze
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	UILED_SET(1);
 	Delay_ms(2000);
@@ -170,7 +170,7 @@ void mode0(void) {
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 400, 1000, 2500, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 },
-				20, 900, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+				20, 1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 		TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
 		AFTER_OFSET_AD_VALUE };
 		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
@@ -183,8 +183,8 @@ void mode0(void) {
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 500, 1300, 3000, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
-				15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-				TURN_R, 300, 300, 2000, 700, 180 }, 15, 1000, 15,
+				15, 1000, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+				TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
 				AFTER_OFSET_AD_VALUE };
 
 		Delay_ms(2000);
@@ -201,7 +201,7 @@ void mode0(void) {
 				{ MOVE_FORWARD, 0, 600, 1500, 3000, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
 				5, 700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-		TURN_R, 300, 300, 2000, 700, 180 }, 15, 1000, 15,
+		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
 		AFTER_OFSET_AD_VALUE };
 
 		Delay_ms(2000);
@@ -380,7 +380,7 @@ void mode12(void) {
 			- NEZUTAKA_LENGTH) * 0.5 };
 
 	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 20,
-			900, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
+			1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
 			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 	posX = START_X;

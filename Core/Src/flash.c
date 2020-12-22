@@ -27,25 +27,15 @@ void eraseFlash(void) {
  * 戻り値：無し
  */
 void writeFlash(uint32_t address, uint8_t *data, uint32_t size) {
-	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 
-		HAL_FLASH_Unlock();        // unlock flash
-		printf("UNLOCK\n");
-		eraseFlash();            // erease sector1
-		printf("erase\n");
-		for (uint32_t add = address; add < (address + size); add++) {
-			printf("%d,%p=0x%2x→%p\n",
-					HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, add, *data), data,
-					*data, (uint32_t*) add); // write byte
-			data++;  // add data pointer
-			printf("%p=%ld\n", (uint32_t*) add, *((uint32_t*) add));
-		}
-		printf("data set\n");
-
-		HAL_FLASH_Lock();        // lock flash
-		printf("LOCK\n");
-		osMutexRelease(UART_MutexHandle);
+	HAL_FLASH_Unlock();        // unlock flash
+	eraseFlash();            // erease sector1
+	for (uint32_t add = address; add < (address + size); add++) {
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, add, *data);
+		data++;  // add data pointer
 	}
+
+	HAL_FLASH_Lock();        // lock flash
 }
 
 /*
@@ -57,7 +47,6 @@ void writeFlash(uint32_t address, uint8_t *data, uint32_t size) {
  */
 void loadFlash(uint32_t address, uint8_t *data, uint32_t size) {
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
-		printf("%p=%ld\n", (uint32_t*) address, *(uint32_t*) address);
 		memcpy(data, (uint8_t*) address, size); // copy data
 		osMutexRelease(UART_MutexHandle);
 	}
