@@ -32,7 +32,8 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	int32_t stopcount = config.value / STEP_LENGTH - get_MotorStepCount();
 	int32_t gensoku = -1;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
-	uint32_t plpl_time=osKernelGetTickCount();
+	int32_t plpl_time=osKernelGetTickCount();
+
 	if (pid_F && config.direction == MOVE_FORWARD) {
 		osThreadFlagsSet(PID_TaskHandle, TASK_START);
 	} else {
@@ -59,6 +60,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	if (config.initial_speed == 0) {
 		set_MotorSpeed(100);
 	}
+	plpl_time=osKernelGetTickCount();
 	osDelayUntil(osKernelGetTickCount() + 5);
 	//1ループ１
 	do {
@@ -104,7 +106,6 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 
 		fspeed += plpl * (osKernelGetTickCount()-plpl_time);
 		plpl_time=osKernelGetTickCount();
-
 		if (fspeed >= config.max_speed) {
 			fspeed = config.max_speed;
 			if (gensoku == -1) {
@@ -163,10 +164,9 @@ void turn(RUNConfig config) {
 			/ (uint32_t) configTICK_RATE_HZ;
 	int32_t gensoku = -1;
 	float32_t speed = config.initial_speed;
-	uint32_t plpl_time=osKernelGetTickCount();
+	int32_t plpl_time=osKernelGetTickCount();
 	motor_stop();
 	osDelayUntil(osKernelGetTickCount() + 100);
-	temp_MotorSPEED_R = temp_MotorSPEED_L = config.initial_speed;
 
 //on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
@@ -180,6 +180,7 @@ void turn(RUNConfig config) {
 	}
 	reset_MotorStepCount();
 	temp_MotorSPEED_R = temp_MotorSPEED_L = config.initial_speed;
+	plpl_time=osKernelGetTickCount();
 	do {
 //1スピード変更処理
 		if ((((get_MotorStepCount() >= gensoku) && gensoku != -1)
@@ -188,8 +189,7 @@ void turn(RUNConfig config) {
 			plpl *= -1;
 		}
 		speed += plpl * (osKernelGetTickCount()-plpl_time);
-		plpl_time=osKernelGetTickCount();
-
+			plpl_time=osKernelGetTickCount();
 		if (speed >= SPEED_MAX) {
 			speed = SPEED_MAX;
 			if (gensoku == -1) {
@@ -317,7 +317,7 @@ void slalom(SLALOMConfig config) {
 		}
 
 //1スピード変更処理
-		if ((int32_t) (deg * 0.007 * 180 / PI) >= config.config.value * 0.5
+		if ((int32_t) (deg * 0.012 * 180 / PI) >= config.config.value * 0.5
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
@@ -556,9 +556,9 @@ extern void PID(void *argument) {
 	int32_t deviation_sumR = 0, deviation_sumL = 0;
 	int32_t sensorR, sensorL;
 
-	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
-	osWaitForever) != TASK_START)
-		;
+//	while (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
+//	osWaitForever) != TASK_START)
+//		;
 	/* Infinite loop */
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
@@ -595,7 +595,6 @@ extern void PID(void *argument) {
 			if (sensorR >= wall_config[RS_WALL] * 0.95
 					&& sensorR <= wall_config[RS_WALL] * 1.05) {
 				deviation_sumR = 0;
-				deviation_prevR = sensorR - deviation_prevR;
 			}
 			if (temp_MotorSPEED_L != 0) {
 				temp_MotorSPEED_L = pid_calc(temp_MotorSPEED_L,

@@ -220,8 +220,8 @@ uint32_t get_MotorSpeed(void) {
 void set_MotorSpeed_L(uint32_t speed) {
 	uint32_t hz = 0;
 
-		if (speed != MotorSPEED_R) {
-			MotorSPEED_R = speed;
+		if (speed != MotorSPEED_L) {
+			MotorSPEED_L = speed;
 			hz = SPEEDtoHz(speed);
 			if (hz == 0) {
 				HAL_TIMEx_PWMN_Stop_IT(&htim8, STEPPER_CLOCK_L_CHANNEL);
@@ -245,8 +245,8 @@ void set_MotorSpeed_L(uint32_t speed) {
 void set_MotorSpeed_R(uint32_t speed) {
 	uint32_t hz = 0;
 
-		if (speed != MotorSPEED_L) {
-			MotorSPEED_L = speed;
+		if (speed != MotorSPEED_R) {
+			MotorSPEED_R = speed;
 			hz = SPEEDtoHz(speed);
 			if (hz == 0) {
 				HAL_TIM_PWM_Stop_IT(&htim1, STEPPER_CLOCK_R_CHANNEL);

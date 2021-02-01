@@ -340,8 +340,8 @@ extern void SENSOR_PRINT(void *argument) {
 		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 			printf(",%ld,%ld,%ld,%ld,%ld,%ld\n", sensorData.ADC_DATA_RS,
 					sensorData.ADC_DATA_LS, sensorData.ADC_DATA_RF,
-					sensorData.ADC_DATA_LF, get_MotorSpeed_L(),
-					get_MotorSpeed_R());
+					sensorData.ADC_DATA_LF, get_MotorSpeed_R(),
+					get_MotorSpeed_L());
 			osMutexRelease(UART_MutexHandle);
 		}
 		Delay_ms(100);

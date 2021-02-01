@@ -18,7 +18,7 @@
 #include "arm_math.h"
 #include "arm_const_structs.h"
 
-uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2000, 2000, 450, 450, 450,
+uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2400, 2400, 450, 450, 450,
 		450, 700, 700, 700, 700 };
 int16_t posX = 0, posY = 0;	//　現在の位置
 int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
@@ -270,15 +270,15 @@ void mode3(void) {
 }
 //turn R 90°
 void mode4(void) {
-
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 1000, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 + BLOCK_LENGTH / 2 };
-	SLALOMConfig slalom_config = { { TURN_R, 500, 500, 2000, 1500, 90 }, 5, 10 };
+//
+//	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 500, 1000, (BLOCK_LENGTH
+//			- NEZUTAKA_LENGTH) * 0.5 + BLOCK_LENGTH / 2 };
+//	SLALOMConfig slalom_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
+//			5, 700, 5, AFTER_OFSET_AD_VALUE };
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
 
-	straight(RUN_config, 1, 1, 1);
-	slalom(slalom_config);
+	turn_u();
 	motor_stop();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 }

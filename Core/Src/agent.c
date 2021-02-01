@@ -151,7 +151,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 					RUN_config.acceleration = 1000;
 					RUN_config.value = BLOCK_LENGTH / 2;
 				}
-				move = straight(RUN_config, 1, 0, 0);
+				move = straight(RUN_config, 1, 0, 1);
 
 			}
 			/*			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -653,7 +653,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	RUN_config.finish_speed = 0;
 	RUN_config.acceleration = 1000;
 	RUN_config.value = BLOCK_LENGTH / 2;
-	straight(RUN_config, 1, 0, 0);
+	straight(RUN_config, 1, 0, 1);
 	motor_stop();
 	Delay_ms(100);
 	turn_u();
