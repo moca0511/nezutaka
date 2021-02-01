@@ -11,8 +11,8 @@
 #include"main.h"
 
 typedef struct RUTE {
-	uint8_t direction;	//　ゴールまでの距離
-	uint32_t value;	//　進行距離
+	uint8_t direction;	//　進行方向
+	uint32_t value;	//　移動距離or旋回角度
 } RUTE;
 
 

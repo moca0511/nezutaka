@@ -40,12 +40,12 @@ typedef struct {
 #define TURN_L 1
 #define TURN_U 2
 
-#define SPEED_MAX 65536/STEP_LENGTH-1
-#define SPEED_MIN (1680000/(65536+1))/STEP_LENGTH+1
+#define SPEED_MAX 1700
+#define SPEED_MIN 100
 
-#define KP 0.07
-#define KI 0.0001
-#define KD 0.05
+#define KP 0.06
+#define KI 0.00001
+#define KD 0.02
 
 uint16_t straight(RUNConfig config,uint8_t pid_F,uint8_t wall_break_F,uint8_t front_Adjustment_F);
 void turn(RUNConfig config);

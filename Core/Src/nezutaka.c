@@ -18,7 +18,7 @@
 #include "arm_math.h"
 #include "arm_const_structs.h"
 
-uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 1500, 1500, 450, 450, 450,
+uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2000, 2000, 450, 450, 450,
 		450, 700, 700, 700, 700 };
 int16_t posX = 0, posY = 0;	//　現在の位置
 int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
@@ -154,13 +154,15 @@ void mode0(void) {
 	RUNConfig RUN_config_def =
 			{ MOVE_FORWARD, 0, 400, 1000, 2000, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config_def = { { TURN_R, 400, 400, 2000, 1200, 90 },
-			20, 1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config_def = { {
-			TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
-			AFTER_OFSET_AD_VALUE };
+			20, 1000, 15, AFTER_OFSET_AD_VALUE }, slalom180_config_def = { {
+	TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
+	AFTER_OFSET_AD_VALUE };
 
-	mode2();//sensor calibration
-	mode7();//maze init
-	mode12();//serch maze
+	mode2();	//sensor calibration
+	mode7();	//maze init
+	mode12();	//serch maze
+	make_smap(GOAL_X, GOAL_Y, 1);
+	print_map();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	UILED_SET(1);
 	Delay_ms(2000);
@@ -170,7 +172,7 @@ void mode0(void) {
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 400, 1000, 2500, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 },
-				20, 1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+				20, 1000, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 		TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
 		AFTER_OFSET_AD_VALUE };
 		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
@@ -183,9 +185,9 @@ void mode0(void) {
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 500, 1300, 3000, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
-				15, 1000, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-				TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
-				AFTER_OFSET_AD_VALUE };
+				15, 800, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+		AFTER_OFSET_AD_VALUE };
 
 		Delay_ms(2000);
 		music();
@@ -198,7 +200,7 @@ void mode0(void) {
 	UILED_SET(7);
 	{
 		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 600, 1500, 3000, BLOCK_LENGTH };
+				{ MOVE_FORWARD, 0, 600, 1300, 3000, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
 				5, 700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
@@ -215,7 +217,7 @@ void mode0(void) {
 	UILED_SET(15);
 	{
 		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 600, 1500, 3300, BLOCK_LENGTH };
+				{ MOVE_FORWARD, 0, 600, 1300, 3300, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
 				5, 700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 		TURN_R, 300, 300, 2000, 700, 180 }, 15, 1000, 15,
@@ -248,7 +250,6 @@ void mode2(void) {
 }
 //1block run
 void mode3(void) {
-
 
 	Delay_ms(500);
 	tone(tone_hiC, 10);
@@ -374,13 +375,13 @@ void mode11(void) {
 }
 
 void mode12(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
 	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 20,
-			1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 25,
+			1200, 25, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
 			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, 800, 90 };
 	posX = START_X;
@@ -436,11 +437,13 @@ void mode12(void) {
 	return;
 }
 void mode13(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 1000, 2000, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 20,
-			1000, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
-			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 400, 500, (BLOCK_LENGTH
+
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 3000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 }, 15,
+			800, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+	TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+	AFTER_OFSET_AD_VALUE };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
 	posX = START_X;
@@ -457,10 +460,12 @@ void mode13(void) {
 	return;
 }
 void mode14(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 3000, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 }, 15,
-			900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300,
-			300, 2000, 700, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
+
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 600, 1300, 3000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 }, 5,
+			700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+	TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+	AFTER_OFSET_AD_VALUE };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
@@ -477,10 +482,11 @@ void mode14(void) {
 }
 
 void mode15(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 600, 1500, 3500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 600, 1300, 3300, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 }, 5,
-			700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300,
-			300, 2000, 700, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
+			700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+	TURN_R, 300, 300, 2000, 700, 180 }, 15, 1000, 15,
+	AFTER_OFSET_AD_VALUE };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;

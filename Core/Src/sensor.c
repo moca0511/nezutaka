@@ -35,7 +35,7 @@ extern void Sensor(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		if (osThreadFlagsWait(TASK_STOP | TASK_START, osFlagsWaitAny,
-				3U) == TASK_STOP) {
+				5U) == TASK_STOP) {
 //			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 //				printf("SSTOP\n");
 //				osMutexRelease(UART_MutexHandle);

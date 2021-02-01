@@ -32,7 +32,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	int32_t stopcount = config.value / STEP_LENGTH - get_MotorStepCount();
 	int32_t gensoku = -1;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
-
+	uint32_t plpl_time=osKernelGetTickCount();
 	if (pid_F && config.direction == MOVE_FORWARD) {
 		osThreadFlagsSet(PID_TaskHandle, TASK_START);
 	} else {
@@ -59,9 +59,39 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	if (config.initial_speed == 0) {
 		set_MotorSpeed(100);
 	}
-	osDelay(3);
+	osDelayUntil(osKernelGetTickCount() + 5);
 	//1ループ１
 	do {
+		//　前壁判定
+		if (front_Adjustment_F == 1
+				&& (get_sensordata(LF) >= wall_config[LF_WALL]
+						&& get_sensordata(RF) >= wall_config[RF_WALL])
+				/*&& stop_f == 0*/) {
+			config.finish_speed = 0;
+			break;
+		}
+
+		//壁切れ補正
+		if (wall_break_F == 1 && config.direction == MOVE_FORWARD
+				&& HztoSPEED(stopcount - (get_MotorStepCount())) < 80) {
+			if (get_sensordata(LS) < wall_config[LS_threshold] && stop_L == 0) {
+				stopcount = get_MotorStepCount() + SPEEDtoHz(70);
+				stop_R = stop_L = stop_f = 1;
+				//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				//					printf("LS=%ld\n", get_sensordata(LS));
+				//					osMutexRelease(UART_MutexHandle);
+				//				}
+			} else if (get_sensordata(RS) < wall_config[RS_threshold]
+					&& stop_R == 0) {
+				stopcount = get_MotorStepCount() + SPEEDtoHz(70);
+				stop_R = stop_L = stop_f = 1;
+				//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				//					printf("RS=%ld\n", get_sensordata(RS));
+				//					osMutexRelease(UART_MutexHandle);
+				//				}
+			}
+		}
+
 		//1スピード変更処理
 		if ((((get_MotorStepCount() >= gensoku) && gensoku != -1)
 				|| ((get_MotorStepCount() >= (stopcount * 0.45))
@@ -72,12 +102,13 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			plpl *= -1;
 		}
 
-		fspeed += plpl * 5;
+		fspeed += plpl * (osKernelGetTickCount()-plpl_time);
+		plpl_time=osKernelGetTickCount();
 
 		if (fspeed >= config.max_speed) {
 			fspeed = config.max_speed;
 			if (gensoku == -1) {
-				gensoku = stopcount - (get_MotorStepCount() * 0.9);
+				gensoku = stopcount - (get_MotorStepCount());
 			}
 		}
 		//speedが終了速度より下がらないように
@@ -85,8 +116,8 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 			fspeed = config.finish_speed;
 		}
 		//遅すぎたらPID制御が上手くいかないため
-		if (fspeed < 150) {
-			fspeed = 150;
+		if (fspeed < 180) {
+			fspeed = 180;
 		}
 
 		fspeed_L = fspeed_R = fspeed;
@@ -96,41 +127,12 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		temp_MotorSPEED_R = (float32_t) fspeed_R;
 		temp_MotorSPEED_L = (float32_t) fspeed_L;
 
-		//壁切れ補正
-		if (wall_break_F == 1 && config.direction == MOVE_FORWARD
-				&& HztoSPEED(stopcount - (get_MotorStepCount())) < 80) {
-			if (get_sensordata(LS) < wall_config[LS_threshold] && stop_L == 0) {
-				stopcount = get_MotorStepCount() + SPEEDtoHz(70);
-				stop_R = stop_L = stop_f = 1;
-//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//					printf("LS=%ld\n", get_sensordata(LS));
-//					osMutexRelease(UART_MutexHandle);
-//				}
-			} else if (get_sensordata(RS) < wall_config[RS_threshold]
-					&& stop_R == 0) {
-				stopcount = get_MotorStepCount() + SPEEDtoHz(70);
-				stop_R = stop_L = stop_f = 1;
-//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//					printf("RS=%ld\n", get_sensordata(RS));
-//					osMutexRelease(UART_MutexHandle);
-//				}
-			}
-		}
-
-		//　前壁判定
-		if (front_Adjustment_F == 1
-				&& (get_sensordata(LF) >= wall_config[LF_WALL]
-						|| get_sensordata(RF) >= wall_config[RF_WALL])
-				/*&& stop_f == 0*/) {
-			config.finish_speed = 0;
-			break;
-		}
-
 		osDelayUntil(osKernelGetTickCount() + 5);
+
 	} while (stopcount > get_MotorStepCount());
-	if (pid_F) {
-		osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
-	}
+//	if (pid_F) {
+//		osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
+//	}
 	if (config.finish_speed == 0) {
 		motor_stop();
 	} else {
@@ -161,8 +163,10 @@ void turn(RUNConfig config) {
 			/ (uint32_t) configTICK_RATE_HZ;
 	int32_t gensoku = -1;
 	float32_t speed = config.initial_speed;
-
-	osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
+	uint32_t plpl_time=osKernelGetTickCount();
+	motor_stop();
+	osDelayUntil(osKernelGetTickCount() + 100);
+	temp_MotorSPEED_R = temp_MotorSPEED_L = config.initial_speed;
 
 //on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
@@ -183,7 +187,9 @@ void turn(RUNConfig config) {
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
-		speed += plpl * 5;
+		speed += plpl * (osKernelGetTickCount()-plpl_time);
+		plpl_time=osKernelGetTickCount();
+
 		if (speed >= SPEED_MAX) {
 			speed = SPEED_MAX;
 			if (gensoku == -1) {
@@ -457,19 +463,19 @@ void ajast(void) {
 float32_t pid_calc(float32_t speed, int32_t target, int32_t sensor,
 		int32_t *deviation_prev, int32_t *devaition_sum) {
 	int32_t deviation;
-	deviation = target - sensor;
+	deviation = sensor - target;
 	*devaition_sum += deviation;
 	if (*deviation_prev == 0) {
 		*deviation_prev = deviation;
 	}
 	*deviation_prev = deviation - (*deviation_prev);
 
-	speed += (KP * deviation + KD * (*deviation_prev) + KI * (*devaition_sum));
-	if (speed < SPEEDtoHz(SPEED_MIN)) {
-		speed = 0;
+	speed -= (KP * deviation + KD * (*deviation_prev) + KI * (*devaition_sum));
+	if (speed < SPEED_MIN) {
+		speed = SPEED_MIN;
 	}
-	if (speed > SPEEDtoHz(SPEED_MAX)) {
-		speed = SPEEDtoHz(SPEED_MAX);
+	if (speed > SPEED_MAX) {
+		speed = SPEED_MAX;
 	}
 	return speed;
 }
@@ -523,9 +529,11 @@ void chenge_head(uint16_t direction, uint32_t value, int8_t *head_buf) {
  * 戻り値：無し
  */
 void turn_u(void) {
-	RUNConfig turn_config = { TURN_R, 0, 0, 800, 1000, 180 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 400, 400, 180 };
+	Delay_ms(100);
 	turn(turn_config);
 	chenge_head(turn_config.direction, turn_config.value, &head);
+	Delay_ms(100);
 }
 
 /* USER CODE BEGIN Header_PID */
@@ -567,27 +575,33 @@ extern void PID(void *argument) {
 //		osSemaphoreAcquire(pid_SemHandle, osWaitForever);
 		sensorR = get_sensordata(RS);
 		sensorL = get_sensordata(LS);
-		if (sensorL > wall_config[LS_threshold]) { //　壁がある時だけPID操作
-			if (sensorL <= wall_config[LS_WALL] * 0.95
-					&& sensorL >= wall_config[LS_WALL] * 1.05) { //ほぼ壁なら偏差計リセット
+		if (sensorL >= wall_config[LS_threshold]) { //　壁がある時だけPID操作
+			if (sensorL >= wall_config[LS_WALL] * 0.95
+					&& sensorL <= wall_config[LS_WALL] * 1.05) { //ほぼ壁なら偏差計リセット
 				deviation_sumL = 0;
 			}
-			temp_MotorSPEED_R = pid_calc(temp_MotorSPEED_R,
-					wall_config[LS_WALL], sensorL, &deviation_prevL,
-					&deviation_sumL);
+			if (temp_MotorSPEED_R != 0) {
+
+				temp_MotorSPEED_R = pid_calc(temp_MotorSPEED_R,
+						wall_config[LS_WALL], sensorL, &deviation_prevL,
+						&deviation_sumL);
+			}
 		} else {
 			deviation_prevL = 0;
 			deviation_sumL = 0;
 
 		}
-		if (sensorR > wall_config[RS_threshold]) { // *　壁がある時だけPID操作
-			if (sensorR <= wall_config[RS_WALL] * 0.95
-					&& sensorR >= wall_config[RS_WALL] * 1.05) {
+		if (sensorR >= wall_config[RS_threshold]) { // *　壁がある時だけPID操作
+			if (sensorR >= wall_config[RS_WALL] * 0.95
+					&& sensorR <= wall_config[RS_WALL] * 1.05) {
 				deviation_sumR = 0;
+				deviation_prevR = sensorR - deviation_prevR;
 			}
-			temp_MotorSPEED_L = pid_calc(temp_MotorSPEED_L,
-					wall_config[RS_WALL], sensorR, &deviation_prevR,
-					&deviation_sumR);
+			if (temp_MotorSPEED_L != 0) {
+				temp_MotorSPEED_L = pid_calc(temp_MotorSPEED_L,
+						wall_config[RS_WALL], sensorR, &deviation_prevR,
+						&deviation_sumR);
+			}
 		} else {
 			deviation_prevR = 0;
 			deviation_sumR = 0;
