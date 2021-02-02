@@ -32,7 +32,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	int32_t stopcount = config.value / STEP_LENGTH - get_MotorStepCount();
 	int32_t gensoku = -1;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
-	int32_t plpl_time=osKernelGetTickCount();
+//	int32_t plpl_time=osKernelGetTickCount();
 
 	if (pid_F && config.direction == MOVE_FORWARD) {
 		osThreadFlagsSet(PID_TaskHandle, TASK_START);
@@ -60,7 +60,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	if (config.initial_speed == 0) {
 		set_MotorSpeed(100);
 	}
-	plpl_time=osKernelGetTickCount();
+//	plpl_time=osKernelGetTickCount();
 	osDelayUntil(osKernelGetTickCount() + 5);
 	//1ループ１
 	do {
@@ -103,9 +103,9 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
-
-		fspeed += plpl * (osKernelGetTickCount()-plpl_time);
-		plpl_time=osKernelGetTickCount();
+		fspeed += plpl * 5;
+//		fspeed += plpl * (osKernelGetTickCount()-plpl_time);
+//		plpl_time=osKernelGetTickCount();
 		if (fspeed >= config.max_speed) {
 			fspeed = config.max_speed;
 			if (gensoku == -1) {
@@ -164,7 +164,7 @@ void turn(RUNConfig config) {
 			/ (uint32_t) configTICK_RATE_HZ;
 	int32_t gensoku = -1;
 	float32_t speed = config.initial_speed;
-	int32_t plpl_time=osKernelGetTickCount();
+//	int32_t plpl_time=osKernelGetTickCount();
 	motor_stop();
 	osDelayUntil(osKernelGetTickCount() + 100);
 
@@ -180,7 +180,7 @@ void turn(RUNConfig config) {
 	}
 	reset_MotorStepCount();
 	temp_MotorSPEED_R = temp_MotorSPEED_L = config.initial_speed;
-	plpl_time=osKernelGetTickCount();
+//	plpl_time=osKernelGetTickCount();
 	do {
 //1スピード変更処理
 		if ((((get_MotorStepCount() >= gensoku) && gensoku != -1)
@@ -188,8 +188,8 @@ void turn(RUNConfig config) {
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
-		speed += plpl * (osKernelGetTickCount()-plpl_time);
-			plpl_time=osKernelGetTickCount();
+		speed += plpl * 5;
+//			plpl_time=osKernelGetTickCount();
 		if (speed >= SPEED_MAX) {
 			speed = SPEED_MAX;
 			if (gensoku == -1) {
@@ -317,7 +317,7 @@ void slalom(SLALOMConfig config) {
 		}
 
 //1スピード変更処理
-		if ((int32_t) (deg * 0.012 * 180 / PI) >= config.config.value * 0.5
+		if ((int32_t) (deg * 0.007 * 180 / PI) >= config.config.value * 0.5
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
@@ -447,7 +447,7 @@ void sirituke(void) {
  * 戻り値：無し
  */
 void ajast(void) {
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 300, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 200, 200, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	straight(tyousei_config, 0, 0, 0);
 }
@@ -529,7 +529,7 @@ void chenge_head(uint16_t direction, uint32_t value, int8_t *head_buf) {
  * 戻り値：無し
  */
 void turn_u(void) {
-	RUNConfig turn_config = { TURN_R, 0, 0, 400, 400, 180 };
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 180 };
 	Delay_ms(100);
 	turn(turn_config);
 	chenge_head(turn_config.direction, turn_config.value, &head);
