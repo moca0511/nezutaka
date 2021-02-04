@@ -37,6 +37,7 @@ void tone(uint32_t tone,uint32_t ms){
 	buzzer_config.tone =tone;
 	buzzer_config.ms = ms;
 	osThreadFlagsSet(BUZZER_TaskHandle, TASK_START);
+	osThreadYield();
 }
 
 //music

@@ -325,9 +325,9 @@ void mode10(void) {
 	return;
 }
 void mode11(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 1000, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 300, BLOCK_LENGTH };
 	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 1000, (BLOCK_LENGTH
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 300, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 900, 90 }, 20,
 			1100, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
