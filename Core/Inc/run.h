@@ -43,9 +43,9 @@ typedef struct {
 #define SPEED_MAX 1700
 #define SPEED_MIN 100
 
-#define KP 0.06
-#define KI 0.00005
-#define KD 0.01
+#define KP 0.08
+#define KI 0.0001
+#define KD 0.05
 
 uint16_t straight(RUNConfig config,uint8_t pid_F,uint8_t wall_break_F,uint8_t front_Adjustment_F);
 void turn(RUNConfig config);

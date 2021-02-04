@@ -32,7 +32,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	int32_t stopcount = config.value / STEP_LENGTH - get_MotorStepCount();
 	int32_t gensoku = -1;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
-//	int32_t plpl_time=osKernelGetTickCount();
+	int32_t plpl_time = osKernelGetTickCount();
 
 	if (pid_F && config.direction == MOVE_FORWARD) {
 		osThreadFlagsSet(PID_TaskHandle, TASK_START);
@@ -60,7 +60,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	if (config.initial_speed == 0) {
 		set_MotorSpeed(100);
 	}
-//	plpl_time=osKernelGetTickCount();
+	plpl_time = osKernelGetTickCount();
 	osDelayUntil(osKernelGetTickCount() + 5);
 	//1ループ１
 	do {
@@ -68,9 +68,11 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (front_Adjustment_F == 1
 				&& (get_sensordata(LF) >= wall_config[LF_WALL]
 						&& get_sensordata(RF) >= wall_config[RF_WALL])
-				/*&& stop_f == 0*/) {
+				&& stop_f == 0) {
+			stopcount = get_MotorStepCount() + SPEEDtoHz(30);
 			config.finish_speed = 0;
-			break;
+			config.max_speed = 200;
+			stop_R = stop_L = stop_f = 1;
 		}
 
 		//壁切れ補正
@@ -103,9 +105,9 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
-		fspeed += plpl * 5;
-//		fspeed += plpl * (osKernelGetTickCount()-plpl_time);
-//		plpl_time=osKernelGetTickCount();
+//		fspeed += plpl * 5;
+		fspeed += plpl * (osKernelGetTickCount() - plpl_time);
+		plpl_time = osKernelGetTickCount();
 		if (fspeed >= config.max_speed) {
 			fspeed = config.max_speed;
 			if (gensoku == -1) {
@@ -131,15 +133,6 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		osDelayUntil(osKernelGetTickCount() + 5);
 
 	} while (stopcount > get_MotorStepCount());
-//	if (pid_F) {
-//		osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
-//	}
-	if (config.finish_speed == 0) {
-		motor_stop();
-	} else {
-		set_MotorSpeed(config.finish_speed);
-	}
-
 	move = (get_MotorStepCount() * STEP_LENGTH) / config.value;
 	if (((uint16_t) (get_MotorStepCount() * STEP_LENGTH)
 			- (uint16_t) config.value * move) > config.value * 0.5) {
@@ -147,6 +140,14 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	}
 
 	reset_MotorStepCount();
+//	if (pid_F) {
+//		osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
+//	}
+	if (config.finish_speed == 0) {
+		motor_stop();
+	} else {
+		temp_MotorSPEED_L = temp_MotorSPEED_R = config.finish_speed;
+	}
 
 	return move;
 }
@@ -164,9 +165,9 @@ void turn(RUNConfig config) {
 			/ (uint32_t) configTICK_RATE_HZ;
 	int32_t gensoku = -1;
 	float32_t speed = config.initial_speed;
-//	int32_t plpl_time=osKernelGetTickCount();
+	int32_t plpl_time = osKernelGetTickCount();
 	motor_stop();
-	osDelayUntil(osKernelGetTickCount() + 100);
+	osDelayUntil(osKernelGetTickCount() + 500);
 
 //on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
@@ -180,7 +181,7 @@ void turn(RUNConfig config) {
 	}
 	reset_MotorStepCount();
 	temp_MotorSPEED_R = temp_MotorSPEED_L = config.initial_speed;
-//	plpl_time=osKernelGetTickCount();
+	plpl_time = osKernelGetTickCount();
 	do {
 //1スピード変更処理
 		if ((((get_MotorStepCount() >= gensoku) && gensoku != -1)
@@ -188,8 +189,8 @@ void turn(RUNConfig config) {
 				&& plpl >= 0) {
 			plpl *= -1;
 		}
-		speed += plpl * 5;
-//			plpl_time=osKernelGetTickCount();
+		speed += plpl * (osKernelGetTickCount() - plpl_time);
+		plpl_time = osKernelGetTickCount();
 		if (speed >= SPEED_MAX) {
 			speed = SPEED_MAX;
 			if (gensoku == -1) {
@@ -305,6 +306,10 @@ void slalom(SLALOMConfig config) {
 		}
 
 	}
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("Slastart\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
 	reset_MotorStepCount();
 
@@ -369,7 +374,10 @@ void slalom(SLALOMConfig config) {
 	} else {
 		temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
 	}
-
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("Slaend\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 	reset_MotorStepCount();
 	chenge_head(config.config.direction, config.config.value, &temp_head);
 	chenge_pos(1, &temp_posX, &temp_posY, temp_head);
@@ -629,5 +637,6 @@ void motor_stop(void) {
 	temp_MotorSPEED_L = 0;
 	set_MotorSpeed_L(temp_MotorSPEED_L);
 	set_MotorSpeed_R(temp_MotorSPEED_R);
+//	Delay_ms(100);
 }
 
