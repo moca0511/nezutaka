@@ -69,7 +69,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 				&& (get_sensordata(LF) >= wall_config[LF_WALL]
 						&& get_sensordata(RF) >= wall_config[RF_WALL])
 				&& stop_f == 0) {
-			stopcount = get_MotorStepCount() + SPEEDtoHz(30);
+			stopcount = get_MotorStepCount() + SPEEDtoHz(20);
 			config.finish_speed = 0;
 			config.max_speed = 200;
 			stop_R = stop_L = stop_f = 1;
@@ -242,7 +242,8 @@ void slalom(SLALOMConfig config) {
 	uint8_t temp_wall = 0x00;
 	int32_t stopcount = config.before_ofset / STEP_LENGTH
 			- get_MotorStepCount();
-
+	if(stopcount<0)
+		stopcount=0;
 	osThreadFlagsSet(PID_TaskHandle, TASK_START);
 //on
 	HAL_GPIO_WritePin(SLEEP_R_GPIO_Port, SLEEP_R_Pin, GPIO_PIN_RESET);
@@ -260,11 +261,11 @@ void slalom(SLALOMConfig config) {
 			osDelayUntil(osKernelGetTickCount() + 5);
 		} while ((get_sensordata(LF) < config.before_ofset_AD
 				&& get_sensordata(RF) < config.before_ofset_AD));
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("3Swall RF:%ld LF:%ld\n", get_sensordata(RF),
-//					get_sensordata(LF));
-//			osMutexRelease(UART_MutexHandle);
-//		}
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("3Swall RF:%ld LF:%ld\n", get_sensordata(RF),
+					get_sensordata(LF));
+			osMutexRelease(UART_MutexHandle);
+		}
 	} else {
 		while (get_MotorStepCount() < stopcount) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
@@ -272,25 +273,29 @@ void slalom(SLALOMConfig config) {
 			if (get_sensordata(LF) >= config.before_ofset_AD
 					&& get_sensordata(RF) >= config.before_ofset_AD
 					&& ((temp_wall & 0x88) != 0x80)) {
-//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//					printf("1Swall RF:%ld LF:%ld\n", get_sensordata(RF),
-//							get_sensordata(LF));
-//					osMutexRelease(UART_MutexHandle);
-//				}
+				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+					printf("1Swall RF:%ld LF:%ld\n", get_sensordata(RF),
+							get_sensordata(LF));
+					osMutexRelease(UART_MutexHandle);
+				}
 				break;
 			}
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+								printf("test step%ld,stop%ld\n",get_MotorStepCount(),stopcount);
+								osMutexRelease(UART_MutexHandle);
+							}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
 		if ((get_sensordata(LF) < config.before_ofset_AD
 				&& get_sensordata(RF) < config.before_ofset_AD)
-				&& (get_sensordata(LF) >= wall_config[LF_threshold] * 0.85
+				&& (get_sensordata(LF) >= wall_config[LF_threshold]
 						&& get_sensordata(RF)
-								>= wall_config[RF_threshold] * 0.85)
+								>= wall_config[RF_threshold])
 				&& ((temp_wall & 0x88) != 0x80)) {
-//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-////				printf("2Swall in\n");
-//				osMutexRelease(UART_MutexHandle);
-//			}
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("2Swall in\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			while ((get_sensordata(LF) < config.before_ofset_AD
 					&& get_sensordata(RF) < config.before_ofset_AD)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
@@ -298,11 +303,11 @@ void slalom(SLALOMConfig config) {
 
 				osDelayUntil(osKernelGetTickCount() + 5);
 			}
-//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("2Swall RF:%ld LF:%ld\n", get_sensordata(RF),
-//						get_sensordata(LF));
-//				osMutexRelease(UART_MutexHandle);
-//			}
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("2Swall RF:%ld LF:%ld\n", get_sensordata(RF),
+						get_sensordata(LF));
+				osMutexRelease(UART_MutexHandle);
+			}
 		}
 
 	}
@@ -415,9 +420,9 @@ void slalom(SLALOMConfig config) {
 		osDelayUntil(osKernelGetTickCount() + 5);
 		if ((get_sensordata(LF) < config.after_ofset_AD
 				&& get_sensordata(RF) < config.after_ofset_AD)
-				&& (get_sensordata(LF) >= wall_config[LF_threshold] * 0.85
+				&& (get_sensordata(LF) >= wall_config[LF_threshold]
 						&& get_sensordata(RF)
-								>= wall_config[RF_threshold] * 0.85)
+								>= wall_config[RF_threshold])
 				&& ((temp_wall & 0x88) != 0x80)) {
 			while ((get_sensordata(LF) < config.after_ofset_AD
 					&& get_sensordata(RF) < config.after_ofset_AD)) {
