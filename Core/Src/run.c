@@ -33,6 +33,9 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 	int32_t gensoku = -1;
 	uint8_t stop_R = 0, stop_L = 0, stop_f = 0; //　移動距離補正フラグ
 	int32_t plpl_time = osKernelGetTickCount();
+	if(stopcount<0){
+		stopcount=0;
+	}
 
 	if (pid_F && config.direction == MOVE_FORWARD) {
 		osThreadFlagsSet(PID_TaskHandle, TASK_START);
@@ -69,7 +72,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 				&& (get_sensordata(LF) >= wall_config[LF_WALL]
 						&& get_sensordata(RF) >= wall_config[RF_WALL])
 				&& stop_f == 0) {
-			stopcount = get_MotorStepCount() + SPEEDtoHz(20);
+			stopcount = get_MotorStepCount() + SPEEDtoHz(15);
 			config.finish_speed = 0;
 			config.max_speed = 200;
 			stop_R = stop_L = stop_f = 1;
@@ -79,7 +82,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (wall_break_F == 1 && config.direction == MOVE_FORWARD
 				&& HztoSPEED(stopcount - (get_MotorStepCount())) < 80) {
 			if (get_sensordata(LS) < wall_config[LS_threshold] && stop_L == 0) {
-				stopcount = get_MotorStepCount() + SPEEDtoHz(70);
+				stopcount = get_MotorStepCount() + SPEEDtoHz(50);
 				stop_R = stop_L = stop_f = 1;
 				//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				//					printf("LS=%ld\n", get_sensordata(LS));
@@ -261,11 +264,11 @@ void slalom(SLALOMConfig config) {
 			osDelayUntil(osKernelGetTickCount() + 5);
 		} while ((get_sensordata(LF) < config.before_ofset_AD
 				&& get_sensordata(RF) < config.before_ofset_AD));
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("3Swall RF:%ld LF:%ld\n", get_sensordata(RF),
-					get_sensordata(LF));
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf("3Swall RF:%ld LF:%ld\n", get_sensordata(RF),
+//					get_sensordata(LF));
+//			osMutexRelease(UART_MutexHandle);
+//		}
 	} else {
 		while (get_MotorStepCount() < stopcount) {
 			temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
@@ -273,17 +276,17 @@ void slalom(SLALOMConfig config) {
 			if (get_sensordata(LF) >= config.before_ofset_AD
 					&& get_sensordata(RF) >= config.before_ofset_AD
 					&& ((temp_wall & 0x88) != 0x80)) {
-				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-					printf("1Swall RF:%ld LF:%ld\n", get_sensordata(RF),
-							get_sensordata(LF));
-					osMutexRelease(UART_MutexHandle);
-				}
+//				if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//					printf("1Swall RF:%ld LF:%ld\n", get_sensordata(RF),
+//							get_sensordata(LF));
+//					osMutexRelease(UART_MutexHandle);
+//				}
 				break;
 			}
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-								printf("test step%ld,stop%ld\n",get_MotorStepCount(),stopcount);
-								osMutexRelease(UART_MutexHandle);
-							}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//								printf("test step%ld,stop%ld\n",get_MotorStepCount(),stopcount);
+//								osMutexRelease(UART_MutexHandle);
+//							}
 		}
 		osDelayUntil(osKernelGetTickCount() + 5);
 		if ((get_sensordata(LF) < config.before_ofset_AD
@@ -292,10 +295,10 @@ void slalom(SLALOMConfig config) {
 						&& get_sensordata(RF)
 								>= wall_config[RF_threshold])
 				&& ((temp_wall & 0x88) != 0x80)) {
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("2Swall in\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("2Swall in\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			while ((get_sensordata(LF) < config.before_ofset_AD
 					&& get_sensordata(RF) < config.before_ofset_AD)) {
 				temp_MotorSPEED_R = temp_MotorSPEED_L =
@@ -303,18 +306,18 @@ void slalom(SLALOMConfig config) {
 
 				osDelayUntil(osKernelGetTickCount() + 5);
 			}
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("2Swall RF:%ld LF:%ld\n", get_sensordata(RF),
-						get_sensordata(LF));
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("2Swall RF:%ld LF:%ld\n", get_sensordata(RF),
+//						get_sensordata(LF));
+//				osMutexRelease(UART_MutexHandle);
+//			}
 		}
 
 	}
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("Slastart\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//		printf("Slastart\n");
+//		osMutexRelease(UART_MutexHandle);
+//	}
 	osThreadFlagsSet(PID_TaskHandle, TASK_STOP);
 	reset_MotorStepCount();
 
@@ -379,10 +382,10 @@ void slalom(SLALOMConfig config) {
 	} else {
 		temp_MotorSPEED_R = temp_MotorSPEED_L = config.config.finish_speed;
 	}
-	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-		printf("Slaend\n");
-		osMutexRelease(UART_MutexHandle);
-	}
+//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//		printf("Slaend\n");
+//		osMutexRelease(UART_MutexHandle);
+//	}
 	reset_MotorStepCount();
 	chenge_head(config.config.direction, config.config.value, &temp_head);
 	chenge_pos(1, &temp_posX, &temp_posY, temp_head);

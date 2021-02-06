@@ -39,16 +39,16 @@ extern int8_t head;	//　現在向いている方向(北東南西(0,1,2,3))
  */
 void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		SLALOMConfig slalom90_config, uint16_t gx, uint16_t gy) {
-	RUNConfig U_config = { TURN_R, 0, 0, 200, 500, 180 };
 	uint8_t temp_head = 0;
 	int32_t speed_buf = RUN_config.finish_speed;
 	int8_t move_f = -1;
 	int8_t move = 0;
+	int8_t remenber = 1;
 
-//	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//		printf("adachi\n");
-//		osMutexRelease(UART_MutexHandle);
-//	}
+	if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+		printf("adachi\n");
+		osMutexRelease(UART_MutexHandle);
+	}
 
 	tone(tone_hiC, 10);
 
@@ -74,10 +74,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				straight(RUN_config, 1, 0, 0);
 			}
 			motor_stop();
-//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//				printf("can't to goal\n");
-//				osMutexRelease(UART_MutexHandle);
-//			}
+			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+				printf("can't to goal\n");
+				osMutexRelease(UART_MutexHandle);
+			}
 			break;
 		}
 
@@ -106,20 +106,41 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 		}
 
 		make_smap(gx, gy, 0);
+		temp_head = 99;
+		remenber = 99;
+		if ((map[posX][posY].wall & 0x22) == 0x20
+				&& map[posX][posY].step > map[posX][posY - 1].step) {
+			temp_head = 2;
+			if ((map[posX][posY - 1].wall & 0xf0) != 0xf0) {
+				remenber = 2;
+			}
+		}
 
+		if ((map[posX][posY].wall & 0x44) == 0x40
+				&& map[posX][posY].step > map[posX + 1][posY].step) {
+			temp_head = 1;
+			if ((map[posX + 1][posY].wall & 0xf0) != 0xf0) {
+				remenber = 1;
+			}
+		}
+		if ((map[posX][posY].wall & 0x11) == 0x10
+				&& map[posX][posY].step > map[posX - 1][posY].step) {
+			temp_head = 3;
+			if ((map[posX - 1][posY].wall & 0xf0) != 0xf0) {
+				remenber = 3;
+			}
+		}
 		if ((map[posX][posY].wall & 0x88) == 0x80
 				&& map[posX][posY].step > map[posX][posY + 1].step) {
 			temp_head = 0;
-		} else if ((map[posX][posY].wall & 0x11) == 0x10
-				&& map[posX][posY].step > map[posX - 1][posY].step) {
-			temp_head = 3;
-		} else if ((map[posX][posY].wall & 0x44) == 0x40
-				&& map[posX][posY].step > map[posX + 1][posY].step) {
-			temp_head = 1;
-		} else if ((map[posX][posY].wall & 0x22) == 0x20
-				&& map[posX][posY].step > map[posX][posY - 1].step) {
-			temp_head = 2;
-		} else {
+			if ((map[posX][posY + 1].wall & 0xf0) != 0xf0) {
+				remenber = 0;
+			}
+		}
+		if(remenber!=99){
+			temp_head=remenber;
+		}
+		if (temp_head == 99) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
 				printf("err\n");
 				osMutexRelease(UART_MutexHandle);
@@ -138,6 +159,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				sirituke();
 				ajast();
 			}
+			motor_stop();
 			break;
 		}
 
@@ -147,17 +169,17 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			temp_head -= 4;
 		}
 //		print_map();
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("x:%d y:%d\n", posX, posY);
-			osMutexRelease(UART_MutexHandle);
-		}
+//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//			printf("x:%d y:%d\n", posX, posY);
+//			osMutexRelease(UART_MutexHandle);
+//		}
 
 		switch (temp_head) {
 		case 0:
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("S\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("S\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			RUN_config.initial_speed = get_MotorSpeed();
 			RUN_config.value = BLOCK_LENGTH * 0.5;
 
@@ -188,10 +210,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 
 			break;
 		case 1:
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("R\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("R\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			if (move_f == -1) {
 				if (((((map[posX][posY].wall & 0x0f)
 						| (map[posX][posY].wall << 4)) << head) & 0x80)
@@ -215,7 +237,6 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 					ajast();
 				}
 				RUN_config.finish_speed = speed_buf;
-				U_config.direction = TURN_L;
 				turn_config.finish_speed = turn_config.initial_speed = 300;
 			} else {
 				slalom90_config.config.direction = TURN_R;
@@ -223,7 +244,6 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				chenge_head(slalom90_config.config.direction,
 						slalom90_config.config.value, &head);
 				RUN_config.finish_speed = speed_buf;
-				U_config.direction = TURN_L;
 				chenge_pos(1, &posX, &posY, head);
 				wall_set(0x03);
 				wall_set_around();
@@ -233,10 +253,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			break;
 		case 2:
 
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("U\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("U\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			if (move_f == 1) {
 				RUN_config.initial_speed = get_MotorSpeed();
 				RUN_config.finish_speed = 0;
@@ -245,8 +265,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			}
 			move_f = -1;
 			motor_stop();
-			turn(U_config);
-			chenge_head(U_config.direction, U_config.value, &head);
+			turn_u();
 			if (((((map[posX][posY].wall & 0x0f) | (map[posX][posY].wall << 4))
 					<< head) & 0x20) == 0x20) {
 				motor_stop();
@@ -256,10 +275,10 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			RUN_config.finish_speed = speed_buf;
 			break;
 		case 3:
-			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-				printf("L\n");
-				osMutexRelease(UART_MutexHandle);
-			}
+//			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+//				printf("L\n");
+//				osMutexRelease(UART_MutexHandle);
+//			}
 			if (move_f == -1) {
 				if (((((map[posX][posY].wall & 0x0f)
 						| (map[posX][posY].wall << 4)) << head) & 0x80)
@@ -283,7 +302,6 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 					ajast();
 				}
 				RUN_config.finish_speed = speed_buf;
-				U_config.direction = TURN_R;
 				turn_config.finish_speed = turn_config.initial_speed = 300;
 			} else {
 				slalom90_config.config.direction = TURN_L;
@@ -291,7 +309,6 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				chenge_head(slalom90_config.config.direction,
 						slalom90_config.config.value, &head);
 				RUN_config.finish_speed = speed_buf;
-				U_config.direction = TURN_R;
 				chenge_pos(1, &posX, &posY, head);
 				wall_set(0x03);
 				wall_set_around();
