@@ -137,8 +137,8 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 				remenber = 0;
 			}
 		}
-		if(remenber!=99){
-			temp_head=remenber;
+		if (remenber != 99) {
+			temp_head = remenber;
 		}
 		if (temp_head == 99) {
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -184,7 +184,7 @@ void adachi(RUNConfig RUN_config, RUNConfig turn_config,
 			RUN_config.value = BLOCK_LENGTH * 0.5;
 
 			if (move_f == -1) {    //中央から区切りへ
-				move = straight(RUN_config, 1, 1, 1);
+				move = straight(RUN_config, 1, 0, 1);
 			} else {    //区切りから中央へ
 				if (posX == gx && posY == gy) {
 					RUN_config.max_speed = 200;
@@ -403,6 +403,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	int8_t temp_head = 0, head_buf = shead;
 	uint8_t temp_wall;
 	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
+	uint32_t acceleration_buf = RUN_config.acceleration;
 //	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 //		printf("saitan\n");
 //		osMutexRelease(UART_MutexHandle);
@@ -619,9 +620,15 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 //			osMutexRelease(UART_MutexHandle);
 //		}
 	}
-//	rute[i].direction = 0;
-//	rute[i].value += BLOCK_LENGTH / 2;
-//	i++;
+
+//	/*ゴール後中央へ移動*/
+//	if (rute[i - 1].direction == 0) {
+//		rute[i - 1].value += BLOCK_LENGTH / 2;
+//	} else {
+//		rute[i].direction = 0;
+//		rute[i].value = BLOCK_LENGTH / 2;
+//		i++;
+//	}
 
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
@@ -645,20 +652,19 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 				osMutexRelease(UART_MutexHandle);
 			}
 			RUN_config.initial_speed = get_MotorSpeed();
-//			if (f == i - 1 && rute[f].value <= 180) {
-//				RUN_config.max_speed = 400;
-//				RUN_config.finish_speed = 0;
-//				RUN_config.acceleration = 3000;
-//			}
 			RUN_config.value = rute[f].value;
+			if (rute[f].value <= 180) {
+				RUN_config.acceleration *= 0.9;
+			}
+//			if(f==i-1){
+//				RUN_config.finish_speed = 0;
+//			}
 			straight(RUN_config, 1, 1, 1);
-			RUN_config.value += 90;
-			chenge_pos(
-					RUN_config.value / BLOCK_LENGTH
-							+ (RUN_config.value
-									- (RUN_config.value / BLOCK_LENGTH)
-											* BLOCK_LENGTH > 0 ? 1 : 0), &posX,
-					&posY, head);
+			if (f == 0) {
+				RUN_config.value += 90;
+			}
+			chenge_pos(RUN_config.value / BLOCK_LENGTH, &posX, &posY, head);
+			RUN_config.acceleration = acceleration_buf;
 			break;
 		case 1:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -727,6 +733,7 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	RUN_config.acceleration = 1000;
 	RUN_config.value = BLOCK_LENGTH / 2;
 	straight(RUN_config, 1, 0, 1);
+	chenge_pos(1, &posX, &posY, head);
 	motor_stop();
 	turn_u();
 	posX = gx;
