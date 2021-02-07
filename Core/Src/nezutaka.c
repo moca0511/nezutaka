@@ -493,8 +493,8 @@ void mode12(void) {
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
-			1000, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 5,
+			900, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
 			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
 	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
 	posX = START_X;
