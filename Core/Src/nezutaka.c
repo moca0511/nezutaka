@@ -489,7 +489,7 @@ void mode11(void) {
 
 void mode12(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
-	uint16_t searchX = 0, searchY = 0;
+//	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
@@ -603,7 +603,7 @@ void mode14(void) {
 
 void mode15(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
-	uint16_t searchX = 0, searchY = 0;
+//	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 
@@ -611,60 +611,11 @@ void mode15(void) {
 			1000, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
 			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
 	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
-//	posX = START_X;
-//	posY = START_Y;
-//	head = 0;
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(2000);
 
-//	straight(tyousei_config, 1, 0, 0);
-//	adachi(RUN_config, turn_config, slalom90_config, GOAL_X, GOAL_Y);
-////	if (((((map[posX][posY].wall & 0x0f) | (map[posX][posY].wall << 4)) << head)
-////			& 0x80) == 0x80) {
-////		turn_u();
-////		motor_stop();
-////		sirituke();
-////		ajast();
-////	}
-//	if (posX == GOAL_X && posY == GOAL_Y) {
-//		Delay_ms(10);
-//		maze_save();
-//		music();
-//	} else {
-//		motor_stop();
-//		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-//		UILED_SET(15);
-//		tone(tone_C, 1000);
-//		return;
-//	}
 	adachi(RUN_config, turn_config, slalom90_config, START_X, START_Y);
-//	searchX = GOAL_X;
-//	searchY = GOAL_Y;
-//	check_searchBlock(&searchX, &searchY);
-//	while ((searchX != GOAL_X || searchY != GOAL_Y)/*&& (map[searchX][searchY].step < map[START_X][START_Y].step)*/) {
-//		//1最短の可能性があり未探索の場所を探索
-//		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
-//		print_map();
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("searchX:%d searchY:%d\n", searchX, searchY);
-//			osMutexRelease(UART_MutexHandle);
-//		}
-//		adachi(RUN_config, turn_config, slalom90_config, searchX, searchY);
-//
-//		searchX = GOAL_X;
-//		searchY = GOAL_Y;
-//		check_searchBlock(&searchX, &searchY);
-//	}
-//	make_smap(GOAL_X, GOAL_Y, 1);
-//
-//	RUN_config.finish_speed = 400;
-//	RUN_config.initial_speed = 0;
-//	RUN_config.acceleration = 2000;
-//	RUN_config.max_speed = 1000;
-//
-//	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
-//			posX, posY, head);
 
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	//　最短走行
