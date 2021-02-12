@@ -519,13 +519,8 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	uint16_t i = 0;
 	int8_t temp_head = 0, head_buf = shead;
 	uint8_t temp_wall;
-<<<<<<< HEAD
-	RUNConfig turn_config = { TURN_R, 400, 400, 2000, 700, 90 };
-	uint32_t maxspeed_buf = RUN_config.max_speed;
-=======
 	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
 	uint32_t acceleration_buf = RUN_config.acceleration;
->>>>>>> work
 //	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 //		printf("saitan\n");
 //		osMutexRelease(UART_MutexHandle);
@@ -742,18 +737,6 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 //			osMutexRelease(UART_MutexHandle);
 //		}
 	}
-<<<<<<< HEAD
-
-	/*ゴール後中央へ移動*/
-	if (rute[i - 1].direction == 0) {
-		rute[i - 1].value += BLOCK_LENGTH / 2;
-	} else {
-		rute[i].direction = 0;
-		rute[i].value = BLOCK_LENGTH / 2;
-		i++;
-	}
-=======
->>>>>>> work
 
 	if (osMutexWait(UART_MutexHandle, osWaitForever) == osOK) {
 		for (int f = 0; f < i; f++) {
@@ -779,26 +762,14 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			RUN_config.initial_speed = get_MotorSpeed();
 			RUN_config.value = rute[f].value;
 			if (rute[f].value <= 180) {
-<<<<<<< HEAD
-				RUN_config.max_speed = slalom90_config.config.initial_speed;
-			} else {
-				RUN_config.max_speed = maxspeed_buf;
-			}
-			if(f==i-1){
-				RUN_config.finish_speed = 0;
-=======
 				RUN_config.acceleration *= 0.8;
->>>>>>> work
 			}
 			straight(RUN_config, 1, 1, 1);
 			if (f == 0) {
 				RUN_config.value += 90;
 			}
 			chenge_pos(RUN_config.value / BLOCK_LENGTH, &posX, &posY, head);
-<<<<<<< HEAD
-=======
 			RUN_config.acceleration = acceleration_buf;
->>>>>>> work
 			break;
 		case 1:
 			if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
@@ -861,15 +832,6 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 			break;
 		}
 	}
-<<<<<<< HEAD
-//	RUN_config.initial_speed = 300;
-//	RUN_config.max_speed = 300;
-//	RUN_config.finish_speed = 0;
-//	RUN_config.acceleration = 1000;
-//	RUN_config.value = BLOCK_LENGTH / 2;
-//	straight(RUN_config, 1, 0, 1);
-//	chenge_pos(1, &posX, &posY, head);
-=======
 	RUN_config.initial_speed = 300;
 	RUN_config.max_speed = 300;
 	RUN_config.finish_speed = 0;
@@ -877,7 +839,6 @@ void saitan(RUNConfig RUN_config, SLALOMConfig slalom90_config,
 	RUN_config.value = BLOCK_LENGTH / 2;
 	straight(RUN_config, 1, 0, 1);
 	chenge_pos(1, &posX, &posY, head);
->>>>>>> work
 	motor_stop();
 	posX = gx;
 	posY = gy;

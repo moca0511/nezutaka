@@ -101,20 +101,12 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 
 		//1スピード変更処理
 		if ((((get_MotorStepCount() >= gensoku) && gensoku != -1)
-<<<<<<< HEAD
-				|| ((get_MotorStepCount() >= (stopcount * 0.55))
-=======
 				|| ((get_MotorStepCount() >= (stopcount * 0.6))
->>>>>>> work
 						&& gensoku == -1)
 				|| (config.max_speed == config.initial_speed
 						&& config.finish_speed <= config.initial_speed))
 				&& plpl >= 0) {
-<<<<<<< HEAD
-			plpl *= -2;
-=======
 			plpl *= -1.5;
->>>>>>> work
 		}
 //		fspeed += plpl * 5;
 		fspeed += plpl * (osKernelGetTickCount() - plpl_time);
@@ -122,11 +114,7 @@ uint16_t straight(RUNConfig config, uint8_t pid_F, uint8_t wall_break_F,
 		if (fspeed >= config.max_speed) {
 			fspeed = config.max_speed;
 			if (gensoku == -1) {
-<<<<<<< HEAD
-				gensoku = stopcount - (get_MotorStepCount())*0.95;
-=======
 				gensoku = stopcount - (get_MotorStepCount()*0.9);
->>>>>>> work
 			}
 		}
 		//speedが終了速度より下がらないように

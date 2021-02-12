@@ -428,21 +428,11 @@ void mode11(void) {
 //search maze by adachi HIGH
 void mode12(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
-<<<<<<< HEAD
-//	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
-
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 5,
-			900, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
-			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
-=======
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
 	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
 			900, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 400,
 			400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
->>>>>>> work
 	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
 	posX = START_X;
 	posY = START_Y;
@@ -517,23 +507,6 @@ void mode14(void) {
 }
 //saitan HIGH
 void mode15(void) {
-<<<<<<< HEAD
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
-//	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
-
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
-			1000, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
-			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
-
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(2000);
-
-	adachi(RUN_config, turn_config, slalom90_config, START_X, START_Y);
-
-=======
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 600, 1300, 2000, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 }, 5,
 			700, 5, 700 }, slalom180_config = { {
@@ -550,7 +523,6 @@ void mode15(void) {
 	straight(tyousei_config, 1, 0, 0);
 	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
 			posY, head);
->>>>>>> work
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	return;
 }
