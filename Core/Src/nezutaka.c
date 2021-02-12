@@ -18,8 +18,8 @@
 #include "arm_math.h"
 #include "arm_const_structs.h"
 
-uint32_t wall_config[WALL_DATA_MAX] = { 1500, 1500, 2650, 2650, 450, 450, 450,
-		450, 700, 700, 550, 550 };
+uint32_t wall_config[WALL_DATA_MAX] = { 1700, 1700, 2600, 2600, 450, 450, 450,
+		450, 650, 650, 600, 600 };
 int16_t posX = 0, posY = 0;	//　現在の位置
 int8_t head = 0;	//　現在向いている方向(北東南西(0,1,2,3))
 extern MAP map[MAP_X_MAX][MAP_Y_MAX];
@@ -161,8 +161,6 @@ void mode0(void) {
 	mode7();	//maze init
 	mode11();	//search maze
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-//	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-//	START_Y, posX, posY, head);
 	make_smap(GOAL_X, GOAL_Y, 1);
 	print_map();
 	if (map[START_X][START_Y].step == 255) {
@@ -176,114 +174,6 @@ void mode0(void) {
 	Delay_ms(2000);
 	maze_save();
 	music();
-	{
-		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 400, 1000, 2500, BLOCK_LENGTH };
-		SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 },
-				15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-		TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
-		AFTER_OFSET_AD_VALUE };
-		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
-				posX, posY, head);
-	}
-	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-	START_Y, posX, posY, head);
-	UILED_SET(3);
-	{
-		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 500, 1300, 3000, BLOCK_LENGTH };
-		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
-				5, 800, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
-		AFTER_OFSET_AD_VALUE };
-
-		Delay_ms(2000);
-		music();
-		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
-				posX, posY, head);
-
-	}
-	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-	START_Y, posX, posY, head);
-	UILED_SET(7);
-	{
-		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 600, 1300, 3000, BLOCK_LENGTH };
-		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
-				0, 700, 0, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
-		AFTER_OFSET_AD_VALUE };
-
-		Delay_ms(2000);
-		music();
-		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
-				posX, posY, head);
-
-	}
-	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-	START_Y, posX, posY, head);
-	UILED_SET(15);
-	{
-		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 600, 1300, 3300, BLOCK_LENGTH };
-		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
-				0, 700, 0, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-		TURN_R, 300, 300, 2000, 700, 180 }, 15, 1000, 15,
-		AFTER_OFSET_AD_VALUE };
-
-		Delay_ms(2000);
-		music();
-		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
-				posX, posY, head);
-
-	}
-	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-	START_Y, posX, posY, head);
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	return;
-}
-//sensordebug
-void mode1(void) {
-	RUNConfig RUN_config_def = { MOVE_FORWARD, 0, 400, 1000, 500, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config_def = { { TURN_R, 400, 400, 2000, 1200, 90 },
-			15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config_def = { {
-	TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
-	AFTER_OFSET_AD_VALUE };
-
-	mode3();	//sensor calibration
-	mode7();	//maze init
-	mode12();	//search maze
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-//	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-//	START_Y, posX, posY, head);
-	make_smap(GOAL_X, GOAL_Y, 1);
-	print_map();
-	if (map[START_X][START_Y].step == 255) {
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("search Err\n");
-			osMutexRelease(UART_MutexHandle);
-		}
-		return;
-	}
-	UILED_SET(1);
-	Delay_ms(2000);
-	maze_save();
-	music();
-	{
-		RUNConfig RUN_config =
-				{ MOVE_FORWARD, 0, 400, 1000, 2500, BLOCK_LENGTH };
-		SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 },
-				15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-		TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
-		AFTER_OFSET_AD_VALUE };
-		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
-				posX, posY, head);
-	}
-	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
-	START_Y, posX, posY, head);
-//	mode15();	//search maze
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	UILED_SET(3);
 	{
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 400, 1300, 2500, BLOCK_LENGTH };
@@ -291,25 +181,13 @@ void mode1(void) {
 				15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 		TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
 		AFTER_OFSET_AD_VALUE };
-
-		Delay_ms(2000);
-		music();
 		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
 				posX, posY, head);
-
 	}
 	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
 	START_Y, posX, posY, head);
-//	mode15();	//search maze
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	UILED_SET(7);
+	UILED_SET(3);
 	{
-//		RUNConfig RUN_config =
-//				{ MOVE_FORWARD, 0, 600, 1000, 2500, BLOCK_LENGTH };
-//		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
-//				5, 700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-//		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
-//		AFTER_OFSET_AD_VALUE };
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 500, 1000, 2500, BLOCK_LENGTH };
 		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
@@ -325,9 +203,7 @@ void mode1(void) {
 	}
 	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
 	START_Y, posX, posY, head);
-//	mode15();	//search maze
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	UILED_SET(15);
+	UILED_SET(7);
 	{
 		RUNConfig RUN_config =
 				{ MOVE_FORWARD, 0, 500, 1300, 2500, BLOCK_LENGTH };
@@ -335,12 +211,6 @@ void mode1(void) {
 				10, 800, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
 		AFTER_OFSET_AD_VALUE };
-//		RUNConfig RUN_config =
-//				{ MOVE_FORWARD, 0, 500, 1000, 2500, BLOCK_LENGTH };
-//		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
-//				10, 800, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-//		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
-//		AFTER_OFSET_AD_VALUE };
 
 		Delay_ms(2000);
 		music();
@@ -350,16 +220,121 @@ void mode1(void) {
 	}
 	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
 	START_Y, posX, posY, head);
-//	mode15();	//search maze
-//	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	return;
+	UILED_SET(15);
+	{
 
+		RUNConfig RUN_config =
+				{ MOVE_FORWARD, 0, 600, 1300, 2000, BLOCK_LENGTH };
+		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
+				5, 700, 5, 700 }, slalom180_config = { {
+		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+		AFTER_OFSET_AD_VALUE };
+
+		Delay_ms(2000);
+		music();
+		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
+				posX, posY, head);
+
+	}
+	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
+	START_Y, posX, posY, head);
+	return;
 }
-//init wall value
+//sensordebug
+void mode1(void) {
+	RUNConfig RUN_config_def = { MOVE_FORWARD, 0, 400, 1000, 500, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config_def = { { TURN_R, 400, 400, 2000, 1200, 90 },
+			15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config_def = { {
+	TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
+	AFTER_OFSET_AD_VALUE };
+
+	mode3();	//sensor calibration
+	mode7();	//maze init
+	mode12();	//search maze
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	make_smap(GOAL_X, GOAL_Y, 1);
+	print_map();
+	if (map[START_X][START_Y].step == 255) {
+		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
+			printf("search Err\n");
+			osMutexRelease(UART_MutexHandle);
+		}
+		return;
+	}
+	UILED_SET(1);
+	Delay_ms(2000);
+	maze_save();
+	music();
+	{
+		RUNConfig RUN_config =
+				{ MOVE_FORWARD, 0, 400, 1300, 2500, BLOCK_LENGTH };
+		SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 },
+				15, 900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+		TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
+		AFTER_OFSET_AD_VALUE };
+		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
+				posX, posY, head);
+	}
+	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
+	START_Y, posX, posY, head);
+	UILED_SET(3);
+	{
+		RUNConfig RUN_config =
+				{ MOVE_FORWARD, 0, 500, 1000, 2500, BLOCK_LENGTH };
+		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
+				10, 800, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+		AFTER_OFSET_AD_VALUE };
+
+		Delay_ms(2000);
+		music();
+		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
+				posX, posY, head);
+
+	}
+	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
+	START_Y, posX, posY, head);
+	UILED_SET(7);
+	{
+		RUNConfig RUN_config =
+				{ MOVE_FORWARD, 0, 500, 1300, 2500, BLOCK_LENGTH };
+		SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 },
+				10, 800, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+		AFTER_OFSET_AD_VALUE };
+
+		Delay_ms(2000);
+		music();
+		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
+				posX, posY, head);
+
+	}
+	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
+	START_Y, posX, posY, head);
+	UILED_SET(15);
+	{
+
+		RUNConfig RUN_config =
+				{ MOVE_FORWARD, 0, 600, 1300, 2000, BLOCK_LENGTH };
+		SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 },
+				5, 700, 5, 700 }, slalom180_config = { {
+		TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+		AFTER_OFSET_AD_VALUE };
+		Delay_ms(2000);
+		music();
+		saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y,
+				posX, posY, head);
+
+	}
+	saitan(RUN_config_def, slalom90_config_def, slalom180_config_def, START_X,
+	START_Y, posX, posY, head);
+	return;
+}
+//print debug
 void mode2(void) {
 	print_sensordata();
 }
-//1block run
+//init wall value
 void mode3(void) {
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	Delay_ms(1000);
@@ -368,11 +343,10 @@ void mode3(void) {
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 
 }
-//turn R 90°
+//sensor read
 void mode4(void) {
 	Delay_ms(500);
 	tone(tone_hiC, 10);
-	//ajast();
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
 	while (1) {
 		if (HAL_GPIO_ReadPin(OK_GPIO_Port, OK_Pin) == 0) {
@@ -384,49 +358,47 @@ void mode4(void) {
 		}
 	}
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	//	mortor_sleep();
 	tone(tone_hiC, 50);
 }
-//turn 180° and sirituke
+//maze save
 void mode5(void) {
 
 	maze_save();
 }
-//SLALOM_R
+//maze load
 void mode6(void) {
 	maze_load();
 }
-
+//maze_init
 void mode7(void) {
 
 	smap_Init();
 }
-
+//map print
 void mode8(void) {
 
 	print_map();
 }
-
+//make step map (search)
 void mode9(void) {
 
 	make_smap(GOAL_X, GOAL_Y, 0);
 	print_map();
 	return;
 }
-
+//make step map (saitan)
 void mode10(void) {
-
 	make_smap(GOAL_X, GOAL_Y, 1);
 	print_map();
 	return;
 }
+//search maze by adachi LO
 void mode11(void) {
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 300, 300, 300, BLOCK_LENGTH };
-	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 300, 300, 300, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
-	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 900, 90 }, 20,
-			900, 20, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300,
+	SLALOMConfig slalom90_config = { { TURN_R, 300, 300, 2000, 900, 90 }, 10,
+			900, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 300,
 			300, 2000, 700, 180 }, 30, 1000, 30, AFTER_OFSET_AD_VALUE };
 	RUNConfig turn_config = { TURN_R, 0, 0, 2000, AFTER_OFSET_AD_VALUE, 90 };
 	posX = START_X;
@@ -438,81 +410,6 @@ void mode11(void) {
 
 	straight(tyousei_config, 1, 0, 0);
 	adachi(RUN_config, turn_config, slalom90_config, GOAL_X, GOAL_Y);
-//	if (((((map[posX][posY].wall & 0x0f) | (map[posX][posY].wall << 4)) << head)
-//			& 0x80) == 0x80) {
-//		turn_u();
-//		motor_stop();
-//		sirituke();
-//		ajast();
-//	}
-	if (posX == GOAL_X && posY == GOAL_Y) {
-		Delay_ms(10);
-		maze_save();
-		music();
-	} else {
-		motor_stop();
-		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-		UILED_SET(15);
-		tone(tone_C, 1000);
-		return;
-	}
-
-	searchX = GOAL_X;
-	searchY = GOAL_Y;
-	check_searchBlock(&searchX, &searchY);
-	while ((searchX != GOAL_X || searchY != GOAL_Y)) {
-		//1最短の可能性があり未探索の場所を探索
-		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
-		print_map();
-		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-			printf("searchX:%d searchY:%d\n", searchX, searchY);
-			osMutexRelease(UART_MutexHandle);
-		}
-		adachi(RUN_config, turn_config, slalom90_config, searchX, searchY);
-		searchX = GOAL_X;
-		searchY = GOAL_Y;
-		check_searchBlock(&searchX, &searchY);
-	}
-//	make_smap(GOAL_X, GOAL_Y, 1);
-
-//	RUN_config.finish_speed = 300;
-//	RUN_config.initial_speed = 0;
-//	RUN_config.acceleration = RUN_config.max_speed = 1000;
-//
-//	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
-//			posX, posY, head);
-
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-
-	return;
-}
-
-void mode12(void) {
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
-//	uint16_t searchX = 0, searchY = 0;
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
-
-	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 5,
-			900, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
-			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
-	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
-	posX = START_X;
-	posY = START_Y;
-	head = 0;
-
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(2000);
-
-	straight(tyousei_config, 1, 0, 0);
-	adachi(RUN_config, turn_config, slalom90_config, GOAL_X, GOAL_Y);
-//	if (((((map[posX][posY].wall & 0x0f) | (map[posX][posY].wall << 4)) << head)
-//			& 0x80) == 0x80) {
-//		turn_u();
-//		motor_stop();
-//		sirituke();
-//		ajast();
-//	}
 	if (posX == GOAL_X && posY == GOAL_Y) {
 		Delay_ms(10);
 		maze_save();
@@ -525,69 +422,87 @@ void mode12(void) {
 		return;
 	}
 	adachi(RUN_config, turn_config, slalom90_config, START_X, START_Y);
-//	searchX = GOAL_X;
-//	searchY = GOAL_Y;
-//	check_searchBlock(&searchX, &searchY);
-//	while ((searchX != GOAL_X || searchY != GOAL_Y)/*&& (map[searchX][searchY].step < map[START_X][START_Y].step)*/) {
-//		//1最短の可能性があり未探索の場所を探索
-//		//　スタート位置から最短ルートをたどり、最初に来た未探索地区をゴールとした足立法走行を実施。
-//		print_map();
-//		if (osMutexWait(UART_MutexHandle, 0U) == osOK) {
-//			printf("searchX:%d searchY:%d\n", searchX, searchY);
-//			osMutexRelease(UART_MutexHandle);
-//		}
-//		adachi(RUN_config, turn_config, slalom90_config, searchX, searchY);
-//
-//		searchX = GOAL_X;
-//		searchY = GOAL_Y;
-//		check_searchBlock(&searchX, &searchY);
-//	}
-//	make_smap(GOAL_X, GOAL_Y, 1);
-//
-//	RUN_config.finish_speed = 400;
-//	RUN_config.initial_speed = 0;
-//	RUN_config.acceleration = 2000;
-//	RUN_config.max_speed = 1000;
-//
-//	saitan(RUN_config, slalom90_config, slalom180_config, START_X, START_Y,
-//			posX, posY, head);
-
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	//　最短走行
 	return;
 }
+//search maze by adachi HIGH
+void mode12(void) {
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
+<<<<<<< HEAD
+//	uint16_t searchX = 0, searchY = 0;
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 5,
+			900, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R,
+			400, 400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
+=======
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 10,
+			900, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { { TURN_R, 400,
+			400, 2000, 600, 180 }, 15, 1000, 15, AFTER_OFSET_AD_VALUE };
+>>>>>>> work
+	RUNConfig turn_config = { TURN_R, 0, 0, 300, 300, 90 };
+	posX = START_X;
+	posY = START_Y;
+	head = 0;
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(2000);
+
+	straight(tyousei_config, 1, 0, 0);
+	adachi(RUN_config, turn_config, slalom90_config, GOAL_X, GOAL_Y);
+	if (posX == GOAL_X && posY == GOAL_Y) {
+		Delay_ms(10);
+		maze_save();
+		music();
+	} else {
+		motor_stop();
+		osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+		UILED_SET(15);
+		tone(tone_C, 1000);
+		return;
+	}
+	adachi(RUN_config, turn_config, slalom90_config, START_X, START_Y);
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+	return;
+}
+
+//saitan LO
 void mode13(void) {
 
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1000, 2500, BLOCK_LENGTH };
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 1300, 2500, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 400, 400, 2000, 1200, 90 }, 15,
+			900, 15, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
+	TURN_R, 400, 400, 2000, 600, 180 }, 15, 1000, 15,
+	AFTER_OFSET_AD_VALUE };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+
+	posX = START_X;
+	posY = START_Y;
+	head = 0;
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(2000);
+	straight(tyousei_config, 1, 0, 0);
+	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
+			posY, head);
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
+	return;
+}
+//saitan MID
+void mode14(void) {
+
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 500, 1300, 2500, BLOCK_LENGTH };
 	SLALOMConfig slalom90_config = { { TURN_R, 500, 500, 2000, 1400, 90 }, 10,
 			800, 10, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
 	TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
 	AFTER_OFSET_AD_VALUE };
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
 			- NEZUTAKA_LENGTH) * 0.5 };
-
-	posX = START_X;
-	posY = START_Y;
-	head = 0;
-
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
-	Delay_ms(2000);
-	straight(tyousei_config, 1, 0, 0);
-	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
-			posY, head);
-
-	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	return;
-}
-void mode14(void) {
-
-	RUNConfig RUN_config = { MOVE_FORWARD, 0, 600, 1300, 3000, BLOCK_LENGTH };
-	SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 }, 5,
-			700, 5, AFTER_OFSET_AD_VALUE }, slalom180_config = { {
-	TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
-	AFTER_OFSET_AD_VALUE };
-	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
-			- NEZUTAKA_LENGTH) * 0.5 };
 	posX = START_X;
 	posY = START_Y;
 	head = 0;
@@ -600,8 +515,9 @@ void mode14(void) {
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
 	return;
 }
-
+//saitan HIGH
 void mode15(void) {
+<<<<<<< HEAD
 	RUNConfig RUN_config = { MOVE_FORWARD, 0, 400, 400, 400, BLOCK_LENGTH };
 //	uint16_t searchX = 0, searchY = 0;
 	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 400, 400, 400, (BLOCK_LENGTH
@@ -617,8 +533,25 @@ void mode15(void) {
 
 	adachi(RUN_config, turn_config, slalom90_config, START_X, START_Y);
 
+=======
+	RUNConfig RUN_config = { MOVE_FORWARD, 0, 600, 1300, 2000, BLOCK_LENGTH };
+	SLALOMConfig slalom90_config = { { TURN_R, 600, 600, 2000, 1500, 90 }, 5,
+			700, 5, 700 }, slalom180_config = { {
+	TURN_R, 300, 300, 2000, 700, 180 }, 15, 900, 15,
+	AFTER_OFSET_AD_VALUE };
+	RUNConfig tyousei_config = { MOVE_FORWARD, 0, 0, 300, 500, (BLOCK_LENGTH
+			- NEZUTAKA_LENGTH) * 0.5 };
+	posX = START_X;
+	posY = START_Y;
+	head = 0;
+
+	osThreadFlagsSet(Sensor_TaskHandle, TASK_START);
+	Delay_ms(2000);
+	straight(tyousei_config, 1, 0, 0);
+	saitan(RUN_config, slalom90_config, slalom180_config, GOAL_X, GOAL_Y, posX,
+			posY, head);
+>>>>>>> work
 	osThreadFlagsSet(Sensor_TaskHandle, TASK_STOP);
-	//　最短走行
 	return;
 }
 

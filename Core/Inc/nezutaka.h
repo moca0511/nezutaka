@@ -41,7 +41,6 @@ typedef enum {
 	WALL_DATA_MAX
 } WALL_DATA;
 
-
 #define MODE_NAME0 "AUTO RUN LO"
 #define MODE_NAME1 "AUTO RUN HIGH"
 #define MODE_NAME2 "DEBUG PRINT"
@@ -59,27 +58,23 @@ typedef enum {
 #define MODE_NAME14 "SAITAN MID"
 #define MODE_NAME15 "SAITAN HIGH"
 
-
-
 void nezutaka(void);
 void MENU(int16_t *mode);
-void mode0(void);//music
-void mode1(void);//sensordebug
-void mode2(void);//init wall value
-void mode3(void);//1block run
-void mode4(void);//turn 90°
-void mode5(void);//turn 180° and sirituke
-void mode6(void);//wallprint
-void mode7(void);//hidarite
-void mode8(void);//kakutyou
-void mode9(void);//adachi
-void mode10(void);//saitan
+void mode0(void); //music
+void mode1(void); //sensordebug
+void mode2(void); //init wall value
+void mode3(void); //1block run
+void mode4(void); //turn 90°
+void mode5(void); //turn 180° and sirituke
+void mode6(void); //wallprint
+void mode7(void); //hidarite
+void mode8(void); //kakutyou
+void mode9(void); //adachi
+void mode10(void); //saitan
 void mode11(void);
 void mode12(void);
 void mode13(void);
 void mode14(void);
 void mode15(void);
-
-
 
 #endif /* INC_NEZUTAKA_H_ */
