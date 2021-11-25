@@ -40,7 +40,7 @@ void print_map(void) {
 				printf("%4x", map[f][i].wall);
 			}
 			printf("\n");
-			Delay_ms(10);
+			Delay_ms(20);
 		}
 		printf("\n");
 		printf("    ");
@@ -76,7 +76,7 @@ void print_map(void) {
 				}
 			}
 			printf("\n");
-			Delay_ms(10);
+			Delay_ms(20);
 		}
 		osMutexRelease(UART_MutexHandle);
 	}
