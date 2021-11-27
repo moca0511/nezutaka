@@ -30,7 +30,7 @@ typedef struct {
 } SLALOMConfig;
 
 //スラローム終了位置(ADC)
-#define AFTER_OFSET_AD_VALUE 800
+#define AFTER_OFSET_AD_VALUE 700
 
 //進行方向
 #define MOVE_FORWARD GPIO_PIN_RESET	//前進
